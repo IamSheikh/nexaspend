@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS Income (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    type TEXT
+)

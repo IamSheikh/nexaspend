@@ -15,6 +15,10 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import { connect, loadModels } from './services/Database.service';
+import IDaybook from '../types/IDaybook';
+import { addDaybook, getAllDaybook } from './services/Daybook.service';
+import ICategory from '../types/ICategory';
+import { addCategory, getAllCategories } from './services/Category.service';
 
 class AppUpdater {
   constructor() {
@@ -33,6 +37,26 @@ ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
+});
+
+// Dayboo
+
+ipcMain.handle('addDaybook', async (_, daybook: IDaybook) => {
+  await addDaybook(daybook);
+});
+
+ipcMain.handle('getAllDaybook', async () => {
+  return getAllDaybook();
+});
+
+// Category
+
+ipcMain.handle('addCategory', async (_, category: ICategory) => {
+  await addCategory(category);
+});
+
+ipcMain.handle('getAllCategories', () => {
+  return getAllCategories();
 });
 
 if (process.env.NODE_ENV === 'production') {

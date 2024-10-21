@@ -1,10 +1,11 @@
 /* eslint-disable prettier/prettier */
-interface ITransaction {
+interface IDaybook {
   id?: number;
   date: string;
   amount: number;
   categoryId: number;
-  details: number;
+  details: string;
+  type: 'EXPENSE' | 'INCOME';
 }
 
-export default ITransaction;
+export default IDaybook;

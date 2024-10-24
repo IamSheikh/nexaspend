@@ -16,7 +16,14 @@ import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import { connect, loadModels } from './services/Database.service';
 import IDaybook from '../types/IDaybook';
-import { addDaybook, getAllDaybook } from './services/Daybook.service';
+import {
+  addDaybook,
+  deleteDaybook,
+  getAllDaybook,
+  getDaybookByFilters,
+  getLastTenDaybook,
+  updateDaybook,
+} from './services/Daybook.service';
 import ICategory from '../types/ICategory';
 import { addCategory, getAllCategories } from './services/Category.service';
 
@@ -47,6 +54,22 @@ ipcMain.handle('addDaybook', async (_, daybook: IDaybook) => {
 
 ipcMain.handle('getAllDaybook', async () => {
   return getAllDaybook();
+});
+
+ipcMain.handle('getLastTenDaybook', () => {
+  return getLastTenDaybook();
+});
+
+ipcMain.handle('getDaybookByFilters', (_, dateRange, entryType, categoryId) => {
+  return getDaybookByFilters(dateRange, entryType, categoryId);
+});
+
+ipcMain.handle('updateDaybook', (_, daybook: IDaybook) => {
+  updateDaybook(daybook);
+});
+
+ipcMain.handle('deleteDaybook', (_, id: number) => {
+  deleteDaybook(id);
 });
 
 // Category
@@ -107,6 +130,20 @@ const createWindow = async () => {
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
+  });
+
+  mainWindow.maximize();
+  mainWindow.maximizable = false;
+
+  mainWindow.on('ready-to-show', () => {
+    if (!mainWindow) {
+      throw new Error('"mainWindow" is not defined');
+    }
+    if (process.env.START_MINIMIZED) {
+      mainWindow.minimize();
+    } else {
+      mainWindow.show();
+    }
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));

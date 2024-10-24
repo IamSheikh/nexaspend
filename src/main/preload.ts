@@ -29,6 +29,16 @@ const electronHandler = {
 
   addDaybook: (daybook: IDaybook) => ipcRenderer.invoke('addDaybook', daybook),
   getAllDaybook: () => ipcRenderer.invoke('getAllDaybook'),
+  getLastTenDaybook: () => ipcRenderer.invoke('getLastTenDaybook'),
+  getDaybookByFilters: (
+    dateRange: Array<string> | null,
+    entryType: string,
+    categoryId: string,
+  ) =>
+    ipcRenderer.invoke('getDaybookByFilters', dateRange, entryType, categoryId),
+  updateDaybook: (daybook: IDaybook) =>
+    ipcRenderer.invoke('updateDaybook', daybook),
+  deleteDaybook: (id: number) => ipcRenderer.invoke('deleteDaybook', id),
 
   // Category
 

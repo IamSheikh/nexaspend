@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 interface ICategory {
-  id?: string;
+  id?: number;
   name: string;
   type: 'EXPENSE' | 'INCOME';
 }

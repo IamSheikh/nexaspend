@@ -16,10 +16,12 @@ const Home = () => {
   const startDateRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isManageCategoriesModelOpen, setIsManageCategoriesModelOpen] =
+    useState(false);
   const [inputData, setInputData] = useState<IDaybook>({
     amount: 0,
-    categoryId: 1,
-    date: '2024-10-24',
+    categoryId: 0,
+    date: '',
     details: '',
     type: 'EXPENSE',
   });
@@ -32,7 +34,7 @@ const Home = () => {
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
   const [allCate, setAllCate] = useState<ICategory[]>([]);
   const [refreshState, setRefreshState] = useState(false);
-  const [allCategories, setAllCategories] = useState<ICategory[]>([]);
+  const [, setAllCategories] = useState<ICategory[]>([]);
   const [searchData, setSearchData] = useState({
     startDate: '',
     endDate: '',
@@ -41,6 +43,11 @@ const Home = () => {
   });
   const [isUpdateDaybook, setIsUpdateDaybook] = useState(false);
   const [selectedDaybook, setSelectedDaybook] = useState<IDaybook>();
+  const [allDaybooks, setAllDaybook] = useState<IDaybook[]>([]);
+  const [isCategoryEditable, setIsCategoryEditable] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<ICategory>();
+  const categoryTextRef = useRef<HTMLSpanElement>(null);
+  const [activeTab, setActiveTab] = useState('Transaction');
 
   const handleDateClick = () => {
     if (dateInputRef.current) {
@@ -112,9 +119,16 @@ const Home = () => {
       setInputData(clone);
     }
 
-    const allDayB = await window.electron.getLastTenDaybook();
-    setResults(allDayB);
+    const lastTenDaybook = await window.electron.getLastTenDaybook();
+    const allDay = await window.electron.getAllDaybook();
+    setAllDaybook(allDay);
+    setResults(lastTenDaybook);
     setAllCate(allCat);
+
+    setInputData({
+      ...inputData,
+      categoryId: allCat[0].id as number,
+    });
   };
 
   useEffect(() => {
@@ -131,21 +145,103 @@ const Home = () => {
     setResults(filteredResults);
   };
 
+  const handleUpdateDaybook = async (e: FormEvent) => {
+    e.preventDefault();
+    await window.electron.updateDaybook(selectedDaybook as IDaybook);
+    toast('Daybook Updated Successfully', {
+      type: 'success',
+    });
+  };
+
   return (
     <div>
       <div className="flex justify-between mt-2 p-2">
-        <h1 className="text-4xl font-bold text-center">NexaSpend</h1>
-        <button
-          className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"
-          type="button"
-          onClick={() => {
-            setIsModalOpen(true);
-          }}
-        >
-          Add New Category
-        </button>
+        {/* <h1 className="text-4xl font-bold text-center">NexaSpend</h1> */}
+        <h1 className="text-4xl font-bold">
+          <span className="text-red-500">N</span>
+          <span className="text-orange-500">e</span>
+          <span className="text-yellow-300">x</span>
+          <span className="text-green-500">a</span>
+          <span className="text-blue-500">S</span>
+          <span className="text-violet-500">p</span>
+          <span className="text-red-500">e</span>
+          <span className="text-orange-500">n</span>
+          <span className="text-yellow-300">d</span>
+        </h1>
+        <div>
+          <button
+            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"
+            type="button"
+            onClick={() => {
+              setIsManageCategoriesModelOpen(true);
+            }}
+          >
+            Manage Category
+          </button>
+          <button
+            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"
+            type="button"
+            onClick={() => {
+              setIsModalOpen(true);
+            }}
+          >
+            Add New Category
+          </button>
+        </div>
       </div>
-      <form onSubmit={handleSubmit} className="w-full p-4">
+
+      <div className="px-2">
+        <h2 className="text-lg font-semibold mt-2 mb-2">
+          Expenses by Category
+        </h2>
+        <div className="flex flex-wrap items-center gap-4 mb-4">
+          {expenseCategories.map((cate) => {
+            const totalAmount = allDaybooks.reduce(
+              (total: number, item: any) => {
+                return item.categoryId === cate.id
+                  ? total + item.amount
+                  : total;
+              },
+              0,
+            );
+
+            return (
+              <div
+                key={cate.id}
+                className="text-sm p-1 rounded-md flex items-center"
+              >
+                <h2 className="font-semibold text-gray-800 mr-2">
+                  {cate.name}:
+                </h2>
+                <span className="text-gray-700">{totalAmount}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex justify-around border-b border-gray-300">
+        {['Transaction', 'Add Transaction'].map((tab) => (
+          <button
+            type="button"
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`pb-2 text-gray-600 ${
+              activeTab === tab
+                ? 'border-b-2 border-blue-500 text-blue-500'
+                : 'hover:text-blue-500'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+      {/* Tab: Add Transaction */}
+      <form
+        onSubmit={handleSubmit}
+        className="w-full p-4"
+        hidden={activeTab !== 'Add Transaction'}
+      >
         {/* Amount */}
         <div className="flex items-center w-full mt-4">
           <label
@@ -274,11 +370,22 @@ const Home = () => {
               setInputData(clone);
             }}
           >
-            {allCategories.map((cate) => (
+            {/* {allCategories.map((cate) => (
               <option key={cate.id} value={cate.id}>
                 {cate.name}
               </option>
-            ))}
+            ))} */}
+            {inputData.type === 'EXPENSE'
+              ? expenseCategories.map((cate) => (
+                  <option key={cate.id} value={cate.id}>
+                    {cate.name}
+                  </option>
+                ))
+              : incomeCategories.map((cate) => (
+                  <option key={cate.id} value={cate.id}>
+                    {cate.name}
+                  </option>
+                ))}
           </select>
         </div>
 
@@ -433,7 +540,10 @@ const Home = () => {
         transition={Bounce}
       />
 
-      <div className="flex justify-center items-center w-full p-4">
+      {/* Tab: Transaction */}
+      <div
+        className={`flex justify-center items-center w-full p-4 ${activeTab !== 'Transaction' && 'hidden'}`}
+      >
         {/* Date Range Picker */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
@@ -570,7 +680,9 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="flex justify-center self-center mb-4">
+      <div
+        className={`flex justify-center self-center mb-4 ${activeTab !== 'Transaction' && 'hidden'}`}
+      >
         <table className="table-auto border-collapse border border-gray-300 w-[95vw]">
           <thead>
             <tr className="bg-gray-200">
@@ -592,7 +704,12 @@ const Home = () => {
                   {da.type === 'INCOME' ? 'Income' : 'Expense'}
                 </td>
                 <td className="border border-gray-300 p-2">
-                  {allCate.find((c) => c.id === da.categoryId)?.name}
+                  {/* {allCate.find((c) => c.id === da.categoryId)?.name} */}
+                  {da.type === 'EXPENSE'
+                    ? expenseCategories.find((c) => c.id === da.categoryId)
+                        ?.name
+                    : incomeCategories.find((c) => c.id === da.categoryId)
+                        ?.name}
                 </td>
                 <td className="border border-gray-300 p-2">{da.amount}</td>
                 <td className="border border-gray-300 p-2">{da.details}</td>
@@ -623,6 +740,9 @@ const Home = () => {
                     onClick={async () => {
                       setRefreshState((prev) => !prev);
                       await window.electron.deleteDaybook(da.id as number);
+                      toast('Daybook Successfully Deleted', {
+                        type: 'error',
+                      });
                     }}
                   >
                     X
@@ -640,7 +760,7 @@ const Home = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg w-5/12 transform transition-transform duration-500 ease-in-out">
             <h2 className="text-xl font-semibold mb-4">Update Daybook Entry</h2>
 
-            <form>
+            <form onSubmit={handleUpdateDaybook}>
               {/* Amount */}
               <div className="flex items-center space-x-2 mb-4">
                 <label
@@ -656,6 +776,11 @@ const Home = () => {
                   className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
                   required
                   value={selectedDaybook.amount}
+                  onChange={(e) => {
+                    const clone = { ...selectedDaybook };
+                    clone.amount = +e.target.value;
+                    setSelectedDaybook(clone);
+                  }}
                 />
               </div>
 
@@ -673,6 +798,11 @@ const Home = () => {
                   className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
                   required
                   value={selectedDaybook.date}
+                  onChange={(e) => {
+                    const clone = { ...selectedDaybook };
+                    clone.date = e.target.value;
+                    setSelectedDaybook(clone);
+                  }}
                 />
               </div>
 
@@ -730,12 +860,23 @@ const Home = () => {
                   className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
                   required
                   value={selectedDaybook.categoryId}
+                  onChange={(e) => {
+                    const clone = { ...selectedDaybook };
+                    clone.categoryId = +e.target.value;
+                    setSelectedDaybook(clone);
+                  }}
                 >
-                  {allCate.map((cate) => (
-                    <option key={cate.id} value={cate.id}>
-                      {cate.name}
-                    </option>
-                  ))}
+                  {selectedDaybook.type === 'EXPENSE'
+                    ? expenseCategories.map((cate) => (
+                        <option key={cate.id} value={cate.id}>
+                          {cate.name}
+                        </option>
+                      ))
+                    : incomeCategories.map((cate) => (
+                        <option key={cate.id} value={cate.id}>
+                          {cate.name}
+                        </option>
+                      ))}
                 </select>
               </div>
 
@@ -753,6 +894,11 @@ const Home = () => {
                   className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
                   required
                   value={selectedDaybook.details}
+                  onChange={(e) => {
+                    const clone = { ...selectedDaybook };
+                    clone.details = e.target.value;
+                    setSelectedDaybook(clone);
+                  }}
                 />
               </div>
 
@@ -776,6 +922,119 @@ const Home = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Categories */}
+      {isManageCategoriesModelOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-transform duration-500 ease-in-out">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 max-w-md transform transition-transform duration-500 ease-in-out">
+            <h2 className="text-xl font-semibold mb-4">Manage Categories</h2>
+
+            {/* List of Categories */}
+            <ul className="mb-4">
+              {allCate.length === 0 ? (
+                <p>There is no category</p>
+              ) : (
+                allCate.map((category) => {
+                  return (
+                    <li
+                      key={category.id}
+                      className="flex items-center justify-between mb-2"
+                    >
+                      <span className="font-medium text-gray-800">
+                        <span
+                          ref={categoryTextRef}
+                          suppressContentEditableWarning
+                          contentEditable={isCategoryEditable}
+                        >
+                          {category.name}
+                        </span>{' '}
+                        ({category.type === 'EXPENSE' ? 'Expense' : 'Income'})
+                      </span>
+                      <div>
+                        <button
+                          className="text-blue-500 hover:text-blue-700 mr-2"
+                          type="button"
+                          onClick={async () => {
+                            if (!isCategoryEditable) {
+                              setSelectedCategory(category);
+                              setIsCategoryEditable(true);
+                            } else if (
+                              isCategoryEditable &&
+                              selectedCategory?.id === category.id
+                            ) {
+                              if (
+                                categoryTextRef.current?.textContent !==
+                                category.name
+                              ) {
+                                await window.electron.updateCategory({
+                                  ...category,
+                                  name: categoryTextRef.current
+                                    ?.textContent as string,
+                                });
+                                toast('Category Successfully Updated', {
+                                  type: 'success',
+                                });
+                              }
+                              setRefreshState((prev) => !prev);
+                              setIsCategoryEditable(false);
+                              setSelectedCategory(undefined);
+                            }
+                          }}
+                        >
+                          {isCategoryEditable &&
+                          selectedCategory?.id === category.id
+                            ? 'OK'
+                            : 'Edit'}
+                        </button>
+                        <button
+                          className={`text-red-500 hover:text-red-700 disabled:text-red-500 ${isCategoryEditable && 'cursor-not-allowed'}`}
+                          type="button"
+                          disabled={isCategoryEditable}
+                          onClick={async () => {
+                            await window.electron.deleteCategory(
+                              category.id as number,
+                            );
+                            toast('Category Successfully Deleted', {
+                              type: 'error',
+                            });
+                            setRefreshState((prev) => !prev);
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })
+              )}
+            </ul>
+
+            <div className="flex justify-end">
+              <button
+                className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 mr-2"
+                type="button"
+                onClick={() => {
+                  setIsManageCategoriesModelOpen(false);
+                  setIsModalOpen(true);
+                  setIsCategoryEditable(false);
+                }}
+              >
+                Add New Category
+              </button>
+              <button
+                type="button"
+                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mr-3"
+                onClick={() => {
+                  setIsManageCategoriesModelOpen(false);
+                  setIsCategoryEditable(false);
+                }}
+              >
+                X
+              </button>
+            </div>
           </div>
         </div>
       )}

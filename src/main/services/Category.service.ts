@@ -28,4 +28,25 @@ const getAllCategories = async () => {
   }
 };
 
-export { addCategory, getAllCategories };
+const updateCategory = async (category: ICategory) => {
+  const db = connect();
+  const query = `UPDATE Category SET name = ? WHERE id = ?`;
+  db.run(query, [category.name, category.id], (err: any) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Category updated successfully Clown 🤡');
+  });
+};
+
+const deleteCategory = async (id: number) => {
+  const db = connect();
+  const query = `DELETE FROM Category WHERE id = '${id}'`;
+  const stm = db.prepare(query);
+  stm.run((err) => {
+    if (err) throw err;
+    console.log('Category Deleted Successfully Clown 🤡');
+  });
+};
+
+export { addCategory, getAllCategories, updateCategory, deleteCategory };

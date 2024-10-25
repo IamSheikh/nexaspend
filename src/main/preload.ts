@@ -45,6 +45,9 @@ const electronHandler = {
   addCategory: (category: ICategory) =>
     ipcRenderer.invoke('addCategory', category),
   getAllCategories: () => ipcRenderer.invoke('getAllCategories'),
+  updateCategory: (category: ICategory) =>
+    ipcRenderer.invoke('updateCategory', category),
+  deleteCategory: (id: number) => ipcRenderer.invoke('deleteCategory', id),
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

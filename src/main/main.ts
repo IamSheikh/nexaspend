@@ -25,7 +25,12 @@ import {
   updateDaybook,
 } from './services/Daybook.service';
 import ICategory from '../types/ICategory';
-import { addCategory, getAllCategories } from './services/Category.service';
+import {
+  addCategory,
+  deleteCategory,
+  getAllCategories,
+  updateCategory,
+} from './services/Category.service';
 
 class AppUpdater {
   constructor() {
@@ -82,6 +87,19 @@ ipcMain.handle('getAllCategories', () => {
   return getAllCategories();
 });
 
+ipcMain.handle('updateCategory', (_, category: ICategory) => {
+  updateCategory(category);
+});
+
+ipcMain.handle('deleteCategory', (_, id: number) => {
+  deleteCategory(id);
+});
+
+/*
+  WRITTEN AND DIRECTED BY
+    CHRISTOPHER NOLAN
+*/
+
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
@@ -133,7 +151,6 @@ const createWindow = async () => {
   });
 
   mainWindow.maximize();
-  mainWindow.maximizable = false;
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {

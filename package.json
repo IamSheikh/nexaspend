@@ -109,7 +109,8 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.16.0",
     "react-toastify": "^10.0.6",
-    "sqlite": "^5.1.1"
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@electron/rebuild": "^3.3.0",
@@ -162,7 +163,7 @@
     "prettier": "^3.0.3",
     "react-refresh": "^0.14.0",
     "react-test-renderer": "^18.2.0",
-    "rimraf": "^5.0.1",
+    "rimraf": "^6.0.1",
     "sass": "^1.67.0",
     "sass-loader": "^13.3.2",
     "style-loader": "^3.3.3",

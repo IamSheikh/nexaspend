@@ -38,28 +38,6 @@ const configuration: webpack.Configuration = {
 
   module: {
     rules: [
-      // {
-      //   test: /\.s?(a|c)ss$/,
-      //   use: [
-      //     MiniCssExtractPlugin.loader,
-      //     {
-      //       loader: 'css-loader',
-      //       options: {
-      //         modules: true,
-      //         sourceMap: true,
-      //         importLoaders: 1,
-      //       },
-      //     },
-      //     'sass-loader',
-      //   ],
-      //   include: /\.module\.s?(c|a)ss$/,
-      // },
-      {
-        test: /\.s?(a|c)ss$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
-        exclude: /\.module\.s?(c|a)ss$/,
-      },
-
       {
         test: /\.s?(a|c)ss$/,
         use: [
@@ -78,21 +56,43 @@ const configuration: webpack.Configuration = {
       },
       {
         test: /\.s?(a|c)ss$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          'css-loader',
-          'sass-loader',
-          {
-            loader: 'postcss-loader',
-            options: {
-              postcssOptions: {
-                plugins: [require('tailwindcss'), require('autoprefixer')],
-              },
-            },
-          },
-        ],
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
         exclude: /\.module\.s?(c|a)ss$/,
       },
+
+      // {
+      //   test: /\.s?(a|c)ss$/,
+      //   use: [
+      //     MiniCssExtractPlugin.loader,
+      //     {
+      //       loader: 'css-loader',
+      //       options: {
+      //         modules: true,
+      //         sourceMap: true,
+      //         importLoaders: 1,
+      //       },
+      //     },
+      //     'sass-loader',
+      //   ],
+      //   include: /\.module\.s?(c|a)ss$/,
+      // },
+      // {
+      //   test: /\.s?(a|c)ss$/,
+      //   use: [
+      //     MiniCssExtractPlugin.loader,
+      //     'css-loader',
+      //     'sass-loader',
+      //     {
+      //       loader: 'postcss-loader',
+      //       options: {
+      //         postcssOptions: {
+      //           plugins: [require('tailwindcss'), require('autoprefixer')],
+      //         },
+      //       },
+      //     },
+      //   ],
+      //   exclude: /\.module\.s?(c|a)ss$/,
+      // },
       // Fonts
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
@@ -122,6 +122,40 @@ const configuration: webpack.Configuration = {
           'file-loader',
         ],
       },
+
+      // {
+      //   test: /\.s?(a|c)ss$/,
+      //   use: [
+      //     MiniCssExtractPlugin.loader,
+      //     {
+      //       loader: 'css-loader',
+      //       options: {
+      //         modules: true,
+      //         sourceMap: true,
+      //         importLoaders: 1,
+      //       },
+      //     },
+      //     'sass-loader',
+      //   ],
+      //   include: /\.module\.s?(c|a)ss$/,
+      // },
+      // {
+      //   test: /\.s?(a|c)ss$/,
+      //   use: [
+      //     MiniCssExtractPlugin.loader,
+      //     'css-loader',
+      //     'sass-loader',
+      //     {
+      //       loader: 'postcss-loader',
+      //       options: {
+      //         postcssOptions: {
+      //           plugins: [require('tailwindcss'), require('autoprefixer')],
+      //         },
+      //       },
+      //     },
+      //   ],
+      //   exclude: /\.module\.s?(c|a)ss$/,
+      // },
     ],
   },
 

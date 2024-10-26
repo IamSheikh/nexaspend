@@ -62,30 +62,8 @@ const configuration: webpack.Configuration = {
 
   module: {
     rules: [
-      // {
-      //   test: /\.s?(c|a)ss$/,
-      //   use: [
-      //     'style-loader',
-      //     {
-      //       loader: 'css-loader',
-      //       options: {
-      //         modules: true,
-      //         sourceMap: true,
-      //         importLoaders: 1,
-      //       },
-      //     },
-      //     'sass-loader',
-      //   ],
-      //   include: /\.module\.s?(c|a)ss$/,
-      // },
-      // {
-      //   test: /\.s?css$/,
-      //   use: ['style-loader', 'css-loader', 'sass-loader'],
-      //   exclude: /\.module\.s?(c|a)ss$/,
-      // },
-
       {
-        test: /\.s?css$/,
+        test: /\.s?(c|a)ss$/,
         use: [
           'style-loader',
           {
@@ -102,21 +80,43 @@ const configuration: webpack.Configuration = {
       },
       {
         test: /\.s?css$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'sass-loader',
-          {
-            loader: 'postcss-loader',
-            options: {
-              postcssOptions: {
-                plugins: [require('tailwindcss'), require('autoprefixer')],
-              },
-            },
-          },
-        ],
+        use: ['style-loader', 'css-loader', 'sass-loader'],
         exclude: /\.module\.s?(c|a)ss$/,
       },
+
+      // {
+      //   test: /\.s?css$/,
+      //   use: [
+      //     'style-loader',
+      //     {
+      //       loader: 'css-loader',
+      //       options: {
+      //         modules: true,
+      //         sourceMap: true,
+      //         importLoaders: 1,
+      //       },
+      //     },
+      //     'sass-loader',
+      //   ],
+      //   include: /\.module\.s?(c|a)ss$/,
+      // },
+      // {
+      //   test: /\.s?css$/,
+      //   use: [
+      //     'style-loader',
+      //     'css-loader',
+      //     'sass-loader',
+      //     {
+      //       loader: 'postcss-loader',
+      //       options: {
+      //         postcssOptions: {
+      //           plugins: [require('tailwindcss'), require('autoprefixer')],
+      //         },
+      //       },
+      //     },
+      //   ],
+      //   exclude: /\.module\.s?(c|a)ss$/,
+      // },
       // Fonts
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,

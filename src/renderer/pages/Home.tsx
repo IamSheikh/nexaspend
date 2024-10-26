@@ -10,6 +10,7 @@ import { useState, FormEvent, useRef, useEffect } from 'react';
 import { Bounce, toast, ToastContainer } from 'react-toastify';
 import IDaybook from '../../types/IDaybook';
 import ICategory from '../../types/ICategory';
+import '../output/dist.css';
 
 const Home = () => {
   const dateInputRef = useRef<HTMLInputElement>(null);
@@ -110,14 +111,14 @@ const Home = () => {
     setAllCategories(
       inputData.type === 'EXPENSE' ? filteredExpenseCate : filteredIncomeCate,
     );
-    if (!inputData.categoryId) {
-      const clone = { ...inputData };
-      clone.categoryId =
-        inputData.type === 'EXPENSE'
-          ? (filteredExpenseCate[0].id as number)
-          : (filteredIncomeCate[0].id as number);
-      setInputData(clone);
-    }
+    // if (!inputData.categoryId ) {
+    //   const clone = { ...inputData };
+    //   clone.categoryId =
+    //     inputData.type === 'EXPENSE'
+    //       ? (filteredExpenseCate[0].id as number)
+    //       : (filteredIncomeCate[0].id as number);
+    //   setInputData(clone);
+    // }
 
     const lastTenDaybook = await window.electron.getLastTenDaybook();
     const allDay = await window.electron.getAllDaybook();
@@ -125,9 +126,10 @@ const Home = () => {
     setResults(lastTenDaybook);
     setAllCate(allCat);
 
+    // console.log(allCat);
     setInputData({
       ...inputData,
-      categoryId: allCat[0].id as number,
+      categoryId: allCat.length === 0 ? 1 : (allCat[0].id as number),
     });
   };
 

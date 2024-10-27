@@ -93,7 +93,7 @@ const Home = () => {
 
     setInputData({
       amount: 0,
-      date: '',
+      date: formatDate(formattedDate),
       type: 'EXPENSE',
       categoryId: 1,
       details: '',
@@ -185,6 +185,7 @@ const Home = () => {
     });
     setIsEditCategoryModalOpen(false);
     setSelectedCategory(undefined);
+    setRefreshState((prev) => !prev);
   };
 
   return (

@@ -29,6 +29,7 @@ import {
   addCategory,
   deleteCategory,
   getAllCategories,
+  getCategoriesByFilters,
   updateCategory,
 } from './services/Category.service';
 
@@ -85,6 +86,10 @@ ipcMain.handle('addCategory', async (_, category: ICategory) => {
 
 ipcMain.handle('getAllCategories', () => {
   return getAllCategories();
+});
+
+ipcMain.handle('getCategoriesByFilters', (_, entryType: string) => {
+  return getCategoriesByFilters(entryType);
 });
 
 ipcMain.handle('updateCategory', (_, category: ICategory) => {

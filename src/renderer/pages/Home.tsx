@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 /* eslint-disable radix */
 /* eslint-disable no-nested-ternary */
@@ -11,6 +13,15 @@ import { Bounce, toast, ToastContainer } from 'react-toastify';
 import IDaybook from '../../types/IDaybook';
 import ICategory from '../../types/ICategory';
 import '../output/dist.css';
+// import '../index.css';
+import getFirstAndLastDayOfMonth from '../utils/getFirstAndLastDayOfMonth';
+
+/*
+  TODO:
+    1. Remove all tabs
+    2. Add Transaction should have a modal
+    3. Add Search Filters for Categories
+*/
 
 function formatDate(date: any) {
   const year = date.getFullYear();
@@ -64,6 +75,38 @@ const Home = () => {
   const [isDeleteTransactionModalOpen, setIsDeleteTransactionModalOpen] =
     useState(false);
   const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
+  const [currentMonthExpenses, setCurrentMonthExpenses] = useState<IDaybook[]>(
+    [],
+  );
+  const [isViewCategoryShowing, setIsViewingCatetgoryShowing] = useState(false);
+  const [printingMode, setPrintingMode] = useState(false);
+  const [categorySearch, setCategorySearch] = useState({
+    entryType: 'ALL',
+  });
+  const [copyCate, setCopyCate] = useState<ICategory[]>([]);
+
+  const handlePrint = () => {
+    setPrintingMode(true);
+    setTimeout(() => {
+      window.print();
+      setPrintingMode(false);
+    }, 0);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: any) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
+        event.preventDefault();
+        handlePrint();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const handleDateClick = () => {
     if (dateInputRef.current) {
@@ -145,11 +188,19 @@ const Home = () => {
     setAllDaybook(allDay);
     setResults(lastTenDaybook);
     setAllCate(allCat);
+    setCopyCate(allCat);
 
     setInputData({
       ...inputData,
       categoryId: allCat.length === 0 ? 1 : (allCat[0].id as number),
     });
+    const { firstDay, lastDay } = getFirstAndLastDayOfMonth();
+    const findD = await window.electron.getDaybookByFilters(
+      [firstDay, lastDay],
+      'ALL',
+      'ALL',
+    );
+    setCurrentMonthExpenses(findD);
   };
 
   useEffect(() => {
@@ -163,6 +214,8 @@ const Home = () => {
       searchData.entryType,
       searchData.categoryId,
     );
+    setCurrentMonthExpenses(filteredResults);
+
     setResults(filteredResults);
   };
 
@@ -190,8 +243,16 @@ const Home = () => {
 
   return (
     <div>
-      <div className="flex justify-between mt-2 mb-2 p-2">
-        <h1 className="text-4xl font-bold">
+      <div
+        className={`flex justify-between mt-2 mb-2 p-2 ${printingMode && 'hidden'}`}
+      >
+        <h1
+          className="text-4xl font-bold cursor-pointer"
+          onClick={() => {
+            setActiveTab('Transaction');
+            setIsViewingCatetgoryShowing(false);
+          }}
+        >
           <span className="text-red-500">N</span>
           <span className="text-orange-500">e</span>
           <span className="text-yellow-300">x</span>
@@ -210,13 +271,15 @@ const Home = () => {
               setIsModalOpen(true);
             }}
           >
-            Add New Category
+            Category
           </button>
         </div>
       </div>
 
-      <div className="flex justify-around border-b border-gray-300">
-        {['Transaction', 'Add Transaction', 'Categories'].map((tab) => (
+      <div
+        className={`flex justify-around border-b border-gray-300 ${activeTab === '' && 'hidden'} ${printingMode && 'hidden'}`}
+      >
+        {['Transaction', 'Add Transaction'].map((tab) => (
           <button
             type="button"
             key={tab}
@@ -515,11 +578,23 @@ const Home = () => {
                 >
                   Cancel
                 </button>
+
                 <button
                   type="submit"
                   className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   Submit
+                </button>
+                <button
+                  type="button"
+                  className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"
+                  onClick={() => {
+                    setIsViewingCatetgoryShowing(true);
+                    setIsModalOpen(false);
+                    setActiveTab('');
+                  }}
+                >
+                  View Categories
                 </button>
               </div>
             </form>
@@ -542,37 +617,60 @@ const Home = () => {
       />
 
       {/* Tab: Transaction */}
-      <div className={`px-2 ${activeTab !== 'Transaction' && 'hidden'}`}>
-        <h2 className="text-lg font-semibold mt-2 mb-2">
-          Expenses by Category
-        </h2>
-        <div className="flex flex-wrap items-center gap-4 mb-4">
-          {expenseCategories.map((cate) => {
-            const totalAmount = allDaybooks.reduce(
-              (total: number, item: any) => {
-                return item.categoryId === cate.id
-                  ? total + item.amount
-                  : total;
-              },
-              0,
-            );
+      <div
+        className={`px-2 flex justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
+      >
+        <div>
+          <h2 className="text-lg font-semibold mt-2 mb-2">
+            Expenses by Category
+          </h2>
+          <div className="flex flex-wrap items-center gap-4 mb-4">
+            {expenseCategories.map((cate) => {
+              const totalAmount = currentMonthExpenses.reduce(
+                (total: number, item: any) => {
+                  return item.categoryId === cate.id
+                    ? total + item.amount
+                    : total;
+                },
+                0,
+              );
 
-            return (
-              <div
-                key={cate.id}
-                className="text-sm p-1 rounded-md flex items-center"
-              >
-                <h2 className="font-semibold text-gray-800 mr-2">
-                  {cate.name}:
-                </h2>
-                <span className="text-gray-700">{totalAmount}</span>
-              </div>
-            );
-          })}
+              return (
+                <div
+                  key={cate.id}
+                  className="text-sm p-1 rounded-md flex items-center"
+                >
+                  <h2
+                    className="font-semibold text-gray-800 mr-2 cursor-pointer"
+                    onClick={() => {
+                      const clone = { ...searchData };
+                      clone.categoryId = cate.id as unknown as string;
+                      setSearchData(clone);
+                    }}
+                  >
+                    {cate.name}:
+                  </h2>
+                  <span className="text-gray-700">{totalAmount}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold mt-2 mb-2">Total Expenses</h2>
+          <div className="flex flex-wrap justify-end items-center gap-4 mb-4">
+            <p className="text-right">
+              {allDaybooks
+                .filter((da) => da.type === 'EXPENSE')
+                .reduce((total: number, item: any) => {
+                  return total + item.amount;
+                }, 0)}
+            </p>
+          </div>
         </div>
       </div>
       <div
-        className={`flex justify-center items-center w-full p-4 ${activeTab !== 'Transaction' && 'hidden'}`}
+        className={`flex justify-center items-center w-full p-4 ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
       >
         {/* Date Range Picker */}
         <div className="flex items-center space-x-4">
@@ -716,19 +814,21 @@ const Home = () => {
         <table className="table-auto border-collapse border border-gray-300 w-[95vw]">
           <thead>
             <tr className="bg-gray-200">
-              <th className="border border-gray-300 p-2">No.</th>
               <th className="border border-gray-300 p-2">Date</th>
               <th className="border border-gray-300 p-2">Type</th>
               <th className="border border-gray-300 p-2">Category</th>
               <th className="border border-gray-300 p-2">Amount</th>
               <th className="border border-gray-300 p-2">Details</th>
-              <th className="border border-gray-300 p-2">Actions</th>
+              <th
+                className={`border border-gray-300 p-2 ${printingMode && 'hidden'}`}
+              >
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
-            {results.map((da, index) => (
+            {results.map((da) => (
               <tr className="text-center">
-                <td className="border border-gray-300 p-2">{index + 1}</td>
                 <td className="border border-gray-300 p-2">{da.date}</td>
                 <td className="border border-gray-300 p-2">
                   {da.type === 'INCOME' ? 'Income' : 'Expense'}
@@ -743,7 +843,9 @@ const Home = () => {
                 </td>
                 <td className="border border-gray-300 p-2">{da.amount}</td>
                 <td className="border border-gray-300 p-2">{da.details}</td>
-                <td className="border border-gray-300 p-2 items-center justify-center flex">
+                <td
+                  className={`border border-gray-300 p-2 items-center justify-center flex ${printingMode && 'hidden'}`}
+                >
                   <button
                     type="button"
                     className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ml-2"
@@ -1088,64 +1190,115 @@ const Home = () => {
         </div>
       )}
 
-      <div
-        className={`flex justify-center self-center ${activeTab !== 'Categories' && 'hidden'} mt-4`}
-      >
-        <table className="table-auto border-collapse border border-gray-300 w-[95vw]">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border border-gray-300 p-2">No.</th>
-              <th className="border border-gray-300 p-2">Type</th>
-              <th className="border border-gray-300 p-2">Name</th>
-              <th className="border border-gray-300 p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allCate.map((da, index) => (
-              <tr className="text-center">
-                <td className="border border-gray-300 p-2">{index + 1}</td>
-                <td className="border border-gray-300 p-2">
-                  {da.type === 'INCOME' ? 'Income' : 'Expense'}
-                </td>
-                <td className="border border-gray-300 p-2">{da.name}</td>
-                <td className="border border-gray-300 p-2 items-center justify-center flex">
-                  <button
-                    type="button"
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ml-2"
-                    onClick={() => {
-                      setSelectedCategory(da);
-                      setIsEditCategoryModalOpen(true);
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 512 512"
-                      width="21"
-                      height="24"
-                    >
-                      <path
-                        d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
-                        fill="white"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
-                    onClick={async () => {
-                      setSelectedCategory(da);
-                      setIsDeleteCategoryModalOpen(true);
-                      setRefreshState((prev) => !prev);
-                    }}
-                  >
-                    X
-                  </button>
-                </td>
+      {isViewCategoryShowing && (
+        <div className="flex justify-center flex-col items-center self-center mt-4">
+          <div className="flex mb-4">
+            <div className="flex items-center">
+              <label
+                htmlFor="entryType"
+                className="text-sm font-medium text-gray-700"
+              >
+                Entry Type:
+              </label>
+              <select
+                id="entryType"
+                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
+                value={categorySearch.entryType}
+                onChange={(e) => {
+                  const clone = { ...categorySearch };
+                  clone.entryType = e.target.value;
+                  setCategorySearch(clone);
+                }}
+              >
+                <option value="ALL">All</option>
+                <option value="EXPENSE">Expense</option>
+                <option value="INCOME">Income</option>
+              </select>
+            </div>
+            <div className="ml-4">
+              <button
+                type="button"
+                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                onClick={async () => {
+                  const searchResults =
+                    await window.electron.getCategoriesByFilters(
+                      categorySearch.entryType,
+                    );
+                  setCopyCate(searchResults);
+                }}
+              >
+                Search
+              </button>
+              <button
+                type="button"
+                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
+                onClick={() => {
+                  setRefreshState((prev) => !prev);
+                  setCategorySearch({
+                    entryType: 'ALL',
+                  });
+                }}
+              >
+                X
+              </button>
+            </div>
+          </div>
+          <table className="table-auto border-collapse border border-gray-300 w-[95vw]">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="border border-gray-300 p-2">No.</th>
+                <th className="border border-gray-300 p-2">Type</th>
+                <th className="border border-gray-300 p-2">Name</th>
+                <th className="border border-gray-300 p-2">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {copyCate.map((da, index) => (
+                <tr className="text-center">
+                  <td className="border border-gray-300 p-2">{index + 1}</td>
+                  <td className="border border-gray-300 p-2">
+                    {da.type === 'INCOME' ? 'Income' : 'Expense'}
+                  </td>
+                  <td className="border border-gray-300 p-2">{da.name}</td>
+                  <td className="border border-gray-300 p-2 items-center justify-center flex">
+                    <button
+                      type="button"
+                      className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ml-2"
+                      onClick={() => {
+                        setSelectedCategory(da);
+                        setIsEditCategoryModalOpen(true);
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        width="21"
+                        height="24"
+                      >
+                        <path
+                          d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
+                          fill="white"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
+                      onClick={async () => {
+                        setSelectedCategory(da);
+                        setIsDeleteCategoryModalOpen(true);
+                        setRefreshState((prev) => !prev);
+                      }}
+                    >
+                      X
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

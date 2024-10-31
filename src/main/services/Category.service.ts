@@ -28,6 +28,23 @@ const getAllCategories = async () => {
   }
 };
 
+const getCategoriesByFilters = async (entryType: string) => {
+  const db = connect();
+  const dbAll = promisify(db.all).bind(db);
+  try {
+    let query;
+    if (entryType === 'ALL') {
+      query = 'SELECT * FROM Category';
+    } else {
+      query = `SELECT * FROM Category WHERE type = '${entryType}'`;
+    }
+    const rows = dbAll(query);
+    return rows;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const updateCategory = async (category: ICategory) => {
   const db = connect();
   const query = `UPDATE Category SET name = ? WHERE id = ?`;
@@ -49,4 +66,10 @@ const deleteCategory = async (id: number) => {
   });
 };
 
-export { addCategory, getAllCategories, updateCategory, deleteCategory };
+export {
+  addCategory,
+  getAllCategories,
+  getCategoriesByFilters,
+  updateCategory,
+  deleteCategory,
+};

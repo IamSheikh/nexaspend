@@ -45,6 +45,8 @@ const electronHandler = {
   addCategory: (category: ICategory) =>
     ipcRenderer.invoke('addCategory', category),
   getAllCategories: () => ipcRenderer.invoke('getAllCategories'),
+  getCategoriesByFilters: (entryType: string) =>
+    ipcRenderer.invoke('getCategoriesByFilters', entryType),
   updateCategory: (category: ICategory) =>
     ipcRenderer.invoke('updateCategory', category),
   deleteCategory: (id: number) => ipcRenderer.invoke('deleteCategory', id),

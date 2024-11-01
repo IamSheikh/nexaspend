@@ -67,7 +67,7 @@ const Home = () => {
   });
   const [isUpdateDaybook, setIsUpdateDaybook] = useState(false);
   const [selectedDaybook, setSelectedDaybook] = useState<IDaybook>();
-  const [allDaybooks, setAllDaybook] = useState<IDaybook[]>([]);
+  const [, setAllDaybook] = useState<IDaybook[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<ICategory>();
   const [activeTab, setActiveTab] = useState('Transaction');
   const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] =
@@ -251,6 +251,13 @@ const Home = () => {
           onClick={() => {
             setActiveTab('Transaction');
             setIsViewingCatetgoryShowing(false);
+            setRefreshState((prev) => !prev);
+            setSearchData({
+              startDate: '',
+              endDate: '',
+              categoryId: 'ALL',
+              entryType: 'ALL',
+            });
           }}
         >
           <span className="text-red-500">N</span>
@@ -642,10 +649,23 @@ const Home = () => {
                 >
                   <h2
                     className="font-semibold text-gray-800 mr-2 cursor-pointer"
-                    onClick={() => {
+                    onClick={async () => {
                       const clone = { ...searchData };
                       clone.categoryId = cate.id as unknown as string;
                       setSearchData(clone);
+                      const isThereDates =
+                        searchData.startDate !== '' && searchData.endDate;
+                      const filteredResults =
+                        await window.electron.getDaybookByFilters(
+                          isThereDates
+                            ? [searchData.startDate, searchData.endDate]
+                            : null,
+                          searchData.entryType,
+                          clone.categoryId,
+                        );
+                      setCurrentMonthExpenses(filteredResults);
+
+                      setResults(filteredResults);
                     }}
                   >
                     {cate.name}:
@@ -660,7 +680,7 @@ const Home = () => {
           <h2 className="text-lg font-semibold mt-2 mb-2">Total Expenses</h2>
           <div className="flex flex-wrap justify-end items-center gap-4 mb-4">
             <p className="text-right">
-              {allDaybooks
+              {results
                 .filter((da) => da.type === 'EXPENSE')
                 .reduce((total: number, item: any) => {
                   return total + item.amount;

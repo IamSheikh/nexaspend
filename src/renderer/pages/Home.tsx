@@ -183,7 +183,12 @@ const Home = () => {
     //   setInputData(clone);
     // }
 
-    const lastTenDaybook = await window.electron.getLastTenDaybook();
+    const { firstDay, lastDay } = getFirstAndLastDayOfMonth();
+    const lastTenDaybook = await window.electron.getDaybookByFilters(
+      [firstDay, lastDay],
+      'ALL',
+      'ALL',
+    );
     const allDay = await window.electron.getAllDaybook();
     setAllDaybook(allDay);
     setResults(lastTenDaybook);
@@ -194,7 +199,6 @@ const Home = () => {
       ...inputData,
       categoryId: allCat.length === 0 ? 1 : (allCat[0].id as number),
     });
-    const { firstDay, lastDay } = getFirstAndLastDayOfMonth();
     const findD = await window.electron.getDaybookByFilters(
       [firstDay, lastDay],
       'ALL',
@@ -834,13 +838,13 @@ const Home = () => {
         <table className="table-auto border-collapse border border-gray-300 w-[95vw]">
           <thead>
             <tr className="bg-gray-200">
-              <th className="border border-gray-300 p-2">Date</th>
-              <th className="border border-gray-300 p-2">Type</th>
-              <th className="border border-gray-300 p-2">Category</th>
-              <th className="border border-gray-300 p-2">Amount</th>
-              <th className="border border-gray-300 p-2">Details</th>
+              <th className="border border-gray-300">Date</th>
+              <th className="border border-gray-300">Type</th>
+              <th className="border border-gray-300">Category</th>
+              <th className="border border-gray-300">Amount</th>
+              <th className="border border-gray-300">Details</th>
               <th
-                className={`border border-gray-300 p-2 ${printingMode && 'hidden'}`}
+                className={`border border-gray-300 ${printingMode && 'hidden'}`}
               >
                 Actions
               </th>
@@ -849,11 +853,11 @@ const Home = () => {
           <tbody>
             {results.map((da) => (
               <tr className="text-center">
-                <td className="border border-gray-300 p-2">{da.date}</td>
-                <td className="border border-gray-300 p-2">
+                <td className="border border-gray-300">{da.date}</td>
+                <td className="border border-gray-300">
                   {da.type === 'INCOME' ? 'Income' : 'Expense'}
                 </td>
-                <td className="border border-gray-300 p-2">
+                <td className="border border-gray-300">
                   {/* {allCate.find((c) => c.id === da.categoryId)?.name} */}
                   {da.type === 'EXPENSE'
                     ? expenseCategories.find((c) => c.id === da.categoryId)
@@ -861,10 +865,10 @@ const Home = () => {
                     : incomeCategories.find((c) => c.id === da.categoryId)
                         ?.name}
                 </td>
-                <td className="border border-gray-300 p-2">{da.amount}</td>
-                <td className="border border-gray-300 p-2">{da.details}</td>
+                <td className="border border-gray-300">{da.amount}</td>
+                <td className="border border-gray-300">{da.details}</td>
                 <td
-                  className={`border border-gray-300 p-2 items-center justify-center flex ${printingMode && 'hidden'}`}
+                  className={`border border-gray-300 items-center justify-center flex ${printingMode && 'hidden'}`}
                 >
                   <button
                     type="button"

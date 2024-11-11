@@ -31,7 +31,7 @@ const getAllDaybook = async () => {
   const db = connect();
   const dbAll = promisify(db.all).bind(db);
   try {
-    const query = `SELECT * FROM Daybook`;
+    const query = `SELECT * FROM Daybook ORDER BY id DESC`;
     const row = dbAll(query);
     return row;
   } catch (err) {
@@ -61,49 +61,49 @@ const getDaybookByFilters = async (
   try {
     let query = '';
     if (entryType === 'ALL' && categoryId === 'ALL' && dateRange !== null) {
-      query = `SELECT * FROM Daybook WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}'`;
+      query = `SELECT * FROM Daybook WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}' ORDER BY id DESC`;
     } else if (
       entryType !== 'ALL' &&
       categoryId !== 'ALL' &&
       dateRange !== null
     ) {
-      query = `SELECT * FROM Daybook WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}' AND type = '${entryType}' AND categoryId = '${parseInt(categoryId as unknown as string)}'`;
+      query = `SELECT * FROM Daybook WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}' AND type = '${entryType}' AND categoryId = '${parseInt(categoryId as unknown as string)}' ORDER BY id DESC`;
     } else if (
       entryType === 'ALL' &&
       categoryId !== 'ALL' &&
       dateRange !== null
     ) {
-      query = `SELECT * FROM Daybook WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}' AND categoryId = '${parseInt(categoryId as unknown as string)}'`;
+      query = `SELECT * FROM Daybook WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}' AND categoryId = '${parseInt(categoryId as unknown as string)}' ORDER BY id DESC`;
     } else if (
       entryType !== 'ALL' &&
       categoryId === 'ALL' &&
       dateRange !== null
     ) {
-      query = `SELECT * FROM Daybook WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}' AND type = '${entryType}'`;
+      query = `SELECT * FROM Daybook WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}' AND type = '${entryType}' ORDER BY id DESC`;
     } else if (
       entryType === 'ALL' &&
       categoryId === 'ALL' &&
       dateRange === null
     ) {
-      query = `SELECT * FROM Daybook`;
+      query = `SELECT * FROM Daybook ORDER BY id DESC`;
     } else if (
       entryType === 'ALL' &&
       categoryId !== 'ALL' &&
       dateRange === null
     ) {
-      query = `SELECT * FROM Daybook WHERE categoryId = '${parseInt(categoryId as unknown as string)}'`;
+      query = `SELECT * FROM Daybook WHERE categoryId = '${parseInt(categoryId as unknown as string)}' ORDER BY id DESC`;
     } else if (
       entryType !== 'ALL' &&
       categoryId === 'ALL' &&
       dateRange === null
     ) {
-      query = `SELECT * FROM Daybook WHERE type = '${entryType}'`;
+      query = `SELECT * FROM Daybook WHERE type = '${entryType}' ORDER BY id DESC`;
     } else if (
       entryType !== 'ALL' &&
       categoryId !== 'ALL' &&
       dateRange === null
     ) {
-      query = `SELECT * FROM Daybook WHERE type = '${entryType}' AND categoryId = '${parseInt(categoryId as unknown as string)}'`;
+      query = `SELECT * FROM Daybook WHERE type = '${entryType}' AND categoryId = '${parseInt(categoryId as unknown as string)}' ORDER BY id DESC`;
     }
 
     const rows = dbAll(query);

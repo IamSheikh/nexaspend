@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/control-has-associated-label */
@@ -10,18 +11,11 @@
 
 import { useState, FormEvent, useRef, useEffect } from 'react';
 import { Bounce, toast, ToastContainer } from 'react-toastify';
+import numeral from 'numeral';
 import IDaybook from '../../types/IDaybook';
 import ICategory from '../../types/ICategory';
 import '../output/dist.css';
-// import '../index.css';
 import getFirstAndLastDayOfMonth from '../utils/getFirstAndLastDayOfMonth';
-
-/*
-  TODO:
-    1. Remove all tabs
-    2. Add Transaction should have a modal
-    3. Add Search Filters for Categories
-*/
 
 function formatDate(date: any) {
   const year = date.getFullYear();
@@ -84,6 +78,11 @@ const Home = () => {
     entryType: 'ALL',
   });
   const [copyCate, setCopyCate] = useState<ICategory[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
 
   const handlePrint = () => {
     setPrintingMode(true);
@@ -284,6 +283,80 @@ const Home = () => {
           >
             Category
           </button>
+        </div>
+      </div>
+
+      <div
+        className={`fixed inset-y-0 left-0 bg-gray-800 w-64 transform ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        } transition-transform duration-300 ease-in-out`}
+      >
+        <div className="flex items-center justify-between px-4 py-4 bg-gray-900">
+          <h2 className="text-white text-lg font-semibold">
+            Expenses By Category
+          </h2>
+          <button
+            onClick={toggleSidebar}
+            className="text-gray-400 hover:text-white"
+            type="button"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="px-4 py-2">
+          <table className="min-w-full divide-y divide-gray-700">
+            <thead>
+              <tr>
+                <th className="py-2 text-left text-sm font-semibold text-gray-300">
+                  Category
+                </th>
+                <th className="py-2 text-right text-sm font-semibold text-gray-300">
+                  Expense
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-700">
+              {expenseCategories.map((cate) => {
+                const totalAmount = currentMonthExpenses.reduce(
+                  (total, item) =>
+                    item.categoryId === cate.id ? total + item.amount : total,
+                  0,
+                );
+
+                return (
+                  <tr
+                    key={cate.id}
+                    className="hover:bg-gray-700 cursor-pointer"
+                    onClick={async () => {
+                      const clone = { ...searchData };
+                      clone.categoryId = cate.id as unknown as string;
+                      setSearchData(clone);
+                      const isThereDates =
+                        searchData.startDate !== '' && searchData.endDate;
+                      const filteredResults =
+                        await window.electron.getDaybookByFilters(
+                          isThereDates
+                            ? [searchData.startDate, searchData.endDate]
+                            : null,
+                          searchData.entryType,
+                          clone.categoryId,
+                        );
+                      setCurrentMonthExpenses(filteredResults);
+                      setResults(filteredResults);
+                      setIsOpen(false);
+                    }}
+                  >
+                    <td className="text-left text-sm font-medium text-gray-300">
+                      {cate.name}
+                    </td>
+                    <td className="text-sm text-gray-400 text-right">
+                      {numeral(totalAmount).format('0,0')}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -631,7 +704,7 @@ const Home = () => {
       <div
         className={`px-2 flex justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
       >
-        <div>
+        {/* <div>
           <h2 className="text-lg font-semibold mt-2 mb-2">
             Expenses by Category
           </h2>
@@ -679,16 +752,25 @@ const Home = () => {
               );
             })}
           </div>
-        </div>
+        </div> */}
+        <button
+          onClick={toggleSidebar}
+          className="ml-4 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-600 text-2xl"
+          type="button"
+        >
+          ☰
+        </button>
         <div>
           <h2 className="text-lg font-semibold mt-2 mb-2">Total Expenses</h2>
           <div className="flex flex-wrap justify-end items-center gap-4 mb-4">
             <p className="text-right">
-              {results
-                .filter((da) => da.type === 'EXPENSE')
-                .reduce((total: number, item: any) => {
-                  return total + item.amount;
-                }, 0)}
+              {numeral(
+                results
+                  .filter((da) => da.type === 'EXPENSE')
+                  .reduce((total: number, item: any) => {
+                    return total + item.amount;
+                  }, 0),
+              ).format('0,0')}
             </p>
           </div>
         </div>
@@ -835,8 +917,8 @@ const Home = () => {
       <div
         className={`flex justify-center self-center mb-4 ${activeTab !== 'Transaction' && 'hidden'}`}
       >
-        <table className="table-auto border-collapse border border-gray-300 w-[95vw]">
-          <thead>
+        <table className="border-collapse w-[95vw]">
+          <thead className="border border-gray-300">
             <tr className="bg-gray-200">
               <th className="border border-gray-300">Date</th>
               <th className="border border-gray-300">Type</th>
@@ -850,14 +932,14 @@ const Home = () => {
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="border border-gray-300">
             {results.map((da) => (
               <tr className="text-center">
                 <td className="border border-gray-300">{da.date}</td>
-                <td className="border border-gray-300">
+                <td className="border border-gray-300 text-left px-2">
                   {da.type === 'INCOME' ? 'Income' : 'Expense'}
                 </td>
-                <td className="border border-gray-300">
+                <td className="border border-gray-300 text-left px-2">
                   {/* {allCate.find((c) => c.id === da.categoryId)?.name} */}
                   {da.type === 'EXPENSE'
                     ? expenseCategories.find((c) => c.id === da.categoryId)
@@ -865,14 +947,34 @@ const Home = () => {
                     : incomeCategories.find((c) => c.id === da.categoryId)
                         ?.name}
                 </td>
-                <td className="border border-gray-300">{da.amount}</td>
-                <td className="border border-gray-300">{da.details}</td>
+                <td className="border border-gray-300 text-right px-2">
+                  {numeral(da.amount).format('0,0')}
+                </td>
+                <td className="border border-gray-300 text-left px-2">
+                  {da.details}
+                </td>
                 <td
                   className={`border border-gray-300 items-center justify-center flex ${printingMode && 'hidden'}`}
                 >
                   <button
                     type="button"
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ml-2"
+                    onClick={() => {
+                      setIsUpdateDaybook(true);
+                      setSelectedDaybook(da);
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 512 512"
+                      width="16"
+                      height="20"
+                    >
+                      <path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z" />
+                    </svg>
+                  </button>
+                  {/* <button
+                    type="button"
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-[0.4rem] px-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ml-2"
                     onClick={() => {
                       setIsUpdateDaybook(true);
                       setSelectedDaybook(da);
@@ -889,10 +991,10 @@ const Home = () => {
                         fill="white"
                       />
                     </svg>
-                  </button>
+                  </button> */}
                   <button
                     type="button"
-                    className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
+                    className="bg-transparent font-semibold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ml-2"
                     onClick={async () => {
                       setSelectedDaybook(da);
                       setIsDeleteTransactionModalOpen(true);

@@ -287,17 +287,19 @@ const Home = () => {
       </div>
 
       <div
-        className={`fixed inset-y-0 left-0 bg-gray-800 w-64 transform ${
+        className={`fixed inset-y-0 left-0 bg-gray-200 w-64 transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300 ease-in-out`}
       >
-        <div className="flex items-center justify-between px-4 py-4 bg-gray-900">
-          <h2 className="text-white text-lg font-semibold">
+        <div className="flex items-center justify-between px-4 py-4">
+          <h2
+          //  className="text-white text-lg font-semibold"
+          >
             Expenses By Category
           </h2>
           <button
             onClick={toggleSidebar}
-            className="text-gray-400 hover:text-white"
+            // className="text-gray-400 hover:text-white"
             type="button"
           >
             ✕
@@ -307,10 +309,10 @@ const Home = () => {
           <table className="min-w-full divide-y divide-gray-700">
             <thead>
               <tr>
-                <th className="py-2 text-left text-sm font-semibold text-gray-300">
+                <th className="py-2 text-left text-sm font-semibold">
                   Category
                 </th>
-                <th className="py-2 text-right text-sm font-semibold text-gray-300">
+                <th className="py-2 text-right text-sm font-semibold">
                   Expense
                 </th>
               </tr>
@@ -326,7 +328,7 @@ const Home = () => {
                 return (
                   <tr
                     key={cate.id}
-                    className="hover:bg-gray-700 cursor-pointer"
+                    className="text-black cursor-pointer"
                     onClick={async () => {
                       const clone = { ...searchData };
                       clone.categoryId = cate.id as unknown as string;
@@ -346,10 +348,10 @@ const Home = () => {
                       setIsOpen(false);
                     }}
                   >
-                    <td className="text-left text-sm font-medium text-gray-300">
+                    <td className="text-left text-sm font-medium">
                       {cate.name}
                     </td>
-                    <td className="text-sm text-gray-400 text-right">
+                    <td className="text-sm text-black text-right">
                       {numeral(totalAmount).format('0,0')}
                     </td>
                   </tr>

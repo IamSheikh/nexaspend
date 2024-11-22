@@ -1,5 +1,5 @@
 {
-  "name": "nexaspend",
+  "name": "aqasa",
   "description": "A futuristic expense tracker",
   "keywords": [
     "electron",
@@ -183,8 +183,8 @@
     "webpack-merge": "^5.9.0"
   },
   "build": {
-    "productName": "NexaSpend",
-    "appId": "org.erb.NexaSpend",
+    "productName": "AQASA",
+    "appId": "org.erb.AQASA",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [

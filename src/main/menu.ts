@@ -57,14 +57,14 @@ export default class MenuBuilder {
       label: 'Electron',
       submenu: [
         {
-          label: 'About NexaSpend',
+          label: 'About AQASA',
           selector: 'orderFrontStandardAboutPanel:',
         },
         { type: 'separator' },
         { label: 'Services', submenu: [] },
         { type: 'separator' },
         {
-          label: 'Hide NexaSpend',
+          label: 'Hide AQASA',
           accelerator: 'Command+H',
           selector: 'hide:',
         },

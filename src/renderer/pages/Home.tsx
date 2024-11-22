@@ -15,7 +15,10 @@ import numeral from 'numeral';
 import IDaybook from '../../types/IDaybook';
 import ICategory from '../../types/ICategory';
 import '../output/dist.css';
-import getFirstAndLastDayOfMonth from '../utils/getFirstAndLastDayOfMonth';
+import {
+  getFirstAndLastDayOfMonth,
+  getFirstAndLastDayOfLastMonth,
+} from '../utils/getFirstAndLastDayOfMonth';
 
 function formatDate(date: any) {
   const year = date.getFullYear();
@@ -47,6 +50,9 @@ const Home = () => {
     name: '',
     type: 'EXPENSE',
   });
+  const [previousMonthResults, setPreviousMonthResults] = useState<IDaybook[]>(
+    [],
+  );
   const [results, setResults] = useState<IDaybook[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
@@ -194,6 +200,15 @@ const Home = () => {
     setAllCate(allCat);
     setCopyCate(allCat);
 
+    const { firstDay: previousMonthFirstDay, lastDay: previousMonthLastDay } =
+      getFirstAndLastDayOfLastMonth();
+    const previous = await window.electron.getDaybookByFilters(
+      [previousMonthFirstDay, previousMonthLastDay],
+      'ALL',
+      'ALL',
+    );
+    setPreviousMonthResults(previous);
+
     setInputData({
       ...inputData,
       categoryId: allCat.length === 0 ? 1 : (allCat[0].id as number),
@@ -247,7 +262,7 @@ const Home = () => {
   return (
     <div>
       <div
-        className={`flex justify-between mt-2 mb-2 p-2 ${printingMode && 'hidden'}`}
+        className={`flex justify-between mt-2 mb-2 p-2 top-0 sticky z-50 bg-white ${printingMode && 'hidden'}`}
       >
         <h1
           className="text-4xl font-bold cursor-pointer"
@@ -263,15 +278,15 @@ const Home = () => {
             });
           }}
         >
-          <span className="text-red-500">N</span>
-          <span className="text-orange-500">e</span>
-          <span className="text-yellow-300">x</span>
-          <span className="text-green-500">a</span>
-          <span className="text-blue-500">S</span>
-          <span className="text-violet-500">p</span>
+          <span className="text-red-500">A</span>
+          <span className="text-orange-500">Q</span>
+          <span className="text-yellow-300">A</span>
+          <span className="text-green-500">S</span>
+          <span className="text-blue-500">A</span>
+          {/* <span className="text-violet-500">p</span>
           <span className="text-red-500">e</span>
           <span className="text-orange-500">n</span>
-          <span className="text-yellow-300">d</span>
+          <span className="text-yellow-300">d</span> */}
         </h1>
         <div>
           <button
@@ -287,7 +302,7 @@ const Home = () => {
       </div>
 
       <div
-        className={`fixed inset-y-0 left-0 bg-gray-200 w-64 transform ${
+        className={`fixed inset-y-0 left-0 z-50 bg-gray-200 w-64 transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300 ease-in-out`}
       >
@@ -363,17 +378,17 @@ const Home = () => {
       </div>
 
       <div
-        className={`flex justify-around border-b border-gray-300 ${activeTab === '' && 'hidden'} ${printingMode && 'hidden'}`}
+        className={`flex justify-around border-b top-[50px] sticky z-40 bg-white  border-gray-300 ${activeTab === '' && 'hidden'} ${printingMode && 'hidden'}`}
       >
         {['Transaction', 'Add Transaction'].map((tab) => (
           <button
             type="button"
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`pb-2 text-gray-600 ${
+            className={`pb-2 text-gray-600  ${
               activeTab === tab
-                ? 'border-b-2 border-blue-500 text-blue-500'
-                : 'hover:text-blue-500'
+                ? 'border-b-2 border-black text-black'
+                : 'hover:text-black'
             }`}
           >
             {tab}
@@ -704,7 +719,7 @@ const Home = () => {
 
       {/* Tab: Transaction */}
       <div
-        className={`px-2 flex justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
+        className={`px-2 flex z-30 top-[79px] sticky bg-white justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
       >
         {/* <div>
           <h2 className="text-lg font-semibold mt-2 mb-2">
@@ -762,10 +777,171 @@ const Home = () => {
         >
           ☰
         </button>
-        <div>
-          <h2 className="text-lg font-semibold mt-2 mb-2">Total Expenses</h2>
-          <div className="flex flex-wrap justify-end items-center gap-4 mb-4">
-            <p className="text-right">
+        <div
+          className={`flex items-center ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
+        >
+          {/* Date Range Picker */}
+          <div className="flex">
+            <div className="flex items-center">
+              <label
+                htmlFor="startDate"
+                className="text-sm font-medium text-gray-700"
+              >
+                Start Date:
+              </label>
+              <input
+                id="startDate"
+                type="date"
+                className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
+                ref={startDateRef}
+                onClick={handleStartDateClick}
+                value={searchData.startDate}
+                onChange={(e) => {
+                  const clone = { ...searchData };
+                  clone.startDate = e.target.value;
+                  setSearchData(clone);
+                }}
+              />
+            </div>
+            <div className="flex items-center ml-1">
+              <label
+                htmlFor="endDate"
+                className="text-sm font-medium text-gray-700"
+              >
+                End Date:
+              </label>
+              <input
+                id="endDate"
+                type="date"
+                className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
+                ref={endDateRef}
+                onClick={handleEndDateClick}
+                value={searchData.endDate}
+                onChange={(e) => {
+                  const clone = { ...searchData };
+                  clone.endDate = e.target.value;
+                  setSearchData(clone);
+                }}
+              />
+            </div>
+
+            {/* Income/Expense Dropdown */}
+            <div className="flex items-center ml-1">
+              <label
+                htmlFor="entryType"
+                className="text-sm font-medium text-gray-700"
+              >
+                Entry Type:
+              </label>
+              <select
+                id="entryType"
+                className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
+                value={searchData.entryType}
+                onChange={(e) => {
+                  const clone = { ...searchData };
+                  clone.entryType = e.target.value;
+                  setSearchData(clone);
+                }}
+              >
+                <option value="ALL">All</option>
+                <option value="EXPENSE">Expense</option>
+                <option value="INCOME">Income</option>
+              </select>
+            </div>
+
+            {/* Category Dropdown */}
+            <div className="flex items-center ml-1">
+              <label
+                htmlFor="category"
+                className="text-sm font-medium text-gray-700"
+              >
+                Category:
+              </label>
+              <select
+                id="category"
+                className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
+                value={searchData.categoryId}
+                onChange={(e) => {
+                  const clone = { ...searchData };
+                  clone.categoryId = e.target.value;
+                  setSearchData(clone);
+                }}
+              >
+                <option value="ALL">All</option>
+                {searchData.entryType === 'ALL'
+                  ? allCate.map((cate) => (
+                      <option key={cate.id} value={cate.id}>
+                        {cate.name}
+                      </option>
+                    ))
+                  : searchData.entryType === 'EXPENSE'
+                    ? expenseCategories.map((cate) => (
+                        <option key={cate.id} value={cate.id}>
+                          {cate.name}
+                        </option>
+                      ))
+                    : incomeCategories.map((cate) => (
+                        <option key={cate.id} value={cate.id}>
+                          {cate.name}
+                        </option>
+                      ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Search Button */}
+          <div className="ml-2">
+            <button
+              type="button"
+              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              onClick={handleSearch}
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              className="bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
+              onClick={() => {
+                setRefreshState((prev) => !prev);
+                setSearchData({
+                  startDate: '',
+                  endDate: '',
+                  categoryId: 'ALL',
+                  entryType: 'ALL',
+                });
+              }}
+            >
+              X
+            </button>
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <div className="mr-2 flex items-center text-red-500">
+            <h2 className="text-sm  font-semibold">
+              {new Date(
+                new Date().setMonth(new Date().getMonth() - 1),
+              ).toLocaleString('default', { month: 'long' })}
+              , {new Date().getFullYear()}:{' '}
+            </h2>
+            {/* <div className="flex flex-wrap justify-end items-center gap-4 mb-4"> */}
+            <p className="ml-5">
+              {numeral(
+                previousMonthResults
+                  .filter((da) => da.type === 'EXPENSE')
+                  .reduce((total: number, item: any) => {
+                    return total + item.amount;
+                  }, 0),
+              ).format('0,0')}
+            </p>
+            {/* </div> */}
+          </div>
+          <div className="flex items-center">
+            <h2 className="text-sm font-semibold text-blue-800">
+              {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
+              {new Date().getFullYear()}:{' '}
+            </h2>
+            {/* <div className="flex flex-wrap justify-end items-center gap-4 mb-4"> */}
+            <p className="ml-5">
               {numeral(
                 results
                   .filter((da) => da.type === 'EXPENSE')
@@ -774,145 +950,8 @@ const Home = () => {
                   }, 0),
               ).format('0,0')}
             </p>
+            {/* </div> */}
           </div>
-        </div>
-      </div>
-      <div
-        className={`flex justify-center items-center w-full p-4 ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
-      >
-        {/* Date Range Picker */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center">
-            <label
-              htmlFor="startDate"
-              className="text-sm font-medium text-gray-700"
-            >
-              Start Date:
-            </label>
-            <input
-              id="startDate"
-              type="date"
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
-              ref={startDateRef}
-              onClick={handleStartDateClick}
-              value={searchData.startDate}
-              onChange={(e) => {
-                const clone = { ...searchData };
-                clone.startDate = e.target.value;
-                setSearchData(clone);
-              }}
-            />
-          </div>
-          <div className="flex items-center">
-            <label
-              htmlFor="endDate"
-              className="text-sm font-medium text-gray-700"
-            >
-              End Date:
-            </label>
-            <input
-              id="endDate"
-              type="date"
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
-              ref={endDateRef}
-              onClick={handleEndDateClick}
-              value={searchData.endDate}
-              onChange={(e) => {
-                const clone = { ...searchData };
-                clone.endDate = e.target.value;
-                setSearchData(clone);
-              }}
-            />
-          </div>
-
-          {/* Income/Expense Dropdown */}
-          <div className="flex items-center">
-            <label
-              htmlFor="entryType"
-              className="text-sm font-medium text-gray-700"
-            >
-              Entry Type:
-            </label>
-            <select
-              id="entryType"
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
-              value={searchData.entryType}
-              onChange={(e) => {
-                const clone = { ...searchData };
-                clone.entryType = e.target.value;
-                setSearchData(clone);
-              }}
-            >
-              <option value="ALL">All</option>
-              <option value="EXPENSE">Expense</option>
-              <option value="INCOME">Income</option>
-            </select>
-          </div>
-
-          {/* Category Dropdown */}
-          <div className="flex items-center">
-            <label
-              htmlFor="category"
-              className="text-sm font-medium text-gray-700"
-            >
-              Category:
-            </label>
-            <select
-              id="category"
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
-              value={searchData.categoryId}
-              onChange={(e) => {
-                const clone = { ...searchData };
-                clone.categoryId = e.target.value;
-                setSearchData(clone);
-              }}
-            >
-              <option value="ALL">All</option>
-              {searchData.entryType === 'ALL'
-                ? allCate.map((cate) => (
-                    <option key={cate.id} value={cate.id}>
-                      {cate.name}
-                    </option>
-                  ))
-                : searchData.entryType === 'EXPENSE'
-                  ? expenseCategories.map((cate) => (
-                      <option key={cate.id} value={cate.id}>
-                        {cate.name}
-                      </option>
-                    ))
-                  : incomeCategories.map((cate) => (
-                      <option key={cate.id} value={cate.id}>
-                        {cate.name}
-                      </option>
-                    ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Search Button */}
-        <div className="ml-4">
-          <button
-            type="button"
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            onClick={handleSearch}
-          >
-            Search
-          </button>
-          <button
-            type="button"
-            className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
-            onClick={() => {
-              setRefreshState((prev) => !prev);
-              setSearchData({
-                startDate: '',
-                endDate: '',
-                categoryId: 'ALL',
-                entryType: 'ALL',
-              });
-            }}
-          >
-            X
-          </button>
         </div>
       </div>
 

@@ -85,6 +85,11 @@ const Home = () => {
   });
   const [copyCate, setCopyCate] = useState<ICategory[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [backgroundColor, setBackgroundColor] = useState('white');
+  const [textColor, setTextColor] = useState('black');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 10;
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -135,7 +140,7 @@ const Home = () => {
     e.preventDefault();
 
     await window.electron.addDaybook(inputData);
-    toast('Daybook added successfully', {
+    toast('Transaction added successfully', {
       type: 'success',
     });
 
@@ -235,12 +240,24 @@ const Home = () => {
     setCurrentMonthExpenses(filteredResults);
 
     setResults(filteredResults);
+    setCurrentPage(1);
+  };
+
+  const totalPages = Math.ceil(results.length / itemsPerPage);
+  const currentData = results.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+  const handlePageChange = (page: any) => {
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   const handleUpdateDaybook = async (e: FormEvent) => {
     e.preventDefault();
     await window.electron.updateDaybook(selectedDaybook as IDaybook);
-    toast('Daybook Updated Successfully', {
+    toast('Transaction Updated Successfully', {
       type: 'success',
     });
     setRefreshState((prev) => !prev);
@@ -257,6 +274,33 @@ const Home = () => {
     setIsEditCategoryModalOpen(false);
     setSelectedCategory(undefined);
     setRefreshState((prev) => !prev);
+  };
+
+  const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
+  const calculateLuminance = (hexColor: any) => {
+    const rgb = hexColor
+      .replace('#', '')
+      .match(/.{1,2}/g)
+      .map((x: any) => parseInt(x, 16));
+
+    const [r, g, b] = rgb.map((channel: any) => {
+      const normalized = channel / 255;
+      return normalized <= 0.03928
+        ? normalized / 12.92
+        : ((normalized + 0.055) / 1.055) ** 2.4;
+    });
+    const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+    return luminance > 0.5 ? 'black' : 'white';
   };
 
   return (
@@ -276,6 +320,8 @@ const Home = () => {
               categoryId: 'ALL',
               entryType: 'ALL',
             });
+            setBackgroundColor('white');
+            setTextColor('black');
           }}
         >
           <span className="text-red-500">A</span>
@@ -361,6 +407,9 @@ const Home = () => {
                       setCurrentMonthExpenses(filteredResults);
                       setResults(filteredResults);
                       setIsOpen(false);
+                      const newColor = getRandomColor();
+                      setBackgroundColor(newColor);
+                      setTextColor(calculateLuminance(newColor));
                     }}
                   >
                     <td className="text-left text-sm font-medium">
@@ -859,12 +908,25 @@ const Home = () => {
               </label>
               <select
                 id="category"
-                className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
+                className={`border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2 ${
+                  searchData.categoryId !== 'ALL' && 'focus:ring-0'
+                }`}
+                style={{ backgroundColor, color: textColor }}
                 value={searchData.categoryId}
                 onChange={(e) => {
                   const clone = { ...searchData };
                   clone.categoryId = e.target.value;
                   setSearchData(clone);
+
+                  if (e.target.value === 'ALL') {
+                    setBackgroundColor('white');
+                    setTextColor('black');
+                  } else {
+                    const newColor = getRandomColor();
+                    setBackgroundColor(newColor);
+
+                    setTextColor(calculateLuminance(newColor));
+                  }
                 }}
               >
                 <option value="ALL">All</option>
@@ -917,7 +979,7 @@ const Home = () => {
         </div>
         <div className="flex flex-col">
           <div className="mr-2 flex items-center text-red-500">
-            <h2 className="text-sm  font-semibold">
+            <h2 className="text-sm font-semibold">
               {new Date(
                 new Date().setMonth(new Date().getMonth() - 1),
               ).toLocaleString('default', { month: 'long' })}
@@ -956,7 +1018,7 @@ const Home = () => {
       </div>
 
       <div
-        className={`flex justify-center self-center mb-4 ${activeTab !== 'Transaction' && 'hidden'}`}
+        className={`flex justify-center self-center items-center flex-col mb-4 ${activeTab !== 'Transaction' && 'hidden'}`}
       >
         <table className="border-collapse w-[95vw]">
           <thead className="border border-gray-300">
@@ -974,7 +1036,7 @@ const Home = () => {
             </tr>
           </thead>
           <tbody className="border border-gray-300">
-            {results.map((da) => (
+            {currentData.map((da) => (
               <tr className="text-center">
                 <td className="border border-gray-300">{da.date}</td>
                 <td className="border border-gray-300 text-left px-2">
@@ -1049,6 +1111,67 @@ const Home = () => {
             ))}
           </tbody>
         </table>
+        {/* <div className="flex flex-end justify-end">
+          <h1>hello</h1>
+        </div> */}
+        <div className="flex justify-end self-end items-end mt-4 ml-2 mr-5">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            type="button"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+              />
+            </svg>
+          </button>
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => handlePageChange(index + 1)}
+              type="button"
+              className={`px-3 py-1 mx-1 rounded ${
+                currentPage === index + 1
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 hover:bg-gray-300'
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            type="button"
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Update Daybook Model */}
@@ -1290,7 +1413,7 @@ const Home = () => {
                   await window.electron.deleteDaybook(
                     selectedDaybook?.id as number,
                   );
-                  toast('Daybook Successfully deleted', {
+                  toast('Transaction Successfully deleted', {
                     type: 'error',
                   });
                   setIsDeleteTransactionModalOpen(false);

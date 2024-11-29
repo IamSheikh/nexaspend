@@ -89,7 +89,7 @@ const Home = () => {
   const [textColor, setTextColor] = useState('black');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -1020,62 +1020,63 @@ const Home = () => {
       <div
         className={`flex justify-center self-center items-center flex-col mb-4 ${activeTab !== 'Transaction' && 'hidden'}`}
       >
-        <table className="border-collapse w-[95vw]">
-          <thead className="border border-gray-300">
-            <tr className="bg-gray-200">
-              <th className="border border-gray-300">Date</th>
-              <th className="border border-gray-300">Type</th>
-              <th className="border border-gray-300">Category</th>
-              <th className="border border-gray-300">Amount</th>
-              <th className="border border-gray-300">Details</th>
-              <th
-                className={`border border-gray-300 ${printingMode && 'hidden'}`}
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="border border-gray-300">
-            {currentData.map((da) => (
-              <tr className="text-center">
-                <td className="border border-gray-300">{da.date}</td>
-                <td className="border border-gray-300 text-left px-2">
-                  {da.type === 'INCOME' ? 'Income' : 'Expense'}
-                </td>
-                <td className="border border-gray-300 text-left px-2">
-                  {/* {allCate.find((c) => c.id === da.categoryId)?.name} */}
-                  {da.type === 'EXPENSE'
-                    ? expenseCategories.find((c) => c.id === da.categoryId)
-                        ?.name
-                    : incomeCategories.find((c) => c.id === da.categoryId)
-                        ?.name}
-                </td>
-                <td className="border border-gray-300 text-right px-2">
-                  {numeral(da.amount).format('0,0')}
-                </td>
-                <td className="border border-gray-300 text-left px-2">
-                  {da.details}
-                </td>
-                <td
-                  className={`border border-gray-300 items-center justify-center flex ${printingMode && 'hidden'}`}
+        <div className="overflow-auto max-h-[400px]">
+          <table className="border-collapse w-[95vw]">
+            <thead className="border border-gray-300 sticky top-0">
+              <tr className="bg-gray-200">
+                <th className="border border-gray-300">Date</th>
+                <th className="border border-gray-300">Type</th>
+                <th className="border border-gray-300">Category</th>
+                <th className="border border-gray-300">Amount</th>
+                <th className="border border-gray-300">Details</th>
+                <th
+                  className={`border border-gray-300 ${printingMode && 'hidden'}`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsUpdateDaybook(true);
-                      setSelectedDaybook(da);
-                    }}
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="border border-gray-300">
+              {currentData.map((da) => (
+                <tr className="text-center">
+                  <td className="border border-gray-300">{da.date}</td>
+                  <td className="border border-gray-300 text-left px-2">
+                    {da.type === 'INCOME' ? 'Income' : 'Expense'}
+                  </td>
+                  <td className="border border-gray-300 text-left px-2">
+                    {/* {allCate.find((c) => c.id === da.categoryId)?.name} */}
+                    {da.type === 'EXPENSE'
+                      ? expenseCategories.find((c) => c.id === da.categoryId)
+                          ?.name
+                      : incomeCategories.find((c) => c.id === da.categoryId)
+                          ?.name}
+                  </td>
+                  <td className="border border-gray-300 text-right px-2">
+                    {numeral(da.amount).format('0,0')}
+                  </td>
+                  <td className="border border-gray-300 text-left px-2">
+                    {da.details}
+                  </td>
+                  <td
+                    className={`border border-gray-300 items-center justify-center flex ${printingMode && 'hidden'}`}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 512 512"
-                      width="16"
-                      height="20"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsUpdateDaybook(true);
+                        setSelectedDaybook(da);
+                      }}
                     >
-                      <path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z" />
-                    </svg>
-                  </button>
-                  {/* <button
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        width="16"
+                        height="20"
+                      >
+                        <path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z" />
+                      </svg>
+                    </button>
+                    {/* <button
                     type="button"
                     className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-[0.4rem] px-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ml-2"
                     onClick={() => {
@@ -1095,48 +1096,48 @@ const Home = () => {
                       />
                     </svg>
                   </button> */}
-                  <button
-                    type="button"
-                    className="bg-transparent font-semibold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ml-2"
-                    onClick={async () => {
-                      setSelectedDaybook(da);
-                      setIsDeleteTransactionModalOpen(true);
-                      setRefreshState((prev) => !prev);
-                    }}
-                  >
-                    X
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {/* <div className="flex flex-end justify-end">
-          <h1>hello</h1>
-        </div> */}
+                    <button
+                      type="button"
+                      className="bg-transparent font-semibold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ml-2"
+                      onClick={async () => {
+                        setSelectedDaybook(da);
+                        setIsDeleteTransactionModalOpen(true);
+                        setRefreshState((prev) => !prev);
+                      }}
+                    >
+                      X
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
         <div className="flex justify-end self-end items-end mt-4 ml-2 mr-5">
+          <button
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            type="button"
+          >
+            {'<<'}
+          </button>
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
             type="button"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-              />
-            </svg>
+            {'<'}
           </button>
-          {Array.from({ length: totalPages }, (_, index) => (
+          <button
+            className="px-3 py-1 mx-1 rounded bg-blue-500 text-white"
+            type="button"
+          >
+            {currentPage}
+          </button>
+          {/* {Array.from({ length: totalPages }, (_, index) => (
             <button
               key={index + 1}
               onClick={() => handlePageChange(index + 1)}
@@ -1149,27 +1150,22 @@ const Home = () => {
             >
               {index + 1}
             </button>
-          ))}
+          ))} */}
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             type="button"
             disabled={currentPage === totalPages}
             className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-              />
-            </svg>
+            {'>'}
+          </button>
+          <button
+            onClick={() => handlePageChange(totalPages)}
+            type="button"
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          >
+            {'>>'}
           </button>
         </div>
       </div>

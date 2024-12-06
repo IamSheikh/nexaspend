@@ -404,7 +404,7 @@ const Home = () => {
                           searchData.entryType,
                           clone.categoryId,
                         );
-                      setCurrentMonthExpenses(filteredResults);
+                      // setCurrentMonthExpenses(filteredResults);
                       setResults(filteredResults);
                       setIsOpen(false);
                       const newColor = getRandomColor();

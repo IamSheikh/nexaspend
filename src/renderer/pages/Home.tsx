@@ -12,6 +12,10 @@
 import { useState, FormEvent, useRef, useEffect } from 'react';
 import { Bounce, toast, ToastContainer } from 'react-toastify';
 import numeral from 'numeral';
+import { useReactToPrint } from 'react-to-print';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import 'jspdf-autotable';
 import IDaybook from '../../types/IDaybook';
 import ICategory from '../../types/ICategory';
 import '../output/dist.css';
@@ -29,6 +33,7 @@ function formatDate(date: any) {
 
 const Home = () => {
   const date = new Date();
+  const tableRef = useRef(null);
   const formattedDate = new Date(
     date.getFullYear(),
     date.getMonth(),
@@ -95,19 +100,76 @@ const Home = () => {
     setIsOpen(!isOpen);
   };
 
-  const handlePrint = () => {
+  const handlePrint = useReactToPrint({
+    contentRef: tableRef,
+  });
+
+  const handleDownloadPDF = () => {
     setPrintingMode(true);
-    setTimeout(() => {
-      window.print();
+
+    setTimeout(async () => {
+      // eslint-disable-next-line new-cap
+      const pdf = new jsPDF() as any;
+      const table = tableRef.current as any;
+
+      const rows: any = [];
+      const headers: any = [];
+
+      // Extract table headers
+      table.querySelectorAll('thead tr th').forEach((th: any) => {
+        if (th.textContent !== 'Actions') {
+          headers.push(th.textContent);
+        }
+      });
+
+      // Extract table rows
+      table.querySelectorAll('tbody tr').forEach((tr: any) => {
+        const row: any = [];
+        tr.querySelectorAll('td').forEach((td: any) => {
+          row.push(td.textContent);
+        });
+        rows.push(row);
+      });
+
+      // Use jsPDF AutoTable to generate table in PDF
+      // pdf.autoTable({
+      //   head: [headers],
+      //   body: rows,
+      //   styles: { fontSize: 10, halign: 'center', valign: 'middle' },
+      // });
+      pdf.autoTable({
+        head: [headers],
+        body: rows,
+        headStyles: {
+          fillColor: [255, 255, 255], // White background for header
+          textColor: [0, 0, 0], // Black text color for header
+          fontStyle: 'bold', // Bold text style for header
+        },
+        styles: {
+          cellPadding: 3, // Cell padding
+          fontSize: 10, // Font size for table content
+          halign: 'center', // Horizontal alignment
+          valign: 'middle', // Vertical alignment
+        },
+        theme: 'striped', // Optional: Change table style ('striped', 'grid', or 'plain')
+      });
+
+      // Save the PDF
+      pdf.save('table.pdf');
+
       setPrintingMode(false);
-    }, 0);
+    }, 1000);
   };
 
   useEffect(() => {
     const handleKeyDown = (event: any) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
         event.preventDefault();
-        handlePrint();
+        setPrintingMode(true);
+        setTimeout(() => {
+          handlePrint();
+          setPrintingMode(false);
+        }, 1000);
       }
     };
 
@@ -1026,10 +1088,10 @@ const Home = () => {
       </div>
 
       <div
-        className={`flex justify-center self-center items-center flex-col mb-4 ${activeTab !== 'Transaction' && 'hidden'}`}
+        className={`${!printingMode && 'flex justify-center self-center items-center flex-col mb-4'} ${activeTab !== 'Transaction' && 'hidden'}`}
       >
-        <div className="overflow-auto max-h-[400px]">
-          <table className="border-collapse w-[95vw]">
+        <div className={`${!printingMode && 'overflow-auto max-h-[400px]'}`}>
+          <table className="border-collapse w-[95vw]" ref={tableRef}>
             <thead className="border border-gray-300 sticky top-0">
               <tr className="bg-gray-200">
                 <th className="border border-gray-300">Date</th>
@@ -1038,7 +1100,7 @@ const Home = () => {
                 <th className="border border-gray-300">Amount</th>
                 <th className="border border-gray-300">Details</th>
                 <th
-                  className={`border border-gray-300 ${printingMode && 'hidden'}`}
+                  className={`border border-gray-300 ${printingMode && 'hidden'} no-print`}
                 >
                   Actions
                 </th>
@@ -1066,7 +1128,7 @@ const Home = () => {
                     {da.details}
                   </td>
                   <td
-                    className={`border border-gray-300 items-center justify-center flex ${printingMode && 'hidden'}`}
+                    className={`border border-gray-300 items-center justify-center flex ${printingMode && 'hidden'} no-print`}
                   >
                     <button
                       type="button"
@@ -1122,30 +1184,54 @@ const Home = () => {
           </table>
         </div>
 
-        <div className="flex justify-end self-end items-end mt-4 ml-2 mr-5">
-          <button
-            onClick={() => handlePageChange(1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            type="button"
-          >
-            {'<<'}
-          </button>
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            type="button"
-          >
-            {'<'}
-          </button>
-          <button
-            className="px-3 py-1 mx-1 rounded bg-blue-500 text-white"
-            type="button"
-          >
-            {currentPage} of {totalPages === 0 ? '1' : totalPages}
-          </button>
-          {/* {Array.from({ length: totalPages }, (_, index) => (
+        <div className="flex w-[95vw] justify-between">
+          <div className="flex justify-start self-start items-start mt-4 ml-2">
+            <button
+              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
+              type="button"
+              onClick={() => {
+                setPrintingMode(true);
+                setTimeout(() => {
+                  handlePrint();
+                  setPrintingMode(false);
+                }, 1000);
+              }}
+            >
+              Print
+            </button>
+            <button
+              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
+              type="button"
+              onClick={handleDownloadPDF}
+            >
+              Download
+            </button>
+          </div>
+
+          <div className="flex justify-end self-end items-end mt-4 ml-2 mr-5">
+            <button
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              type="button"
+            >
+              {'<<'}
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              type="button"
+            >
+              {'<'}
+            </button>
+            <button
+              className="px-3 py-1 mx-1 rounded bg-blue-500 text-white"
+              type="button"
+            >
+              {currentPage} of {totalPages === 0 ? '1' : totalPages}
+            </button>
+            {/* {Array.from({ length: totalPages }, (_, index) => (
             <button
               key={index + 1}
               onClick={() => handlePageChange(index + 1)}
@@ -1159,22 +1245,23 @@ const Home = () => {
               {index + 1}
             </button>
           ))} */}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            type="button"
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-          >
-            {'>'}
-          </button>
-          <button
-            onClick={() => handlePageChange(totalPages)}
-            type="button"
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-          >
-            {'>>'}
-          </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              type="button"
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              {'>'}
+            </button>
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              type="button"
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              {'>>'}
+            </button>
+          </div>
         </div>
       </div>
 

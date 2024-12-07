@@ -14,7 +14,6 @@ import { Bounce, toast, ToastContainer } from 'react-toastify';
 import numeral from 'numeral';
 import { useReactToPrint } from 'react-to-print';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import 'jspdf-autotable';
 import IDaybook from '../../types/IDaybook';
 import ICategory from '../../types/ICategory';

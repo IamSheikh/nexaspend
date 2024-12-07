@@ -1143,7 +1143,7 @@ const Home = () => {
             className="px-3 py-1 mx-1 rounded bg-blue-500 text-white"
             type="button"
           >
-            {currentPage}
+            {currentPage} of {totalPages === 0 ? '1' : totalPages}
           </button>
           {/* {Array.from({ length: totalPages }, (_, index) => (
             <button

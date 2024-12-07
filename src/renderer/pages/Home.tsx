@@ -304,7 +304,7 @@ const Home = () => {
       searchData.entryType,
       searchData.categoryId,
     );
-    setCurrentMonthExpenses(filteredResults);
+    // setCurrentMonthExpenses(filteredResults);
 
     setResults(filteredResults);
     setCurrentPage(1);

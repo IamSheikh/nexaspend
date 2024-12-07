@@ -233,7 +233,12 @@ const Home = () => {
   const handleSearch = async () => {
     const isThereDates = searchData.startDate !== '' && searchData.endDate;
     const filteredResults = await window.electron.getDaybookByFilters(
-      isThereDates ? [searchData.startDate, searchData.endDate] : null,
+      isThereDates
+        ? [searchData.startDate, searchData.endDate]
+        : [
+            getFirstAndLastDayOfMonth().firstDay,
+            getFirstAndLastDayOfMonth().lastDay,
+          ],
       searchData.entryType,
       searchData.categoryId,
     );
@@ -400,7 +405,10 @@ const Home = () => {
                         await window.electron.getDaybookByFilters(
                           isThereDates
                             ? [searchData.startDate, searchData.endDate]
-                            : null,
+                            : [
+                                getFirstAndLastDayOfMonth().firstDay,
+                                getFirstAndLastDayOfMonth().lastDay,
+                              ],
                           searchData.entryType,
                           clone.categoryId,
                         );

@@ -1083,6 +1083,24 @@ const Home = () => {
             </p>
             {/* </div> */}
           </div>
+          <div className="flex items-center">
+            <h2 className="text-sm font-semibold text-blue-800">Today:</h2>
+            {/* <div className="flex flex-wrap justify-end items-center gap-4 mb-4"> */}
+            <p className="ml-5">
+              {numeral(
+                results
+                  .filter(
+                    (da) =>
+                      da.type === 'EXPENSE' &&
+                      da.date === formatDate(new Date()),
+                  )
+                  .reduce((total: number, item: any) => {
+                    return total + item.amount;
+                  }, 0),
+              ).format('0,0')}
+            </p>
+            {/* </div> */}
+          </div>
         </div>
       </div>
 

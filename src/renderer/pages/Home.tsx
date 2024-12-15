@@ -15,45 +15,23 @@ import numeral from 'numeral';
 import { useReactToPrint } from 'react-to-print';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import IDaybook from '../../types/IDaybook';
-import ICategory from '../../types/ICategory';
+import { IDaybook, ICategory } from '../../types';
 import '../output/dist.css';
 import {
   getFirstAndLastDayOfMonth,
   getFirstAndLastDayOfLastMonth,
-} from '../utils/getFirstAndLastDayOfMonth';
-
-function formatDate(date: any) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-  const day = String(date.getDate()).padStart(2, '0'); // Day of the month
-  return `${year}-${month}-${day}`;
-}
+  formatDate,
+} from '../utils';
+import AddCategoryModal from '../components/AddCategoryModal';
+import AddTransaction from '../components/AddTransaction';
 
 const Home = () => {
-  const date = new Date();
   const tableRef = useRef(null);
-  const formattedDate = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-  );
 
-  const dateInputRef = useRef<HTMLInputElement>(null);
   const startDateRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [inputData, setInputData] = useState<IDaybook>({
-    amount: 0,
-    categoryId: 0,
-    date: formatDate(formattedDate),
-    details: '',
-    type: 'EXPENSE',
-  });
-  const [categoryInputData, setCategoryInputData] = useState<ICategory>({
-    name: '',
-    type: 'EXPENSE',
-  });
+
   const [previousMonthResults, setPreviousMonthResults] = useState<IDaybook[]>(
     [],
   );
@@ -62,7 +40,6 @@ const Home = () => {
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
   const [allCate, setAllCate] = useState<ICategory[]>([]);
   const [refreshState, setRefreshState] = useState(false);
-  const [, setAllCategories] = useState<ICategory[]>([]);
   const [searchData, setSearchData] = useState({
     startDate: '',
     endDate: '',
@@ -179,12 +156,6 @@ const Home = () => {
     };
   }, []);
 
-  const handleDateClick = () => {
-    if (dateInputRef.current) {
-      dateInputRef.current.showPicker();
-    }
-  };
-
   const handleStartDateClick = () => {
     if (startDateRef.current) {
       startDateRef.current.showPicker();
@@ -197,39 +168,6 @@ const Home = () => {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
-    await window.electron.addDaybook(inputData);
-    toast('Transaction added successfully', {
-      type: 'success',
-    });
-
-    setInputData({
-      amount: 0,
-      date: formatDate(formattedDate),
-      type: 'EXPENSE',
-      categoryId: 1,
-      details: '',
-    });
-    setActiveTab('Transaction');
-    setRefreshState((prev) => !prev);
-  };
-
-  const handleModalSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    await window.electron.addCategory(categoryInputData);
-    toast('New Category Successfully Added', {
-      type: 'success',
-    });
-    setIsModalOpen(false);
-    setCategoryInputData({
-      name: '',
-      type: 'EXPENSE',
-    });
-    setRefreshState((prev) => !prev);
-  };
-
   const getData = async () => {
     const allCat = (await window.electron.getAllCategories()) as ICategory[];
     const filteredExpenseCate = allCat.filter(
@@ -238,9 +176,9 @@ const Home = () => {
     const filteredIncomeCate = allCat.filter((cate) => cate.type === 'INCOME');
     setExpenseCategories(filteredExpenseCate);
     setIncomeCategories(filteredIncomeCate);
-    setAllCategories(
-      inputData.type === 'EXPENSE' ? filteredExpenseCate : filteredIncomeCate,
-    );
+    // setAllCategories(
+    //   inputData.type === 'EXPENSE' ? filteredExpenseCate : filteredIncomeCate,
+    // );
     // if (!inputData.categoryId) {
     //   const clone = { ...inputData };
     //   clone.categoryId =
@@ -275,10 +213,10 @@ const Home = () => {
     );
     setPreviousMonthResults(previous);
 
-    setInputData({
-      ...inputData,
-      categoryId: allCat.length === 0 ? 1 : (allCat[0].id as number),
-    });
+    // setInputData({
+    //   ...inputData,
+    //   categoryId: allCat.length === 0 ? 1 : (allCat[0].id as number),
+    // });
     const findD = await window.electron.getDaybookByFilters(
       [firstDay, lastDay],
       'ALL',
@@ -513,313 +451,9 @@ const Home = () => {
           </button>
         ))}
       </div>
-      {/* Tab: Add Transaction */}
-      <div
-        className={`flex justify-center items-center w-full ${activeTab !== 'Add Transaction' && 'hidden'}`}
-      >
-        <form
-          onSubmit={handleSubmit}
-          className="justify-center items-center w-5/6"
-          hidden={activeTab !== 'Add Transaction'}
-        >
-          {/* Amount */}
-          <div className="flex items-center self-center mt-4">
-            <label
-              htmlFor="amount"
-              className="text-sm font-medium text-gray-700 w-1/6"
-            >
-              Amount:
-            </label>
-            <input
-              id="amount"
-              type="number"
-              min={0}
-              placeholder="Amount"
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
-              required
-              value={inputData.amount === 0 ? '' : inputData.amount}
-              // value={inputData.amount}
-              onChange={(e) => {
-                const clone = { ...inputData };
-                clone.amount = +e.target.value;
-                setInputData(clone);
-              }}
-            />
-          </div>
-
-          {/* Date */}
-          <div className="flex items-center w-full mt-4">
-            <label
-              htmlFor="date"
-              className="text-sm font-medium text-gray-700 w-1/6"
-            >
-              Date:
-            </label>
-            <input
-              id="date"
-              type="date"
-              ref={dateInputRef}
-              onClick={handleDateClick}
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
-              required
-              value={inputData.date}
-              // value="2024-05-15"
-              onChange={(e) => {
-                const clone = { ...inputData };
-                clone.date = e.target.value;
-                setInputData(clone);
-              }}
-            />
-          </div>
-
-          {/* Type */}
-          <div className="mt-4 w-full flex">
-            <label
-              htmlFor="type"
-              className="text-sm font-medium text-gray-700 w-1/6"
-            >
-              Type:
-            </label>
-            <div className="flex items-center space-x-4 w-5/6">
-              <div className="flex items-center">
-                <input
-                  id="expense"
-                  name="type"
-                  type="radio"
-                  value="EXPENSE"
-                  className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                  required
-                  checked={inputData.type === 'EXPENSE'}
-                  onChange={(e) => {
-                    const clone = { ...inputData };
-                    clone.type = e.target.value as 'INCOME' | 'EXPENSE';
-                    setAllCategories(expenseCategories);
-                    clone.categoryId = expenseCategories[0].id as number;
-                    setInputData(clone);
-                  }}
-                />
-                <label
-                  htmlFor="expense"
-                  className="ml-2 text-sm font-medium text-gray-700"
-                >
-                  Expense
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  id="income"
-                  name="type"
-                  type="radio"
-                  value="INCOME"
-                  className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                  required
-                  checked={inputData.type === 'INCOME'}
-                  onChange={(e) => {
-                    const clone = { ...inputData };
-                    clone.type = e.target.value as 'INCOME' | 'EXPENSE';
-                    clone.categoryId = incomeCategories[0].id as number;
-                    setAllCategories(incomeCategories);
-                    setInputData(clone);
-                  }}
-                />
-                <label
-                  htmlFor="income"
-                  className="ml-2 text-sm font-medium text-gray-700"
-                >
-                  Income
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Category */}
-          <div className="flex items-center w-full mt-4">
-            <label
-              htmlFor="category"
-              className="text-sm font-medium text-gray-700 w-1/6"
-            >
-              Category:
-            </label>
-            <select
-              id="category"
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
-              required
-              value={inputData.categoryId}
-              onChange={(e) => {
-                const clone = { ...inputData };
-                clone.categoryId = +e.target.value;
-                setInputData(clone);
-              }}
-            >
-              {/* {allCategories.map((cate) => (
-              <option key={cate.id} value={cate.id}>
-                {cate.name}
-              </option>
-            ))} */}
-              {inputData.type === 'EXPENSE'
-                ? expenseCategories.map((cate) => (
-                    <option key={cate.id} value={cate.id}>
-                      {cate.name}
-                    </option>
-                  ))
-                : incomeCategories.map((cate) => (
-                    <option key={cate.id} value={cate.id}>
-                      {cate.name}
-                    </option>
-                  ))}
-            </select>
-          </div>
-
-          {/* Details */}
-          <div className="flex items-center w-full mt-4">
-            <label
-              htmlFor="details"
-              className="text-sm font-medium text-gray-700 w-1/6"
-            >
-              Details:
-            </label>
-            <input
-              id="details"
-              type="text"
-              placeholder="Details"
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
-              required
-              value={inputData.details}
-              onChange={(e) => {
-                const clone = { ...inputData };
-                clone.details = e.target.value;
-                setInputData(clone);
-              }}
-            />
-          </div>
-
-          {/* Submit Button */}
-          <div className="w-full flex justify-center mt-4">
-            <button
-              type="submit"
-              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Submit
-            </button>
-          </div>
-        </form>
-      </div>
 
       {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-transform duration-500 ease-in-out">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-5/12 transform transition-transform duration-500 ease-in-out">
-            <h2 className="text-xl font-semibold mb-4">Add New Category</h2>
-
-            {/* Modal Form */}
-            <form onSubmit={handleModalSubmit}>
-              {/* Type */}
-              <div className="w-full flex mb-4">
-                <span className="text-sm font-medium text-gray-700 w-1/3">
-                  Type:
-                </span>
-                <div className="flex items-center space-x-4 w-2/3 ml-2">
-                  <div className="flex items-center">
-                    <input
-                      id="expenseModal"
-                      name="type"
-                      type="radio"
-                      value="EXPENSE"
-                      className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                      required
-                      checked={categoryInputData.type === 'EXPENSE'}
-                      onChange={(e) => {
-                        const clone = { ...categoryInputData };
-                        clone.type = e.target.value as 'EXPENSE' | 'INCOME';
-                        setCategoryInputData(clone);
-                      }}
-                    />
-                    <label
-                      htmlFor="expenseModal"
-                      className="ml-2 text-sm font-medium text-gray-700"
-                    >
-                      Expense
-                    </label>
-                  </div>
-                  <div className="flex items-center">
-                    <input
-                      id="incomeModal"
-                      name="type"
-                      type="radio"
-                      value="INCOME"
-                      className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                      required
-                      onChange={(e) => {
-                        const clone = { ...categoryInputData };
-                        clone.type = e.target.value as 'EXPENSE' | 'INCOME';
-                        setCategoryInputData(clone);
-                      }}
-                    />
-                    <label
-                      htmlFor="incomeModal"
-                      className="ml-2 text-sm font-medium text-gray-700"
-                    >
-                      Income
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Name */}
-              <div className="flex items-center space-x-2 mt-4 w-full">
-                <label
-                  htmlFor="categoryName"
-                  className="text-sm font-medium text-gray-700 w-1/3"
-                >
-                  Name:
-                </label>
-                <input
-                  id="categoryName"
-                  type="text"
-                  placeholder="Name"
-                  className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-2/3 ml-2"
-                  required
-                  value={categoryInputData.name}
-                  onChange={(e) => {
-                    const clone = { ...categoryInputData };
-                    clone.name = e.target.value;
-                    setCategoryInputData(clone);
-                  }}
-                />
-              </div>
-
-              {/* Modal Buttons */}
-              <div className="flex justify-end mt-4">
-                <button
-                  type="button"
-                  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mr-3"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                  Submit
-                </button>
-                <button
-                  type="button"
-                  className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"
-                  onClick={() => {
-                    setIsViewingCatetgoryShowing(true);
-                    setIsModalOpen(false);
-                    setActiveTab('');
-                  }}
-                >
-                  View Categories
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {isModalOpen && <AddCategoryModal setIsModalOpen={setIsModalOpen} />}
 
       <ToastContainer
         position="top-right"
@@ -1103,6 +737,14 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      {activeTab !== 'Transaction' && (
+        <AddTransaction
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          setRefreshState={setRefreshState}
+        />
+      )}
 
       <div
         className={`${!printingMode && 'flex justify-center self-center items-center flex-col mb-4'} ${activeTab !== 'Transaction' && 'hidden'}`}

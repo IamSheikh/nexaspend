@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable react/function-component-definition */
 /* eslint-disable no-undef */
@@ -49,6 +50,10 @@ const AddTransaction = ({
 
     setExpenseCategories(filteredExpenseCategories);
     setIncomeCategories(filteredIncomeCategories);
+    setInputData({
+      ...inputData,
+      categoryId: filteredExpenseCategories[0].id as number,
+    });
   };
 
   useEffect(() => {
@@ -216,11 +221,6 @@ const AddTransaction = ({
               setInputData(clone);
             }}
           >
-            {/* {allCategories.map((cate) => (
-              <option key={cate.id} value={cate.id}>
-                {cate.name}
-              </option>
-            ))} */}
             {inputData.type === 'EXPENSE'
               ? expenseCategories.map((cate) => (
                   <option key={cate.id} value={cate.id}>

@@ -16,14 +16,19 @@ import { useReactToPrint } from 'react-to-print';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { IDaybook, ICategory } from '../../types';
-import '../output/dist.css';
+import '../styles/dist/dist.css';
 import {
   getFirstAndLastDayOfMonth,
   getFirstAndLastDayOfLastMonth,
   formatDate,
+  getRandomColor,
+  calculateLuminance,
 } from '../utils';
 import AddCategoryModal from '../components/AddCategoryModal';
 import AddTransaction from '../components/AddTransaction';
+import Header from '../components/Header';
+import Sidebar from '../components/Sidebar';
+import Tabs from '../components/Tabs';
 
 const Home = () => {
   const tableRef = useRef(null);
@@ -59,7 +64,7 @@ const Home = () => {
   const [currentMonthExpenses, setCurrentMonthExpenses] = useState<IDaybook[]>(
     [],
   );
-  const [isViewCategoryShowing, setIsViewingCatetgoryShowing] = useState(false);
+  const [isViewCategoryShowing, setIsViewingCategoryShowing] = useState(false);
   const [printingMode, setPrintingMode] = useState(false);
   const [categorySearch, setCategorySearch] = useState({
     entryType: 'ALL',
@@ -176,21 +181,6 @@ const Home = () => {
     const filteredIncomeCate = allCat.filter((cate) => cate.type === 'INCOME');
     setExpenseCategories(filteredExpenseCate);
     setIncomeCategories(filteredIncomeCate);
-    // setAllCategories(
-    //   inputData.type === 'EXPENSE' ? filteredExpenseCate : filteredIncomeCate,
-    // );
-    // if (!inputData.categoryId) {
-    //   const clone = { ...inputData };
-    //   clone.categoryId =
-    //     inputData.type === 'EXPENSE'
-    //       ? filteredExpenseCate.length === 0
-    //         ? 1
-    //         : (filteredExpenseCate[0].id as number)
-    //       : filteredIncomeCate.length === 0
-    //         ? 1
-    //         : (filteredIncomeCate[0].id as number);
-    //   setInputData(clone);
-    // }
 
     const { firstDay, lastDay } = getFirstAndLastDayOfMonth();
     const lastTenDaybook = await window.electron.getDaybookByFilters(
@@ -213,10 +203,6 @@ const Home = () => {
     );
     setPreviousMonthResults(previous);
 
-    // setInputData({
-    //   ...inputData,
-    //   categoryId: allCat.length === 0 ? 1 : (allCat[0].id as number),
-    // });
     const findD = await window.electron.getDaybookByFilters(
       [firstDay, lastDay],
       'ALL',
@@ -241,7 +227,6 @@ const Home = () => {
       searchData.entryType,
       searchData.categoryId,
     );
-    // setCurrentMonthExpenses(filteredResults);
 
     setResults(filteredResults);
     setCurrentPage(1);
@@ -280,177 +265,36 @@ const Home = () => {
     setRefreshState((prev) => !prev);
   };
 
-  const getRandomColor = () => {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  };
-
-  const calculateLuminance = (hexColor: any) => {
-    const rgb = hexColor
-      .replace('#', '')
-      .match(/.{1,2}/g)
-      .map((x: any) => parseInt(x, 16));
-
-    const [r, g, b] = rgb.map((channel: any) => {
-      const normalized = channel / 255;
-      return normalized <= 0.03928
-        ? normalized / 12.92
-        : ((normalized + 0.055) / 1.055) ** 2.4;
-    });
-    const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-
-    return luminance > 0.5 ? 'black' : 'white';
-  };
-
   return (
     <div>
-      <div
-        className={`flex justify-between mt-2 mb-2 p-2 top-0 sticky z-50 bg-white ${printingMode && 'hidden'}`}
-      >
-        <h1
-          className="text-4xl font-bold cursor-pointer"
-          onClick={() => {
-            setActiveTab('Transaction');
-            setIsViewingCatetgoryShowing(false);
-            setRefreshState((prev) => !prev);
-            setSearchData({
-              startDate: '',
-              endDate: '',
-              categoryId: 'ALL',
-              entryType: 'ALL',
-            });
-            setBackgroundColor('white');
-            setTextColor('black');
-          }}
-        >
-          <span className="text-red-500">A</span>
-          <span className="text-orange-500">Q</span>
-          <span className="text-yellow-300">A</span>
-          <span className="text-green-500">S</span>
-          <span className="text-blue-500">A</span>
-          {/* <span className="text-violet-500">p</span>
-          <span className="text-red-500">e</span>
-          <span className="text-orange-500">n</span>
-          <span className="text-yellow-300">d</span> */}
-        </h1>
-        <div>
-          <button
-            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"
-            type="button"
-            onClick={() => {
-              setIsModalOpen(true);
-            }}
-          >
-            Category
-          </button>
-        </div>
-      </div>
+      <Header
+        printingMode={printingMode}
+        setIsViewingCategoryShowing={setIsViewingCategoryShowing}
+        setActiveTab={setActiveTab}
+        setBackgroundColor={setBackgroundColor}
+        setIsModalOpen={setIsModalOpen}
+        setRefreshState={setRefreshState}
+        setSearchData={setSearchData}
+        setTextColor={setTextColor}
+      />
 
-      <div
-        className={`fixed inset-y-0 left-0 z-50 bg-gray-200 w-64 transform ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } transition-transform duration-300 ease-in-out`}
-      >
-        <div className="flex items-center justify-between px-4 py-4">
-          <h2
-          //  className="text-white text-lg font-semibold"
-          >
-            Expenses By Category
-          </h2>
-          <button
-            onClick={toggleSidebar}
-            // className="text-gray-400 hover:text-white"
-            type="button"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="px-4 py-2">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead>
-              <tr>
-                <th className="py-2 text-left text-sm font-semibold">
-                  Category
-                </th>
-                <th className="py-2 text-right text-sm font-semibold">
-                  Expense
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {expenseCategories.map((cate) => {
-                const totalAmount = currentMonthExpenses.reduce(
-                  (total, item) =>
-                    item.categoryId === cate.id ? total + item.amount : total,
-                  0,
-                );
+      <Sidebar
+        currentMonthExpenses={currentMonthExpenses}
+        isOpen={isOpen}
+        searchData={searchData}
+        setIsOpen={setIsOpen}
+        setResults={setResults}
+        setSearchData={setSearchData}
+        toggleSidebar={toggleSidebar}
+        setBackgroundColor={setBackgroundColor}
+        setTextColor={setTextColor}
+      />
 
-                return (
-                  <tr
-                    key={cate.id}
-                    className="text-black cursor-pointer"
-                    onClick={async () => {
-                      const clone = { ...searchData };
-                      clone.categoryId = cate.id as unknown as string;
-                      setSearchData(clone);
-                      const isThereDates =
-                        searchData.startDate !== '' && searchData.endDate;
-                      const filteredResults =
-                        await window.electron.getDaybookByFilters(
-                          isThereDates
-                            ? [searchData.startDate, searchData.endDate]
-                            : [
-                                getFirstAndLastDayOfMonth().firstDay,
-                                getFirstAndLastDayOfMonth().lastDay,
-                              ],
-                          searchData.entryType,
-                          clone.categoryId,
-                        );
-                      // setCurrentMonthExpenses(filteredResults);
-                      setResults(filteredResults);
-                      setIsOpen(false);
-                      const newColor = getRandomColor();
-                      setBackgroundColor(newColor);
-                      setTextColor(calculateLuminance(newColor));
-                    }}
-                  >
-                    <td className="text-left text-sm font-medium">
-                      {cate.name}
-                    </td>
-                    <td className="text-sm text-black text-right">
-                      {numeral(totalAmount).format('0,0')}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div
-        className={`flex justify-around border-b top-[50px] sticky z-40 bg-white  border-gray-300 ${activeTab === '' && 'hidden'} ${printingMode && 'hidden'}`}
-      >
-        {['Transaction', 'Add Transaction'].map((tab) => (
-          <button
-            type="button"
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`pb-2 text-gray-600  ${
-              activeTab === tab
-                ? 'border-b-2 border-black text-black'
-                : 'hover:text-black'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        printingMode={printingMode}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
 
       {/* Modal */}
       {isModalOpen && <AddCategoryModal setIsModalOpen={setIsModalOpen} />}
@@ -473,55 +317,6 @@ const Home = () => {
       <div
         className={`px-2 flex z-30 top-[79px] sticky bg-white justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
       >
-        {/* <div>
-          <h2 className="text-lg font-semibold mt-2 mb-2">
-            Expenses by Category
-          </h2>
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            {expenseCategories.map((cate) => {
-              const totalAmount = currentMonthExpenses.reduce(
-                (total: number, item: any) => {
-                  return item.categoryId === cate.id
-                    ? total + item.amount
-                    : total;
-                },
-                0,
-              );
-
-              return (
-                <div
-                  key={cate.id}
-                  className="text-sm p-1 rounded-md flex items-center"
-                >
-                  <h2
-                    className="font-semibold text-gray-800 mr-2 cursor-pointer"
-                    onClick={async () => {
-                      const clone = { ...searchData };
-                      clone.categoryId = cate.id as unknown as string;
-                      setSearchData(clone);
-                      const isThereDates =
-                        searchData.startDate !== '' && searchData.endDate;
-                      const filteredResults =
-                        await window.electron.getDaybookByFilters(
-                          isThereDates
-                            ? [searchData.startDate, searchData.endDate]
-                            : null,
-                          searchData.entryType,
-                          clone.categoryId,
-                        );
-                      setCurrentMonthExpenses(filteredResults);
-
-                      setResults(filteredResults);
-                    }}
-                  >
-                    {cate.name}:
-                  </h2>
-                  <span className="text-gray-700">{totalAmount}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div> */}
         <button
           onClick={toggleSidebar}
           className="ml-4 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-600 text-2xl"

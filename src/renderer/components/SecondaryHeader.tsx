@@ -48,7 +48,11 @@ const SecondaryHeader = ({
   const [allCategories, setAllCategories] = useState<ICategory[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
+  const [todayExpenses, setTodayExpenses] = useState<IDaybook[]>([]);
   const [previousMonthResults, setPreviousMonthResults] = useState<IDaybook[]>(
+    [],
+  );
+  const [currentMonthResults, setCurrentMonthResults] = useState<IDaybook[]>(
     [],
   );
   const startDateRef = useRef<any>(null);
@@ -76,6 +80,22 @@ const SecondaryHeader = ({
         'ALL',
       );
       setPreviousMonthResults(previous);
+
+      const { firstDay: monthFirstDay, lastDay: monthLastDay } =
+        getFirstAndLastDayOfMonth();
+      const current = await window.electron.getDaybookByFilters(
+        [monthFirstDay, monthLastDay],
+        'ALL',
+        'ALL',
+      );
+      setCurrentMonthResults(current);
+
+      const todayExpense = await window.electron.getDaybookByFilters(
+        [formatDate(new Date()), formatDate(new Date())],
+        'EXPENSE',
+        'ALL',
+      );
+      setTodayExpenses(todayExpense);
     })();
   }, []);
   const handleSearch = async () => {
@@ -293,7 +313,7 @@ const SecondaryHeader = ({
           {/* <div className="flex flex-wrap justify-end items-center gap-4 mb-4"> */}
           <p className="ml-5">
             {numeral(
-              results
+              currentMonthResults
                 .filter((da: any) => da.type === 'EXPENSE')
                 .reduce((total: number, item: any) => {
                   return total + item.amount;
@@ -303,22 +323,34 @@ const SecondaryHeader = ({
           {/* </div> */}
         </div>
         <div className="flex items-center">
-          <h2 className="text-sm font-semibold text-blue-800">Today:</h2>
+          <h2 className="text-sm font-semibold text-blue-800">Today: </h2>
           {/* <div className="flex flex-wrap justify-end items-center gap-4 mb-4"> */}
           <p className="ml-5">
             {numeral(
-              results
-                .filter(
-                  (da: any) =>
-                    da.type === 'EXPENSE' && da.date === formatDate(new Date()),
-                )
+              todayExpenses
+                .filter((da: any) => da.date === formatDate(new Date()))
                 .reduce((total: number, item: any) => {
                   return total + item.amount;
                 }, 0),
             ).format('0,0')}
           </p>
-          {/* </div> */}
         </div>
+        {searchData.startDate !== '' && searchData.endDate !== '' && (
+          <div className="flex items-center">
+            <h2 className="text-sm font-semibold text-blue-800">
+              {searchData.startDate} to {searchData.endDate}:
+            </h2>
+            <p className="ml-5">
+              {numeral(
+                results
+                  .filter((da: any) => da.type === 'EXPENSE')
+                  .reduce((total: number, item: any) => {
+                    return total + item.amount;
+                  }, 0),
+              ).format('0,0')}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

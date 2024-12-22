@@ -6,7 +6,17 @@ import { useState, FormEvent } from 'react';
 import { toast } from 'react-toastify';
 import ICategory from '../../types/ICategory';
 
-const AddCategoryModal = ({ setIsModalOpen }: { setIsModalOpen: any }) => {
+const AddCategoryModal = ({
+  setActiveTab,
+  setIsModalOpen,
+  setIsViewingCategoryShowing,
+  setRefreshState,
+}: {
+  setIsModalOpen: any;
+  setActiveTab: any;
+  setIsViewingCategoryShowing: any;
+  setRefreshState: any;
+}) => {
   const [categoryInputData, setCategoryInputData] = useState<ICategory>({
     name: '',
     type: 'EXPENSE',
@@ -23,7 +33,7 @@ const AddCategoryModal = ({ setIsModalOpen }: { setIsModalOpen: any }) => {
       name: '',
       type: 'EXPENSE',
     });
-    // setRefreshState((prev) => !prev);
+    setRefreshState((prev: any) => !prev);
   };
 
   return (
@@ -128,9 +138,9 @@ const AddCategoryModal = ({ setIsModalOpen }: { setIsModalOpen: any }) => {
               type="button"
               className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"
               onClick={() => {
-                //   setIsViewingCatetgoryShowing(true);
+                setIsViewingCategoryShowing(true);
                 setIsModalOpen(false);
-                //   setActiveTab('');
+                setActiveTab('');
               }}
             >
               View Categories

@@ -4,8 +4,9 @@
 /* eslint-disable react/function-component-definition */
 /* eslint-disable no-undef */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import numeral from 'numeral';
+import { useReactToPrint } from 'react-to-print';
 import { ICategory } from '../../types';
 import {
   calculateLuminance,
@@ -34,7 +35,9 @@ const Sidebar = ({
   setBackgroundColor: any;
   setTextColor: any;
 }) => {
+  const ref = useRef<any>(null);
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
+  const [printingMode, setPrintingMode] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -47,19 +50,39 @@ const Sidebar = ({
     })();
   }, []);
 
+  const handlePrint = useReactToPrint({
+    contentRef: ref,
+  });
+
   return (
     <div
       className={`fixed inset-y-0 left-0 z-50 bg-gray-200 w-64 transform ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } transition-transform duration-300 ease-in-out`}
+      } transition-transform duration-300 ease-in-out ${printingMode && 'w-screen'}`}
+      ref={ref}
     >
-      <div className="flex items-center justify-between px-4 py-4">
+      <div
+        className={`flex items-center justify-between px-4 py-4 ${printingMode && 'hidden'}`}
+      >
         <h2>Expenses By Category</h2>
-        <button onClick={toggleSidebar} type="button">
+        <button
+          onClick={toggleSidebar}
+          type="button"
+          className={`${printingMode && 'hidden'}`}
+        >
           ✕
         </button>
       </div>
-      <div className="px-4 py-2">
+      <h2 className={`${!printingMode && 'hidden'} text-center px-4 py-4`}>
+        Expenses By Category
+      </h2>
+      <h2 className={`${!printingMode && 'hidden'} text-center`}>
+        {searchData.startDate === '' && searchData.endDate === ''
+          ? `${new Date().toLocaleDateString('default', { month: 'long' })}, 
+            ${new Date().getFullYear()}`
+          : `${searchData.startDate} to ${searchData.endDate}`}
+      </h2>
+      <div className="flex flex-col px-4 py-2">
         <table className="min-w-full divide-y divide-gray-700">
           <thead>
             <tr>
@@ -112,6 +135,21 @@ const Sidebar = ({
             })}
           </tbody>
         </table>
+        <div className="flex justify-end align-end">
+          <button
+            type="button"
+            className={`bg-green-800 hover:bg-green-900 px-3 py-1 text-white rounded transition-all duration-300 ease-in-out ${printingMode && 'hidden'}`}
+            onClick={() => {
+              setPrintingMode(true);
+              setTimeout(() => {
+                handlePrint();
+                setPrintingMode(false);
+              }, 0);
+            }}
+          >
+            Print
+          </button>
+        </div>
       </div>
     </div>
   );

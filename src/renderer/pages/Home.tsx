@@ -276,6 +276,7 @@ const Home = () => {
         setSelectedDaybook={setSelectedDaybook}
         tableRef={tableRef}
         totalPages={totalPages}
+        searchData={searchData}
       />
 
       {/* Update Daybook Model */}

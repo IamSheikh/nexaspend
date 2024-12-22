@@ -25,6 +25,7 @@ const MainTable = ({
   handlePageChange,
   currentPage,
   totalPages,
+  searchData,
 }: {
   printingMode: any;
   activeTab: any;
@@ -40,36 +41,63 @@ const MainTable = ({
   handlePageChange: any;
   currentPage: any;
   totalPages: any;
+  searchData: any;
 }) => {
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
+  const [allCategories, setAllCategories] = useState<ICategory[]>([]);
 
   useEffect(() => {
     (async () => {
-      const allCategories =
+      const categories =
         (await window.electron.getAllCategories()) as ICategory[];
-      const filteredExpenseCategories = allCategories.filter(
+      const filteredExpenseCategories = categories.filter(
         (category) => category.type === 'EXPENSE',
       );
-      const filteredIncomeCategories = allCategories.filter(
+      const filteredIncomeCategories = categories.filter(
         (category) => category.type === 'INCOME',
       );
+      setAllCategories(categories);
       setExpenseCategories(filteredExpenseCategories);
       setIncomeCategories(filteredIncomeCategories);
     })();
   }, []);
+
   return (
     <div
       className={`${!printingMode && 'flex justify-center self-center items-center flex-col mb-4'} ${activeTab !== 'Transaction' && 'hidden'}`}
     >
-      <div className={`${!printingMode && 'overflow-auto max-h-[400px]'}`}>
-        <table className="border-collapse w-[95vw]" ref={tableRef}>
+      <div
+        className={`flex flex-col justify-center items-center ${!printingMode && 'overflow-auto max-h-[400px]'}`}
+        ref={tableRef}
+      >
+        {printingMode && (
+          <div className="text-center">
+            <h2 className="text-xl font-semibold">
+              {searchData.entryType === 'ALL'
+                ? 'All'
+                : searchData.entryType === 'INCOME'
+                  ? 'All Income'
+                  : 'All Expenses'}
+            </h2>
+            <h2 className="text-xl font-semibold">
+              {searchData.categoryId === 'ALL'
+                ? 'All Categories'
+                : // @ts-ignore
+                  allCategories?.find(
+                    (category) => category.id === +searchData.categoryId,
+                  ).name}
+            </h2>
+          </div>
+        )}
+        <table className="border-collapse w-[95vw]">
           <thead className="border border-gray-300 sticky top-0">
             <tr className="bg-gray-200">
               <th className="border border-gray-300">Date</th>
               <th className="border border-gray-300">Type</th>
               <th className="border border-gray-300">Category</th>
-              <th className="border border-gray-300">Amount</th>
+              <th className="border border-gray-300">Income</th>
+              <th className="border border-gray-300">Expense</th>
               <th className="border border-gray-300">Details</th>
               <th
                 className={`border border-gray-300 ${printingMode && 'hidden'} no-print`}
@@ -94,7 +122,10 @@ const MainTable = ({
                         ?.name}
                 </td>
                 <td className="border border-gray-300 text-right px-2">
-                  {numeral(da.amount).format('0,0')}
+                  {da.type === 'INCOME' && numeral(da.amount).format('0,0')}
+                </td>
+                <td className="border border-gray-300 text-right px-2">
+                  {da.type === 'EXPENSE' && numeral(da.amount).format('0,0')}
                 </td>
                 <td className="border border-gray-300 text-left px-2">
                   {da.details}
@@ -146,7 +177,7 @@ const MainTable = ({
               setTimeout(() => {
                 handlePrint();
                 setPrintingMode(false);
-              }, 1000);
+              }, 0);
             }}
           >
             Print

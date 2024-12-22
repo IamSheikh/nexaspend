@@ -72,22 +72,27 @@ const MainTable = ({
         ref={tableRef}
       >
         {printingMode && (
-          <div className="text-center">
-            <h2 className="text-xl font-semibold">
-              {searchData.entryType === 'ALL'
-                ? 'All'
-                : searchData.entryType === 'INCOME'
-                  ? 'All Income'
-                  : 'All Expenses'}
-            </h2>
+          <div className="text-center mb-2">
             <h2 className="text-xl font-semibold">
               {searchData.categoryId === 'ALL'
-                ? 'All Categories'
-                : // @ts-ignore
-                  allCategories?.find(
-                    (category) => category.id === +searchData.categoryId,
-                  ).name}
+                ? 'All Categories Expenses'
+                : `${
+                    // @ts-ignore
+                    allCategories?.find(
+                      (category) => category.id === +searchData.categoryId,
+                    ).name
+                  } Expenses`}
             </h2>
+            {searchData.startDate !== '' && searchData.endDate !== '' ? (
+              <h2>
+                {searchData.startDate} to {searchData.endDate}
+              </h2>
+            ) : (
+              <h2>
+                {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
+                {new Date().getFullYear()}
+              </h2>
+            )}
           </div>
         )}
         <table className="border-collapse w-[95vw]">

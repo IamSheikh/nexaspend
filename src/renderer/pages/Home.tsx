@@ -251,6 +251,7 @@ const Home = () => {
         setTextColor={setTextColor}
         textColor={textColor}
         toggleSidebar={toggleSidebar}
+        refreshState={refreshState}
       />
 
       {activeTab !== 'Transaction' && (
@@ -269,7 +270,7 @@ const Home = () => {
         handlePageChange={handlePageChange}
         handlePrint={handlePrint}
         printingMode={printingMode}
-        setIsDeleteTransactionModalOpen={setIsDeleteCategoryModalOpen}
+        setIsDeleteTransactionModalOpen={setIsDeleteTransactionModalOpen}
         setIsUpdateDaybook={setIsUpdateDaybook}
         setPrintingMode={setPrintingMode}
         setRefreshState={setRefreshState}

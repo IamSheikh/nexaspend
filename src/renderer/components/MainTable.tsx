@@ -68,7 +68,7 @@ const MainTable = ({
       className={`${!printingMode && 'flex justify-center self-center items-center flex-col mb-4'} ${activeTab !== 'Transaction' && 'hidden'}`}
     >
       <div
-        className={`flex flex-col justify-center items-center ${!printingMode && 'overflow-auto max-h-[400px]'}`}
+        className={`flex flex-col justify-center items-center  `}
         ref={tableRef}
       >
         {printingMode && (
@@ -95,8 +95,11 @@ const MainTable = ({
             )}
           </div>
         )}
-        <table className="border-collapse w-[95vw]">
-          <thead className="border border-gray-300 sticky top-0">
+        <table className={`border-collapse w-[95vw] `}>
+          <thead
+            className={`border border-gray-300 ${!printingMode && 'top-[140px] sticky'}`}
+            style={{ zIndex: 50000000 }}
+          >
             <tr className="bg-gray-200">
               <th className="border border-gray-300">Date</th>
               <th className="border border-gray-300">Type</th>
@@ -113,7 +116,7 @@ const MainTable = ({
           </thead>
           <tbody className="border border-gray-300">
             {currentData.map((da: any) => (
-              <tr className="text-center">
+              <tr className="text-center" key={da.id}>
                 <td className="border border-gray-300">{da.date}</td>
                 <td className="border border-gray-300 text-left px-2">
                   {da.type === 'INCOME' ? 'Income' : 'Expense'}

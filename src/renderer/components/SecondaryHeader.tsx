@@ -30,6 +30,7 @@ const SecondaryHeader = ({
   results,
   setResults,
   setCurrentPage,
+  refreshState,
 }: {
   activeTab: any;
   printingMode: any;
@@ -44,6 +45,7 @@ const SecondaryHeader = ({
   results: any;
   setResults: any;
   setCurrentPage: any;
+  refreshState: any;
 }) => {
   const [allCategories, setAllCategories] = useState<ICategory[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
@@ -97,7 +99,8 @@ const SecondaryHeader = ({
       );
       setTodayExpenses(todayExpense);
     })();
-  }, []);
+  }, [refreshState]);
+
   const handleSearch = async () => {
     const isThereDates = searchData.startDate !== '' && searchData.endDate;
     const filteredResults = await window.electron.getDaybookByFilters(

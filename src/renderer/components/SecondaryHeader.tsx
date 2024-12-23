@@ -263,7 +263,7 @@ const SecondaryHeader = ({
         </div>
 
         {/* Search and Reset Button */}
-        <div className="ml-2">
+        <div className="ml-2 flex">
           <button
             type="button"
             className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -290,7 +290,7 @@ const SecondaryHeader = ({
       </div>
 
       {/* Transaction Summary Section */}
-      <div className="flex flex-col ml-22">
+      <div className="flex flex-col ml-10">
         {/* Previous Month */}
         <div className="flex mb-1">
           <h2 className="text-sm font-semibold text-red-500 w-[190px]">
@@ -299,7 +299,7 @@ const SecondaryHeader = ({
             ).toLocaleString('default', { month: 'long' })}
             , {new Date().getFullYear()}:
           </h2>
-          <p className="ml-5 text-left w-[100px]">
+          <p className="ml-3 text-left w-[100px]">
             {numeral(
               previousMonthResults
                 .filter((da) => da.type === 'EXPENSE')
@@ -314,7 +314,7 @@ const SecondaryHeader = ({
             {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
             {new Date().getFullYear()}:
           </h2>
-          <p className="ml-5 text-left w-[100px]">
+          <p className="ml-3 text-left w-[100px]">
             {numeral(
               currentMonthResults
                 .filter((da: any) => da.type === 'EXPENSE')
@@ -329,7 +329,7 @@ const SecondaryHeader = ({
             <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
               Today:{' '}
             </h2>
-            <p className="ml-5 text-left w-[100px]">
+            <p className="ml-3 text-left w-[100px]">
               {numeral(
                 todayExpenses
                   .filter((da: any) => da.date === formatDate(new Date()))

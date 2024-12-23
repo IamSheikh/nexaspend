@@ -66,7 +66,7 @@ const MainTable = ({
       className={`${!printingMode && 'flex justify-center self-center items-center flex-col mb-4'} ${activeTab !== 'Transaction' && 'hidden'}`}
     >
       <div
-        className={`flex flex-col justify-center items-center  `}
+        className={`flex flex-col justify-center items-center `}
         ref={tableRef}
       >
         {printingMode && (
@@ -93,9 +93,9 @@ const MainTable = ({
             )}
           </div>
         )}
-        <table className={`border-collapse w-[95vw] `} id="table-container">
+        <table className={`border-collapse w-[95vw]  `} id="table-container">
           <thead
-            className={`border border-gray-300 sticky ${printingMode ? '' : 'top-[10.3rem] z-40'}`}
+            className={`border border-gray-300 sticky ${printingMode ? '' : 'top-[10.3rem] z-40'} specific-thead`}
             // style={{ zIndex: 50000000 }}
           >
             <tr className="bg-gray-200">
@@ -136,6 +136,7 @@ const MainTable = ({
               </th>
             </tr>
           </thead>
+
           <tbody className="border border-gray-300">
             {currentData.map((da: any) => (
               <tr className="text-center" key={da.id}>
@@ -208,6 +209,8 @@ const MainTable = ({
               </tr>
             ))}
           </tbody>
+          {/* <tfoot className="flex justify-end border-red-500"> */}
+          {/* </tfoot> */}
         </table>
       </div>
 

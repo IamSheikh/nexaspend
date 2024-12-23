@@ -8,6 +8,7 @@ const addCategory = async (category: ICategory) => {
   const db = connect();
   const query = `INSERT INTO Category (name, type) VALUES (?, ?)`;
 
+  // hi
   db.run(query, [category.name, category.type], (err: any) => {
     if (err) {
       return console.log(err.message);

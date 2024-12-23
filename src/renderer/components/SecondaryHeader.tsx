@@ -120,7 +120,7 @@ const SecondaryHeader = ({
 
   return (
     <div
-      className={`px-2 flex z-30 top-[79px] sticky bg-white justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
+      className={`px-2 flex z-50 top-[5.4rem] sticky bg-white justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
     >
       <button
         onClick={toggleSidebar}
@@ -129,11 +129,13 @@ const SecondaryHeader = ({
       >
         ☰
       </button>
+
+      {/* Date Range Picker & Filters */}
       <div
         className={`flex items-center ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
       >
-        {/* Date Range Picker */}
         <div className="flex">
+          {/* Start Date Picker */}
           <div className="flex items-center">
             <label
               htmlFor="startDate"
@@ -159,6 +161,8 @@ const SecondaryHeader = ({
               }}
             />
           </div>
+
+          {/* End Date Picker */}
           <div className="flex items-center ml-1">
             <label
               htmlFor="endDate"
@@ -185,7 +189,7 @@ const SecondaryHeader = ({
             />
           </div>
 
-          {/* Income/Expense Dropdown */}
+          {/* Entry Type Dropdown */}
           <div className="flex items-center ml-1">
             <label
               htmlFor="entryType"
@@ -219,23 +223,19 @@ const SecondaryHeader = ({
             </label>
             <select
               id="category"
-              className={`border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2 ${
-                searchData.categoryId !== 'ALL' && 'focus:ring-0'
-              }`}
+              className={`border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2 ${searchData.categoryId !== 'ALL' && 'focus:ring-0'}`}
               style={{ backgroundColor, color: textColor }}
               value={searchData.categoryId}
               onChange={(e) => {
                 const clone = { ...searchData };
                 clone.categoryId = e.target.value;
                 setSearchData(clone);
-
                 if (e.target.value === 'ALL') {
                   setBackgroundColor('white');
                   setTextColor('black');
                 } else {
                   const newColor = getRandomColor();
                   setBackgroundColor(newColor);
-
                   setTextColor(calculateLuminance(newColor));
                 }
               }}
@@ -262,7 +262,7 @@ const SecondaryHeader = ({
           </div>
         </div>
 
-        {/* Search Button */}
+        {/* Search and Reset Button */}
         <div className="ml-2">
           <button
             type="button"
@@ -288,68 +288,70 @@ const SecondaryHeader = ({
           </button>
         </div>
       </div>
-      <div className="flex flex-col">
-        <div className="mr-2 flex items-center text-red-500">
-          <h2 className="text-sm font-semibold">
+
+      {/* Transaction Summary Section */}
+      <div className="flex flex-col ml-22">
+        {/* Previous Month */}
+        <div className="flex mb-1">
+          <h2 className="text-sm font-semibold text-red-500 w-[190px]">
             {new Date(
               new Date().setMonth(new Date().getMonth() - 1),
             ).toLocaleString('default', { month: 'long' })}
-            , {new Date().getFullYear()}:{' '}
+            , {new Date().getFullYear()}:
           </h2>
-          {/* <div className="flex flex-wrap justify-end items-center gap-4 mb-4"> */}
-          <p className="ml-5">
+          <p className="ml-5 text-left w-[100px]">
             {numeral(
               previousMonthResults
                 .filter((da) => da.type === 'EXPENSE')
-                .reduce((total: number, item: any) => {
-                  return total + item.amount;
-                }, 0),
+                .reduce((total: number, item: any) => total + item.amount, 0),
             ).format('0,0')}
           </p>
-          {/* </div> */}
         </div>
-        <div className="flex items-center">
-          <h2 className="text-sm font-semibold text-blue-800">
+
+        {/* Current Month */}
+        <div className="flex mb-1">
+          <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
             {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
-            {new Date().getFullYear()}:{' '}
+            {new Date().getFullYear()}:
           </h2>
-          {/* <div className="flex flex-wrap justify-end items-center gap-4 mb-4"> */}
-          <p className="ml-5">
+          <p className="ml-5 text-left w-[100px]">
             {numeral(
               currentMonthResults
                 .filter((da: any) => da.type === 'EXPENSE')
-                .reduce((total: number, item: any) => {
-                  return total + item.amount;
-                }, 0),
-            ).format('0,0')}
-          </p>
-          {/* </div> */}
-        </div>
-        <div className="flex items-center">
-          <h2 className="text-sm font-semibold text-blue-800">Today: </h2>
-          {/* <div className="flex flex-wrap justify-end items-center gap-4 mb-4"> */}
-          <p className="ml-5">
-            {numeral(
-              todayExpenses
-                .filter((da: any) => da.date === formatDate(new Date()))
-                .reduce((total: number, item: any) => {
-                  return total + item.amount;
-                }, 0),
+                .reduce((total: number, item: any) => total + item.amount, 0),
             ).format('0,0')}
           </p>
         </div>
+
+        {/* Today */}
+        {searchData.startDate === '' || searchData.endDate === '' ? (
+          <div className="flex">
+            <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
+              Today:{' '}
+            </h2>
+            <p className="ml-5 text-left w-[100px]">
+              {numeral(
+                todayExpenses
+                  .filter((da: any) => da.date === formatDate(new Date()))
+                  .reduce((total: number, item: any) => total + item.amount, 0),
+              ).format('0,0')}
+            </p>
+          </div>
+        ) : (
+          ''
+        )}
+
+        {/* Custom Date Range */}
         {searchData.startDate !== '' && searchData.endDate !== '' && (
-          <div className="flex items-center">
-            <h2 className="text-sm font-semibold text-blue-800">
+          <div className="flex">
+            <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
               {searchData.startDate} to {searchData.endDate}:
             </h2>
-            <p className="ml-5">
+            <p className="ml-5 text-left w-[100px]">
               {numeral(
                 results
                   .filter((da: any) => da.type === 'EXPENSE')
-                  .reduce((total: number, item: any) => {
-                    return total + item.amount;
-                  }, 0),
+                  .reduce((total: number, item: any) => total + item.amount, 0),
               ).format('0,0')}
             </p>
           </div>

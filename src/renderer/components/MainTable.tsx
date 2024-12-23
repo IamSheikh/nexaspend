@@ -95,8 +95,8 @@ const MainTable = ({
         )}
         <table className={`border-collapse w-[95vw] `} id="table-container">
           <thead
-            className={`border border-gray-300 ${!printingMode && 'top-[140px] sticky'}`}
-            style={{ zIndex: 50000000 }}
+            className={`border border-gray-300 sticky ${printingMode ? '' : 'top-[10.3rem] z-40'}`}
+            // style={{ zIndex: 50000000 }}
           >
             <tr className="bg-gray-200">
               <th

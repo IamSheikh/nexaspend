@@ -37,6 +37,7 @@ import MainTable from '../components/MainTable';
 
 const Home = () => {
   const tableRef = useRef(null);
+  const sideBarRef = useRef(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -143,21 +144,65 @@ const Home = () => {
     setPrintingMode(true);
 
     setTimeout(() => {
-      const element = document.getElementById('table-container') as any;
-      html2canvas(element).then((canvas) => {
+      const element = document.getElementById('table-container');
+      html2canvas(element as any).then((canvas) => {
         const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF();
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4',
+        });
 
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.height;
+
+        // Calculate the total content height from the image
+        const imgProps = pdf.getImageProperties(imgData);
+        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        let currentHeight = 0;
+        let offset = 0;
+
+        // Add the first page
+        pdf.addImage(imgData, 'PNG', 0, offset, pdfWidth, imgHeight);
+        currentHeight += imgHeight;
+
+        // Loop to handle content overflow
+        while (currentHeight > pageHeight) {
+          offset = -pageHeight; // move the image position to the next page
+          currentHeight -= pageHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, offset, pdfWidth, imgHeight);
+        }
+
+        // Save the PDF
         pdf.save('table-styled.pdf');
       });
 
       setPrintingMode(false);
     }, 0);
   };
+
+  const handleClickOutside = (event: any) => {
+    // If the click is outside the sidebar, close the sidebar
+    // @ts-ignore
+    if (sideBarRef.current && !sideBarRef.current.contains(event.target)) {
+      setIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    // Cleanup event listener when component is unmounted or sidebar is closed
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   return (
     <div>
@@ -172,17 +217,19 @@ const Home = () => {
         setTextColor={setTextColor}
       />
 
-      <Sidebar
-        currentMonthExpenses={currentMonthExpenses}
-        isOpen={isOpen}
-        searchData={searchData}
-        setIsOpen={setIsOpen}
-        setResults={setResults}
-        setSearchData={setSearchData}
-        toggleSidebar={toggleSidebar}
-        setBackgroundColor={setBackgroundColor}
-        setTextColor={setTextColor}
-      />
+      <div ref={sideBarRef}>
+        <Sidebar
+          currentMonthExpenses={currentMonthExpenses}
+          isOpen={isOpen}
+          searchData={searchData}
+          setIsOpen={setIsOpen}
+          setResults={setResults}
+          setSearchData={setSearchData}
+          toggleSidebar={toggleSidebar}
+          setBackgroundColor={setBackgroundColor}
+          setTextColor={setTextColor}
+        />
+      </div>
 
       <Tabs
         printingMode={printingMode}

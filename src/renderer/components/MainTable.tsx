@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
 /* eslint-disable jsx-a11y/control-has-associated-label */
 /* eslint-disable no-nested-ternary */
@@ -115,6 +116,11 @@ const MainTable = ({
                 Category
               </th>
               <th
+                className={`border border-gray-300 ${printingMode && 'px-2 pb-2 mb-2 text-center'}`}
+              >
+                Details
+              </th>
+              <th
                 className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
               >
                 Income
@@ -124,22 +130,24 @@ const MainTable = ({
               >
                 Expense
               </th>
-              <th
-                className={`border border-gray-300 ${printingMode && 'px-2 pb-2 mb-2 text-center'}`}
-              >
-                Details
-              </th>
-              <th
+              {/* <th
                 className={`border border-gray-300 ${printingMode && 'hidden'} no-print`}
               >
                 Actions
-              </th>
+              </th> */}
             </tr>
           </thead>
 
           <tbody className="border border-gray-300">
             {currentData.map((da: any) => (
-              <tr className="text-center" key={da.id}>
+              <tr
+                className="text-center"
+                key={da.id}
+                onClick={() => {
+                  setIsUpdateDaybook(true);
+                  setSelectedDaybook(da);
+                }}
+              >
                 <td
                   className={`border border-gray-300 ${printingMode && 'pb-2'}`}
                 >
@@ -163,6 +171,11 @@ const MainTable = ({
                 <td
                   className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
                 >
+                  {da.details}
+                </td>
+                <td
+                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
+                >
                   {da.type === 'INCOME' && numeral(da.amount).format('0,0')}
                 </td>
                 <td
@@ -170,12 +183,7 @@ const MainTable = ({
                 >
                   {da.type === 'EXPENSE' && numeral(da.amount).format('0,0')}
                 </td>
-                <td
-                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
-                >
-                  {da.details}
-                </td>
-                <td
+                {/* <td
                   className={`border border-gray-300 items-center justify-center flex ${printingMode && 'hidden'} no-print`}
                 >
                   <button
@@ -205,7 +213,7 @@ const MainTable = ({
                   >
                     X
                   </button>
-                </td>
+                </td> */}
               </tr>
             ))}
           </tbody>

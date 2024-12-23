@@ -311,6 +311,7 @@ const Home = () => {
           setIsUpdateDaybook={setIsUpdateDaybook}
           setRefreshState={setRefreshState}
           setSelectedDaybook={setSelectedDaybook}
+          setIsDeleteTransactionModalOpen={setIsDeleteTransactionModalOpen}
         />
       )}
 

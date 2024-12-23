@@ -1,3 +1,7 @@
+/* eslint-disable promise/no-nesting */
+/* eslint-disable promise/catch-or-return */
+/* eslint-disable new-cap */
+/* eslint-disable promise/always-return */
 /* eslint-disable prettier/prettier */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
@@ -14,6 +18,7 @@ import { Bounce, ToastContainer } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 import { IDaybook, ICategory } from '../../types';
 import '../styles/dist/dist.css';
 import { getFirstAndLastDayOfMonth } from '../utils';
@@ -73,63 +78,6 @@ const Home = () => {
     contentRef: tableRef,
   });
 
-  const handleDownloadPDF = () => {
-    setPrintingMode(true);
-
-    setTimeout(async () => {
-      // eslint-disable-next-line new-cap
-      const pdf = new jsPDF() as any;
-      const table = tableRef.current as any;
-
-      const rows: any = [];
-      const headers: any = [];
-
-      // Extract table headers
-      table.querySelectorAll('thead tr th').forEach((th: any) => {
-        if (th.textContent !== 'Actions') {
-          headers.push(th.textContent);
-        }
-      });
-
-      // Extract table rows
-      table.querySelectorAll('tbody tr').forEach((tr: any) => {
-        const row: any = [];
-        tr.querySelectorAll('td').forEach((td: any) => {
-          row.push(td.textContent);
-        });
-        rows.push(row);
-      });
-
-      // Use jsPDF AutoTable to generate table in PDF
-      // pdf.autoTable({
-      //   head: [headers],
-      //   body: rows,
-      //   styles: { fontSize: 10, halign: 'center', valign: 'middle' },
-      // });
-      pdf.autoTable({
-        head: [headers],
-        body: rows,
-        headStyles: {
-          fillColor: [255, 255, 255], // White background for header
-          textColor: [0, 0, 0], // Black text color for header
-          fontStyle: 'bold', // Bold text style for header
-        },
-        styles: {
-          cellPadding: 3, // Cell padding
-          fontSize: 10, // Font size for table content
-          halign: 'center', // Horizontal alignment
-          valign: 'middle', // Vertical alignment
-        },
-        theme: 'striped', // Optional: Change table style ('striped', 'grid', or 'plain')
-      });
-
-      // Save the PDF
-      pdf.save('table.pdf');
-
-      setPrintingMode(false);
-    }, 1000);
-  };
-
   useEffect(() => {
     const handleKeyDown = (event: any) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
@@ -171,14 +119,44 @@ const Home = () => {
   }, [refreshState]);
 
   const totalPages = Math.ceil(results.length / itemsPerPage);
-  const currentData = results.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  const currentData = printingMode
+    ? results
+    : results.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage,
+      );
   const handlePageChange = (page: any) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
     }
+  };
+
+  const printTable = () => {
+    setPrintingMode(true);
+    setTimeout(() => {
+      handlePrint();
+      setPrintingMode(false);
+    }, 0);
+  };
+
+  const handleDownloadPDF = () => {
+    setPrintingMode(true);
+
+    setTimeout(() => {
+      const element = document.getElementById('table-container') as any;
+      html2canvas(element).then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF();
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('table-styled.pdf');
+      });
+
+      setPrintingMode(false);
+    }, 0);
   };
 
   return (
@@ -268,11 +246,10 @@ const Home = () => {
         currentPage={currentPage}
         handleDownloadPDF={handleDownloadPDF}
         handlePageChange={handlePageChange}
-        handlePrint={handlePrint}
+        printTable={printTable}
         printingMode={printingMode}
         setIsDeleteTransactionModalOpen={setIsDeleteTransactionModalOpen}
         setIsUpdateDaybook={setIsUpdateDaybook}
-        setPrintingMode={setPrintingMode}
         setRefreshState={setRefreshState}
         setSelectedDaybook={setSelectedDaybook}
         tableRef={tableRef}

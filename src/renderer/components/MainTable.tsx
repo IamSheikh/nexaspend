@@ -15,28 +15,26 @@ const MainTable = ({
   activeTab,
   tableRef,
   currentData,
-  setPrintingMode,
   setRefreshState,
   setIsUpdateDaybook,
   setSelectedDaybook,
   setIsDeleteTransactionModalOpen,
-  handlePrint,
   handleDownloadPDF,
   handlePageChange,
   currentPage,
   totalPages,
   searchData,
+  printTable,
 }: {
   printingMode: any;
   activeTab: any;
   tableRef: any;
   currentData: any;
-  setPrintingMode: any;
   setRefreshState: any;
   setIsUpdateDaybook: any;
   setSelectedDaybook: any;
   setIsDeleteTransactionModalOpen: any;
-  handlePrint: any;
+  printTable: any;
   handleDownloadPDF: any;
   handlePageChange: any;
   currentPage: any;
@@ -95,18 +93,42 @@ const MainTable = ({
             )}
           </div>
         )}
-        <table className={`border-collapse w-[95vw] `}>
+        <table className={`border-collapse w-[95vw] `} id="table-container">
           <thead
             className={`border border-gray-300 ${!printingMode && 'top-[140px] sticky'}`}
             style={{ zIndex: 50000000 }}
           >
             <tr className="bg-gray-200">
-              <th className="border border-gray-300">Date</th>
-              <th className="border border-gray-300">Type</th>
-              <th className="border border-gray-300">Category</th>
-              <th className="border border-gray-300">Income</th>
-              <th className="border border-gray-300">Expense</th>
-              <th className="border border-gray-300">Details</th>
+              <th
+                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+              >
+                Date
+              </th>
+              <th
+                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+              >
+                Type
+              </th>
+              <th
+                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+              >
+                Category
+              </th>
+              <th
+                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+              >
+                Income
+              </th>
+              <th
+                className={`border border-gray-300 ${printingMode && 'px-2 pb-2 mb-2 text-center'}`}
+              >
+                Expense
+              </th>
+              <th
+                className={`border border-gray-300 ${printingMode && 'px-2 pb-2 mb-2 text-center'}`}
+              >
+                Details
+              </th>
               <th
                 className={`border border-gray-300 ${printingMode && 'hidden'} no-print`}
               >
@@ -117,11 +139,19 @@ const MainTable = ({
           <tbody className="border border-gray-300">
             {currentData.map((da: any) => (
               <tr className="text-center" key={da.id}>
-                <td className="border border-gray-300">{da.date}</td>
-                <td className="border border-gray-300 text-left px-2">
+                <td
+                  className={`border border-gray-300 ${printingMode && 'pb-2'}`}
+                >
+                  {da.date}
+                </td>
+                <td
+                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
+                >
                   {da.type === 'INCOME' ? 'Income' : 'Expense'}
                 </td>
-                <td className="border border-gray-300 text-left px-2">
+                <td
+                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
+                >
                   {/* {allCate.find((c) => c.id === da.categoryId)?.name} */}
                   {da.type === 'EXPENSE'
                     ? expenseCategories.find((c) => c.id === da.categoryId)
@@ -129,13 +159,19 @@ const MainTable = ({
                     : incomeCategories.find((c) => c.id === da.categoryId)
                         ?.name}
                 </td>
-                <td className="border border-gray-300 text-right px-2">
+                <td
+                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
+                >
                   {da.type === 'INCOME' && numeral(da.amount).format('0,0')}
                 </td>
-                <td className="border border-gray-300 text-right px-2">
+                <td
+                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
+                >
                   {da.type === 'EXPENSE' && numeral(da.amount).format('0,0')}
                 </td>
-                <td className="border border-gray-300 text-left px-2">
+                <td
+                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
+                >
                   {da.details}
                 </td>
                 <td
@@ -181,11 +217,7 @@ const MainTable = ({
             className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
             type="button"
             onClick={() => {
-              setPrintingMode(true);
-              setTimeout(() => {
-                handlePrint();
-                setPrintingMode(false);
-              }, 0);
+              printTable();
             }}
           >
             Print

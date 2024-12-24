@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 @media print {
-  @page {
+  /* @page {
     margin-top: 5mm;
     margin-bottom: 5mm;
-  }
+  } */
   .no-print {
     display: none;
   }

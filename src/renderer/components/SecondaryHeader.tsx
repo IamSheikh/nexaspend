@@ -10,6 +10,7 @@ import numeral from 'numeral';
 import {
   calculateLuminance,
   formatDate,
+  formatDateWithDDMMYYYY,
   getFirstAndLastDayOfLastMonth,
   getFirstAndLastDayOfMonth,
   getRandomColor,
@@ -120,7 +121,7 @@ const SecondaryHeader = ({
 
   return (
     <div
-      className={`px-2 flex z-50 top-[5.4rem] sticky bg-white justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
+      className={`px-2 flex z-[45] top-[5.4rem] sticky bg-white justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
     >
       <button
         onClick={toggleSidebar}
@@ -293,7 +294,7 @@ const SecondaryHeader = ({
       <div className="flex flex-col ml-10">
         {/* Previous Month */}
         <div className="flex mb-1">
-          <h2 className="text-sm font-semibold text-red-500 w-[190px]">
+          <h2 className="text-sm font-semibold text-red-500 w-[200px]">
             {new Date(
               new Date().setMonth(new Date().getMonth() - 1),
             ).toLocaleString('default', { month: 'long' })}
@@ -310,7 +311,7 @@ const SecondaryHeader = ({
 
         {/* Current Month */}
         <div className="flex mb-1">
-          <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
+          <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
             {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
             {new Date().getFullYear()}:
           </h2>
@@ -326,7 +327,7 @@ const SecondaryHeader = ({
         {/* Today */}
         {searchData.startDate === '' || searchData.endDate === '' ? (
           <div className="flex">
-            <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
+            <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
               Today:{' '}
             </h2>
             <p className="ml-3 text-left w-[100px]">
@@ -345,7 +346,8 @@ const SecondaryHeader = ({
         {searchData.startDate !== '' && searchData.endDate !== '' && (
           <div className="flex">
             <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
-              {searchData.startDate} to {searchData.endDate}:
+              {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
+              {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
             </h2>
             <p className="ml-5 text-left w-[100px]">
               {numeral(

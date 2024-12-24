@@ -59,7 +59,8 @@ const Sidebar = ({
       className={`fixed inset-y-0 left-0 z-50 bg-gray-200 w-64 transform ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } transition-transform duration-300 ease-in-out ${printingMode && 'w-screen'}`}
-      style={{ zIndex: 50000000 }}
+      ref={ref}
+      // style={{ zIndex: 50000000 }}
     >
       <div
         className={`flex items-center justify-between px-4 py-4 ${printingMode && 'hidden'}`}
@@ -81,6 +82,15 @@ const Sidebar = ({
           ? `${new Date().toLocaleDateString('default', { month: 'long' })}, 
             ${new Date().getFullYear()}`
           : `${searchData.startDate} to ${searchData.endDate}`}
+      </h2>
+      <h2 className={`${!printingMode && 'hidden'} text-center mt-4`}>
+        Total Category Expenses:{' '}
+        {numeral(
+          currentMonthExpenses.reduce(
+            (total: any, item: any) => total + item.amount,
+            0,
+          ),
+        ).format('0,0')}
       </h2>
       <div className="flex flex-col px-4 py-2">
         <table className="min-w-full divide-y divide-gray-700">

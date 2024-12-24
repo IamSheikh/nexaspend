@@ -172,7 +172,7 @@ const UpdateDaybook = ({
           <div className="flex justify-end mt-4">
             <button
               type="button"
-              className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mr-3"
+              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
               onClick={() => {
                 setIsUpdateDaybook(false);
                 setSelectedDaybook(undefined);
@@ -184,7 +184,7 @@ const UpdateDaybook = ({
               type="submit"
               className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              Edit
+              {isInputDisabled ? 'Edit' : 'Save'}
             </button>
           </div>
 

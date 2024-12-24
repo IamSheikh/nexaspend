@@ -325,7 +325,9 @@ const SecondaryHeader = ({
         </div>
 
         {/* Today */}
-        {searchData.startDate === '' || searchData.endDate === '' ? (
+        {searchData.startDate === '' &&
+        searchData.endDate === '' &&
+        searchData.categoryId === 'ALL' ? (
           <div className="flex">
             <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
               Today:{' '}
@@ -342,14 +344,18 @@ const SecondaryHeader = ({
           ''
         )}
 
-        {/* Custom Date Range */}
-        {searchData.startDate !== '' && searchData.endDate !== '' && (
+        {searchData.startDate === '' ||
+        (searchData.endDate === '' && searchData.categoryId !== 'ALL') ? (
           <div className="flex">
-            <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
-              {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
-              {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
+            <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+              {
+                expenseCategories?.find(
+                  (category) => category.id === searchData.categoryId,
+                )?.name
+              }
+              :{' '}
             </h2>
-            <p className="ml-5 text-left w-[100px]">
+            <p className="ml-3 text-left w-[100px]">
               {numeral(
                 results
                   .filter((da: any) => da.type === 'EXPENSE')
@@ -357,7 +363,58 @@ const SecondaryHeader = ({
               ).format('0,0')}
             </p>
           </div>
+        ) : (
+          ''
         )}
+
+        {/* Custom Date Range */}
+        {searchData.startDate !== '' &&
+          searchData.endDate !== '' &&
+          searchData.categoryId === 'ALL' && (
+            <div className="flex">
+              <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
+                {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
+                {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
+              </h2>
+              <p className="ml-5 text-left w-[100px]">
+                {numeral(
+                  results
+                    .filter((da: any) => da.type === 'EXPENSE')
+                    .reduce(
+                      (total: number, item: any) => total + item.amount,
+                      0,
+                    ),
+                ).format('0,0')}
+              </p>
+            </div>
+          )}
+        {searchData.startDate !== '' &&
+          searchData.endDate !== '' &&
+          searchData.categoryId !== 'ALL' && (
+            <div className="flex">
+              <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
+                {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
+                {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
+                <br />
+                {
+                  // @ts-ignore
+                  expenseCategories?.find(
+                    (category) => category.id === searchData.categoryId,
+                  ).name
+                }
+              </h2>
+              <p className="ml-5 text-left w-[100px]">
+                {numeral(
+                  results
+                    .filter((da: any) => da.type === 'EXPENSE')
+                    .reduce(
+                      (total: number, item: any) => total + item.amount,
+                      0,
+                    ),
+                ).format('0,0')}
+              </p>
+            </div>
+          )}
       </div>
     </div>
   );

@@ -8,7 +8,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { toast } from 'react-toastify';
-import { ICategory, IDaybook } from '../../types';
+import { IAccount, ICategory, IDaybook } from '../../types';
 
 const UpdateDaybook = ({
   selectedDaybook,
@@ -25,13 +25,22 @@ const UpdateDaybook = ({
 }) => {
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
+  const [accounts, setAccounts] = useState<IAccount[]>([]);
   const [isInputDisabled, setIsInputDisabled] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const allAccounts =
+        (await window.electron.getAllAccounts()) as IAccount[];
+      setAccounts(allAccounts);
+    })();
+  }, []);
 
   useEffect(() => {
     (async () => {
       const allCategories = (await window.electron.getAllCategories(
         // @ts-ignore
-        +localStorage.getItem('currentAccountId'),
+        selectedDaybook.accountId,
       )) as ICategory[];
       const filteredIncomeCategories = allCategories.filter(
         (category) => category.type === 'INCOME',
@@ -41,14 +50,23 @@ const UpdateDaybook = ({
       );
       setIncomeCategories(filteredIncomeCategories);
       setExpenseCategories(filteredExpenseCategories);
+
+      const clone = { ...selectedDaybook };
+      clone.categoryId = filteredExpenseCategories[0].id;
+      setSelectedDaybook(clone);
     })();
-  }, []);
+  }, [selectedDaybook.accountId]);
+
+  useEffect(() => {
+    console.log(selectedDaybook.categoryId);
+  }, [selectedDaybook.categoryId]);
 
   const handleUpdateDaybook = async (e: FormEvent) => {
     e.preventDefault();
     if (isInputDisabled) {
       setIsInputDisabled((prev) => !prev);
     } else {
+      console.log(selectedDaybook);
       await window.electron.updateDaybook(selectedDaybook as IDaybook);
       toast('Transaction Updated Successfully', {
         type: 'success',
@@ -144,6 +162,33 @@ const UpdateDaybook = ({
                       {cate.name}
                     </option>
                   ))}
+            </select>
+          </div>
+
+          <div className="flex items-center space-x-2 mb-4">
+            <label
+              htmlFor="category"
+              className="text-sm font-medium text-gray-700 w-1/3"
+            >
+              Account:
+            </label>
+            <select
+              id="category"
+              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
+              required
+              disabled={isInputDisabled}
+              value={selectedDaybook.accountId}
+              onChange={(e) => {
+                const clone = { ...selectedDaybook };
+                clone.accountId = +e.target.value;
+                setSelectedDaybook(clone);
+              }}
+            >
+              {accounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.name}
+                </option>
+              ))}
             </select>
           </div>
 

@@ -117,7 +117,7 @@ const getDaybookByFilters = async (
 
 const updateDaybook = async (daybook: IDaybook) => {
   const db = connect();
-  const query = `UPDATE Daybook SET date = ?, amount = ?, categoryId = ?, details = ?, type = ? WHERE id = ?`;
+  const query = `UPDATE Daybook SET date = ?, amount = ?, categoryId = ?, details = ?, type = ?, accountId = ? WHERE id = ?`;
 
   db.run(
     query,
@@ -127,6 +127,7 @@ const updateDaybook = async (daybook: IDaybook) => {
       daybook.categoryId,
       daybook.details,
       daybook.type,
+      daybook.accountId,
       daybook.id, // Make sure to include the ID for the WHERE clause
     ],
     (err: any) => {

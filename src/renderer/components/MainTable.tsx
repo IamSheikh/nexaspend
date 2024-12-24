@@ -26,6 +26,7 @@ const MainTable = ({
   totalPages,
   searchData,
   printTable,
+  currentAccountId,
 }: {
   printingMode: any;
   activeTab: any;
@@ -41,6 +42,7 @@ const MainTable = ({
   currentPage: any;
   totalPages: any;
   searchData: any;
+  currentAccountId: any;
 }) => {
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
@@ -48,6 +50,7 @@ const MainTable = ({
 
   useEffect(() => {
     (async () => {
+      console.log(localStorage.getItem('currentAccountId'));
       const categories = (await window.electron.getAllCategories(
         // @ts-ignore
         +localStorage.getItem('currentAccountId'),
@@ -62,7 +65,7 @@ const MainTable = ({
       setExpenseCategories(filteredExpenseCategories);
       setIncomeCategories(filteredIncomeCategories);
     })();
-  }, []);
+  }, [currentAccountId]);
 
   return (
     <div

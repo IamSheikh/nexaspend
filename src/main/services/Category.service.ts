@@ -51,13 +51,17 @@ const getCategoriesByFilters = async (entryType: string, accountId: number) => {
 
 const updateCategory = async (category: ICategory) => {
   const db = connect();
-  const query = `UPDATE Category SET name = ? WHERE id = ?`;
-  db.run(query, [category.name, category.id], (err: any) => {
-    if (err) {
-      return console.error(err.message);
-    }
-    console.log('Category updated successfully Clown 🤡');
-  });
+  const query = `UPDATE Category SET name = ?, accountId = ? WHERE id = ?`;
+  db.run(
+    query,
+    [category.name, category.accountId, category.id],
+    (err: any) => {
+      if (err) {
+        return console.error(err.message);
+      }
+      console.log('Category updated successfully Clown 🤡');
+    },
+  );
 };
 
 const deleteCategory = async (id: number) => {

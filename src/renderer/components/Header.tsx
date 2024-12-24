@@ -46,7 +46,6 @@ const Header = ({
           // @ts-ignore
           currentAccountId,
       );
-      console.log(currentAccountId);
       setCurrentAccount(account);
     })();
   }, [refreshState]);

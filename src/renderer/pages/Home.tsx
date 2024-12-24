@@ -65,9 +65,7 @@ const Home = ({
   const [isDeleteTransactionModalOpen, setIsDeleteTransactionModalOpen] =
     useState(false);
   const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
-  const [currentMonthExpenses, setCurrentMonthExpenses] = useState<IDaybook[]>(
-    [],
-  );
+  const [, setCurrentMonthExpenses] = useState<IDaybook[]>([]);
   const [isViewCategoryShowing, setIsViewingCategoryShowing] = useState(false);
   const [printingMode, setPrintingMode] = useState(false);
   const [currentAccountId, setCurrentAccountId] = useState(
@@ -129,10 +127,10 @@ const Home = ({
     );
     setCurrentMonthExpenses(findD);
 
-    // setCurrentAccountId(
-    //   // @ts-ignore
-    //   +localStorage.getItem('currentAccountId'),
-    // );
+    setCurrentAccountId(
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
+    );
     // console.log(+localStorage.getItem('currentAccountId'));
   };
 
@@ -243,7 +241,7 @@ const Home = ({
 
       <div ref={sideBarRef}>
         <Sidebar
-          currentMonthExpenses={currentMonthExpenses}
+          currentMonthExpenses={results}
           isOpen={isOpen}
           searchData={searchData}
           setIsOpen={setIsOpen}
@@ -334,6 +332,7 @@ const Home = ({
         tableRef={tableRef}
         totalPages={totalPages}
         searchData={searchData}
+        currentAccountId={currentAccountId}
       />
 
       {/* Update Daybook Model */}

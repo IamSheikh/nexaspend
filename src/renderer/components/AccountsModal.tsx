@@ -29,6 +29,7 @@ const AccountsModal = ({
   }, [refresh]);
 
   const handleClick = (accountId: number) => {
+    localStorage.removeItem('currentAccountId');
     localStorage.setItem('currentAccountId', `${accountId}`);
     setCurrentAccountId(accountId);
     setAccountModalOpen((prev: any) => !prev);

@@ -14,7 +14,13 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { connect, loadModels } from './services/Database.service';
+import {
+  addColumnIfNotExists,
+  connect,
+  loadModels,
+  updateAccountIdOfCategory,
+  updateAccountIdOfDaybook,
+} from './services/Database.service';
 import IDaybook from '../types/IDaybook';
 import {
   addDaybook,
@@ -53,6 +59,14 @@ ipcMain.on('ipc-example', async (event, arg) => {
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
 });
+
+// Migration
+
+addColumnIfNotExists('Daybook', 'accountId');
+addColumnIfNotExists('Category', 'accountId');
+
+updateAccountIdOfDaybook();
+updateAccountIdOfCategory();
 
 // Daybook
 

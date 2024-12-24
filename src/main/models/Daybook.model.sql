@@ -1,2 +1,2 @@
 CREATE TABLE IF NOT EXISTS Daybook (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, date DATE, amount INTEGER, categoryId INTEGER, details TEXT, type TEXT)
+    id INTEGER PRIMARY KEY AUTOINCREMENT, date DATE, amount INTEGER, categoryId INTEGER, details TEXT, type TEXT, accountId INTEGER)

@@ -6,6 +6,9 @@
 /* eslint-disable react/function-component-definition */
 /* eslint-disable no-undef */
 
+import { useEffect, useState } from 'react';
+import { IAccount } from '../../types';
+
 const Header = ({
   printingMode,
   setActiveTab,
@@ -14,7 +17,10 @@ const Header = ({
   setSearchData,
   setBackgroundColor,
   setTextColor,
+  setAccountModalOpen,
   setIsModalOpen,
+  currentAccountId,
+  refreshState,
 }: {
   printingMode: any;
   setActiveTab: any;
@@ -24,7 +30,27 @@ const Header = ({
   setBackgroundColor: any;
   setTextColor: any;
   setIsModalOpen: any;
+  setAccountModalOpen: any;
+  currentAccountId: any;
+  refreshState: any;
 }) => {
+  const [currentAccount, setCurrentAccount] = useState<IAccount>();
+
+  useEffect(() => {
+    (async () => {
+      const allAccounts =
+        (await window.electron.getAllAccounts()) as IAccount[];
+      const account = allAccounts.find(
+        (acc) =>
+          acc.id ===
+          // @ts-ignore
+          currentAccountId,
+      );
+      console.log(currentAccountId);
+      setCurrentAccount(account);
+    })();
+  }, [refreshState]);
+
   return (
     <div
       className={`flex justify-between mt-2 mb-2 p-2 top-0 sticky z-50 bg-white ${printingMode && 'hidden'}`}
@@ -56,6 +82,15 @@ const Header = ({
           <span className="text-yellow-300">d</span> */}
       </h1>
       <div>
+        <button
+          className="bg-white  text-black font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"
+          type="button"
+          onClick={() => {
+            setAccountModalOpen((prev: any) => !prev);
+          }}
+        >
+          {currentAccount?.name}
+        </button>
         <button
           className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"
           type="button"

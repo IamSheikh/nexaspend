@@ -48,8 +48,10 @@ const MainTable = ({
 
   useEffect(() => {
     (async () => {
-      const categories =
-        (await window.electron.getAllCategories()) as ICategory[];
+      const categories = (await window.electron.getAllCategories(
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      )) as ICategory[];
       const filteredExpenseCategories = categories.filter(
         (category) => category.type === 'EXPENSE',
       );

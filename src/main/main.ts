@@ -32,6 +32,8 @@ import {
   getCategoriesByFilters,
   updateCategory,
 } from './services/Category.service';
+import { IAccount } from '../types';
+import { addAccount, getAllAccounts } from './services/Account.service';
 
 class AppUpdater {
   constructor() {
@@ -52,23 +54,26 @@ ipcMain.on('ipc-example', async (event, arg) => {
   event.reply('ipc-example', msgTemplate('pong'));
 });
 
-// Dayboo
+// Daybook
 
 ipcMain.handle('addDaybook', async (_, daybook: IDaybook) => {
   await addDaybook(daybook);
 });
 
-ipcMain.handle('getAllDaybook', async () => {
-  return getAllDaybook();
+ipcMain.handle('getAllDaybook', async (_, accountId: number) => {
+  return getAllDaybook(accountId);
 });
 
-ipcMain.handle('getLastTenDaybook', () => {
-  return getLastTenDaybook();
+ipcMain.handle('getLastTenDaybook', (_, accountId: number) => {
+  return getLastTenDaybook(accountId);
 });
 
-ipcMain.handle('getDaybookByFilters', (_, dateRange, entryType, categoryId) => {
-  return getDaybookByFilters(dateRange, entryType, categoryId);
-});
+ipcMain.handle(
+  'getDaybookByFilters',
+  (_, dateRange, entryType, categoryId, accountId) => {
+    return getDaybookByFilters(dateRange, entryType, categoryId, accountId);
+  },
+);
 
 ipcMain.handle('updateDaybook', (_, daybook: IDaybook) => {
   updateDaybook(daybook);
@@ -84,13 +89,16 @@ ipcMain.handle('addCategory', async (_, category: ICategory) => {
   await addCategory(category);
 });
 
-ipcMain.handle('getAllCategories', () => {
-  return getAllCategories();
+ipcMain.handle('getAllCategories', (_, accountId: number) => {
+  return getAllCategories(accountId);
 });
 
-ipcMain.handle('getCategoriesByFilters', (_, entryType: string) => {
-  return getCategoriesByFilters(entryType);
-});
+ipcMain.handle(
+  'getCategoriesByFilters',
+  (_, entryType: string, accountId: number) => {
+    return getCategoriesByFilters(entryType, accountId);
+  },
+);
 
 ipcMain.handle('updateCategory', (_, category: ICategory) => {
   updateCategory(category);
@@ -98,6 +106,16 @@ ipcMain.handle('updateCategory', (_, category: ICategory) => {
 
 ipcMain.handle('deleteCategory', (_, id: number) => {
   deleteCategory(id);
+});
+
+// Account
+
+ipcMain.handle('addAccount', (_, account: IAccount) => {
+  addAccount(account);
+});
+
+ipcMain.handle('getAllAccounts', () => {
+  return getAllAccounts();
 });
 
 /*

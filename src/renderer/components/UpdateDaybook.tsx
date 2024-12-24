@@ -29,8 +29,10 @@ const UpdateDaybook = ({
 
   useEffect(() => {
     (async () => {
-      const allCategories =
-        (await window.electron.getAllCategories()) as ICategory[];
+      const allCategories = (await window.electron.getAllCategories(
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      )) as ICategory[];
       const filteredIncomeCategories = allCategories.filter(
         (category) => category.type === 'INCOME',
       );

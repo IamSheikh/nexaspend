@@ -34,15 +34,22 @@ import EditCategoryModal from '../components/EditCategoryModal';
 import ViewCategories from '../components/ViewCategories';
 import SecondaryHeader from '../components/SecondaryHeader';
 import MainTable from '../components/MainTable';
+import AccountsModal from '../components/AccountsModal';
 
-const Home = () => {
+const Home = ({
+  refreshState,
+  setRefreshState,
+}: {
+  refreshState: any;
+  setRefreshState: any;
+}) => {
   const tableRef = useRef(null);
   const sideBarRef = useRef(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [accountsModalOpen, setAccountsModalOpen] = useState(false);
   const [results, setResults] = useState<IDaybook[]>([]);
-  const [refreshState, setRefreshState] = useState(false);
+  // const [refreshState, setRefreshState] = useState(false);
   const [searchData, setSearchData] = useState({
     startDate: '',
     endDate: '',
@@ -63,6 +70,10 @@ const Home = () => {
   );
   const [isViewCategoryShowing, setIsViewingCategoryShowing] = useState(false);
   const [printingMode, setPrintingMode] = useState(false);
+  const [currentAccountId, setCurrentAccountId] = useState(
+    // @ts-ignore
+    +localStorage.getItem('currentAccountId'),
+  );
 
   const [isOpen, setIsOpen] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState('white');
@@ -104,6 +115,8 @@ const Home = () => {
       [firstDay, lastDay],
       'ALL',
       'ALL',
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
     );
     setResults(lastTenDaybook);
 
@@ -111,8 +124,16 @@ const Home = () => {
       [firstDay, lastDay],
       'ALL',
       'ALL',
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
     );
     setCurrentMonthExpenses(findD);
+
+    // setCurrentAccountId(
+    //   // @ts-ignore
+    //   +localStorage.getItem('currentAccountId'),
+    // );
+    // console.log(+localStorage.getItem('currentAccountId'));
   };
 
   useEffect(() => {
@@ -215,6 +236,9 @@ const Home = () => {
         setRefreshState={setRefreshState}
         setSearchData={setSearchData}
         setTextColor={setTextColor}
+        setAccountModalOpen={setAccountsModalOpen}
+        currentAccountId={currentAccountId}
+        refreshState={refreshState}
       />
 
       <div ref={sideBarRef}>
@@ -260,6 +284,14 @@ const Home = () => {
         theme="colored"
         transition={Bounce}
       />
+
+      {accountsModalOpen && (
+        <AccountsModal
+          setAccountModalOpen={setAccountsModalOpen}
+          setCurrentAccountId={setCurrentAccountId}
+          setRefreshState={setRefreshState}
+        />
+      )}
 
       {/* Tab: Transaction */}
       <SecondaryHeader

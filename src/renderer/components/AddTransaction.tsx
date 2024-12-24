@@ -1,3 +1,4 @@
+/* eslint-disable no-unsafe-optional-chaining */
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/label-has-associated-control */
@@ -32,14 +33,18 @@ const AddTransaction = ({
     date: formatDate(formattedDate),
     details: '',
     type: 'EXPENSE',
+    // @ts-ignore
+    accountId: +localStorage?.getItem('currentAccountId') as unknown as number,
   });
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   const getData = async () => {
-    const allCategories =
-      (await window.electron.getAllCategories()) as ICategory[];
+    const allCategories = (await window.electron.getAllCategories(
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
+    )) as ICategory[];
 
     const filteredExpenseCategories = allCategories.filter(
       (category) => category.type === 'EXPENSE',
@@ -80,6 +85,8 @@ const AddTransaction = ({
       type: 'EXPENSE',
       categoryId: 1,
       details: '',
+      // @ts-ignore
+      accountId: +localStorage.getItem('currentAccountId'),
     });
     setActiveTab('Transaction');
     setRefreshState((prev: any) => !prev);

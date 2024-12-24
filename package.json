@@ -1,5 +1,5 @@
 {
-  "name": "nexaspend",
+  "name": "aqasa",
   "description": "A futuristic expense tracker",
   "keywords": [
     "electron",
@@ -188,7 +188,7 @@
   },
   "build": {
     "productName": "AQASA",
-    "appId": "org.erb.nexaspend",
+    "appId": "org.erb.AQASA",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [

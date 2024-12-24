@@ -63,8 +63,10 @@ const SecondaryHeader = ({
 
   useEffect(() => {
     (async () => {
-      const categories =
-        (await window.electron.getAllCategories()) as ICategory[];
+      const categories = (await window.electron.getAllCategories(
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      )) as ICategory[];
       const filteredExpenseCategories = categories.filter(
         (category) => category.type === 'EXPENSE',
       );
@@ -81,6 +83,8 @@ const SecondaryHeader = ({
         [previousMonthFirstDay, previousMonthLastDay],
         'ALL',
         'ALL',
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
       );
       setPreviousMonthResults(previous);
 
@@ -90,6 +94,8 @@ const SecondaryHeader = ({
         [monthFirstDay, monthLastDay],
         'ALL',
         'ALL',
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
       );
       setCurrentMonthResults(current);
 
@@ -97,6 +103,8 @@ const SecondaryHeader = ({
         [formatDate(new Date()), formatDate(new Date())],
         'EXPENSE',
         'ALL',
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
       );
       setTodayExpenses(todayExpense);
     })();
@@ -113,6 +121,8 @@ const SecondaryHeader = ({
           ],
       searchData.entryType,
       searchData.categoryId,
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
     );
 
     setResults(filteredResults);
@@ -344,8 +354,9 @@ const SecondaryHeader = ({
           ''
         )}
 
-        {searchData.startDate === '' ||
-        (searchData.endDate === '' && searchData.categoryId !== 'ALL') ? (
+        {searchData.startDate === '' &&
+        searchData.endDate === '' &&
+        searchData.categoryId !== 'ALL' ? (
           <div className="flex">
             <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
               {

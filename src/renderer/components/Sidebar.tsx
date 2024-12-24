@@ -41,8 +41,10 @@ const Sidebar = ({
 
   useEffect(() => {
     (async () => {
-      const allCategories =
-        (await window.electron.getAllCategories()) as ICategory[];
+      const allCategories = (await window.electron.getAllCategories(
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      )) as ICategory[];
       const filteredCategories = allCategories.filter(
         (category: any) => category.type === 'EXPENSE',
       );
@@ -60,7 +62,6 @@ const Sidebar = ({
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } transition-transform duration-300 ease-in-out ${printingMode && 'w-screen'}`}
       ref={ref}
-      // style={{ zIndex: 50000000 }}
     >
       <div
         className={`flex items-center justify-between px-4 py-4 ${printingMode && 'hidden'}`}
@@ -128,6 +129,8 @@ const Sidebar = ({
                             ],
                         searchData.entryType,
                         clone.categoryId,
+                        // @ts-ignore
+                        +localStorage.getItem('currentAccountId'),
                       );
                     setResults(filteredResults);
                     setIsOpen(false);

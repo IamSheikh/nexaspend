@@ -1,13 +1,13 @@
 /* eslint-disable prettier/prettier */
 import fs from 'fs';
 import path from 'path';
-import { app } from 'electron';
+// import { app } from 'electron';
 import sqlite3 from 'sqlite3';
 
 const connect = () => {
   const databaseName = 'database.db';
-  // const sqlPathProd = path.join('./release', 'app', databaseName);
-  const sqlPathProd = path.join(app.getPath('userData'), databaseName);
+  const sqlPathProd = path.join('./release', 'app', databaseName);
+  // const sqlPathProd = path.join(app.getPath('userData'), databaseName);
   return new sqlite3.Database(sqlPathProd, (err) => {
     if (err) throw err;
     else console.log('Database connected successfully clown 🤡');
@@ -34,9 +34,18 @@ const loadModels = () => {
     )
     .toString();
 
+  const accountModel = fs
+    .readFileSync(
+      !isDebug
+        ? path.join(process.resourcesPath, 'models', 'Account.model.sql')
+        : './src/main/models/Account.model.sql',
+    )
+    .toString();
+
   db.serialize(() => {
     db.run(daybookModel);
     db.run(categoryModel);
+    db.run(accountModel);
   });
 };
 

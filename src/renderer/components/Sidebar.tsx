@@ -84,7 +84,7 @@ const Sidebar = ({
           : `${searchData.startDate} to ${searchData.endDate}`}
       </h2>
       <h2 className={`${!printingMode && 'hidden'} text-center mt-4`}>
-        Total Category Expenses:{' '}
+        Total Category Expenses: Rs.{' '}
         {numeral(
           currentMonthExpenses.reduce(
             (total: any, item: any) => total + item.amount,

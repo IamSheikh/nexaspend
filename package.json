@@ -188,7 +188,7 @@
   },
   "build": {
     "productName": "AQASA",
-    "appId": "org.erb.AQASA",
+    "appId": "org.erb.nexaspend",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [

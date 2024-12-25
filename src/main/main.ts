@@ -20,6 +20,7 @@ import {
   loadModels,
   updateAccountIdOfCategory,
   updateAccountIdOfDaybook,
+  updatePinOfAccount,
 } from './services/Database.service';
 import IDaybook from '../types/IDaybook';
 import {
@@ -64,9 +65,12 @@ ipcMain.on('ipc-example', async (event, arg) => {
 
 addColumnIfNotExists('Daybook', 'accountId');
 addColumnIfNotExists('Category', 'accountId');
+addColumnIfNotExists('Account', 'pin');
 
+// Merry Christmas
 updateAccountIdOfDaybook();
 updateAccountIdOfCategory();
+updatePinOfAccount();
 
 // Daybook
 

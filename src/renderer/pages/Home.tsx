@@ -35,6 +35,7 @@ import ViewCategories from '../components/ViewCategories';
 import SecondaryHeader from '../components/SecondaryHeader';
 import MainTable from '../components/MainTable';
 import AccountsModal from '../components/AccountsModal';
+import LoginAccount from '../components/LoginAccount';
 
 const Home = ({
   refreshState,
@@ -48,6 +49,7 @@ const Home = ({
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [accountsModalOpen, setAccountsModalOpen] = useState(false);
+  const [loginModal, setLoginModal] = useState(false);
   const [results, setResults] = useState<IDaybook[]>([]);
   // const [refreshState, setRefreshState] = useState(false);
   const [searchData, setSearchData] = useState({
@@ -250,6 +252,8 @@ const Home = ({
           toggleSidebar={toggleSidebar}
           setBackgroundColor={setBackgroundColor}
           setTextColor={setTextColor}
+          currentAccountId={currentAccountId}
+          refreshState={refreshState}
         />
       </div>
 
@@ -288,6 +292,7 @@ const Home = ({
           setAccountModalOpen={setAccountsModalOpen}
           setCurrentAccountId={setCurrentAccountId}
           setRefreshState={setRefreshState}
+          setLoginModal={setLoginModal}
         />
       )}
 
@@ -381,6 +386,16 @@ const Home = ({
           setIsEditCategoryModalOpen={setIsEditCategoryModalOpen}
           setRefreshState={setRefreshState}
           setSelectedCategory={setSelectedCategory}
+        />
+      )}
+
+      {loginModal && (
+        <LoginAccount
+          selectedAccount={currentAccountId}
+          setLoginModal={setLoginModal}
+          setRefreshState={setRefreshState}
+          setAccountModal={setAccountsModalOpen}
+          setCurrentAccountId={setCurrentAccountId}
         />
       )}
     </div>

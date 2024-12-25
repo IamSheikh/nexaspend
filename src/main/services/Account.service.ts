@@ -7,9 +7,9 @@ import { IAccount } from '../../types';
 
 const addAccount = async (account: IAccount) => {
   const db = connect();
-  const query = `INSERT INTO Account (name) VALUES (?)`;
+  const query = `INSERT INTO Account (name, pin) VALUES (?, ?)`;
 
-  db.run(query, [account.name], (err: any) => {
+  db.run(query, [account.name, account.pin], (err: any) => {
     if (err) {
       return console.log(err.message);
     }

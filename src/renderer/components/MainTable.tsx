@@ -53,7 +53,7 @@ const MainTable = ({
       console.log(localStorage.getItem('currentAccountId'));
       const categories = (await window.electron.getAllCategories(
         // @ts-ignore
-        +localStorage.getItem('currentAccountId'),
+        currentAccountId,
       )) as ICategory[];
       const filteredExpenseCategories = categories.filter(
         (category) => category.type === 'EXPENSE',

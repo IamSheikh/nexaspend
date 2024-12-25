@@ -24,6 +24,8 @@ const Sidebar = ({
   setResults,
   setBackgroundColor,
   setTextColor,
+  currentAccountId,
+  refreshState,
 }: {
   toggleSidebar: any;
   isOpen: any;
@@ -34,6 +36,8 @@ const Sidebar = ({
   setResults: any;
   setBackgroundColor: any;
   setTextColor: any;
+  currentAccountId: any;
+  refreshState: any;
 }) => {
   const ref = useRef<any>(null);
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
@@ -42,15 +46,14 @@ const Sidebar = ({
   useEffect(() => {
     (async () => {
       const allCategories = (await window.electron.getAllCategories(
-        // @ts-ignore
-        +localStorage.getItem('currentAccountId'),
+        currentAccountId,
       )) as ICategory[];
       const filteredCategories = allCategories.filter(
         (category: any) => category.type === 'EXPENSE',
       );
       setExpenseCategories(filteredCategories);
     })();
-  }, []);
+  }, [refreshState]);
 
   const handlePrint = useReactToPrint({
     contentRef: ref,

@@ -1,42 +1,45 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable react/require-default-props */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable react/function-component-definition */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { useState, FormEvent } from 'react';
-import { toast } from 'react-toastify';
-import IAccount from '../../types/IAccount';
+import { FormEvent, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { IAccount } from '../../types';
 
-const CreateNewAccountModal = ({
-  setIsModalOpen,
+const LoginAccount = ({
+  selectedAccount,
   setRefreshState,
+  setLoginModal,
+  setAccountModal,
+  setCurrentAccountId,
 }: {
-  setIsModalOpen: any;
+  selectedAccount: any;
   setRefreshState: any;
+  setLoginModal: any;
+  setAccountModal?: any;
+  setCurrentAccountId?: any;
 }) => {
-  const [accountInputData, setAccountInputData] = useState<IAccount>({
-    name: '',
-    pin: '',
-  });
   const [pin, setPin] = useState(['', '', '', '']);
+  const [error, setError] = useState('');
+  const [account, setAccount] = useState<IAccount>();
+  const navigate = useNavigate();
 
-  const handleModalSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    const fullPin = pin.join('');
-    await window.electron.addAccount({
-      name: accountInputData.name,
-      pin: fullPin,
-    });
-    toast('New Account Successfully Added', {
-      type: 'success',
-    });
-    setIsModalOpen(false);
-    setAccountInputData({
-      name: '',
-      pin: '',
-    });
-    setRefreshState((prev: any) => !prev);
-  };
+  useEffect(() => {
+    (async () => {
+      console.log(selectedAccount);
+      const allAccounts =
+        (await window.electron.getAllAccounts()) as IAccount[];
+      const currentAccount = allAccounts.find(
+        (acc) => acc.id === +selectedAccount,
+      );
+      console.log(currentAccount);
+      setAccount(currentAccount);
+    })();
+  }, [selectedAccount]);
+
   const handleInputChange = (value: any, index: any) => {
     if (/^\d?$/.test(value)) {
       const updatedPin = [...pin];
@@ -57,35 +60,30 @@ const CreateNewAccountModal = ({
     }
   };
 
+  const handleLogin = (e: FormEvent) => {
+    e.preventDefault();
+    const fullPin = pin.join('');
+    if (fullPin !== account?.pin) {
+      setError('Incorrect Pin');
+    } else {
+      setError('');
+      setPin(['', '', '', '']);
+      localStorage.removeItem('currentAccountId');
+      localStorage.setItem('currentAccountId', `${account.id}`);
+      navigate('/home');
+      setRefreshState((prev: any) => !prev);
+      setLoginModal(false);
+      if (setAccountModal) {
+        setAccountModal((prev: any) => !prev);
+      }
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-transform duration-500 ease-in-out">
       <div className="bg-white p-6 rounded-lg shadow-lg w-5/12 transform transition-transform duration-500 ease-in-out">
-        <h2 className="text-xl font-semibold mb-4">Create New Account</h2>
-
-        {/* Modal Form */}
-        <form onSubmit={handleModalSubmit}>
-          {/* Name */}
-          <div className="flex items-center space-x-2 mt-4 w-full">
-            <label
-              htmlFor="accountName"
-              className="text-sm font-medium text-gray-700 w-1/3"
-            >
-              Name:
-            </label>
-            <input
-              id="accountName"
-              type="text"
-              placeholder="Name"
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-2/3 ml-2"
-              required
-              value={accountInputData.name}
-              onChange={(e) => {
-                const clone = { ...accountInputData };
-                clone.name = e.target.value;
-                setAccountInputData(clone);
-              }}
-            />
-          </div>
+        <h2 className="text-xl font-semibold">{account?.name}</h2>
+        <form onSubmit={handleLogin}>
           <div className="flex items-center space-x-2 mt-4 w-full">
             <label className="text-sm font-medium text-gray-700 w-1/3">
               PIN:
@@ -106,13 +104,19 @@ const CreateNewAccountModal = ({
               ))}
             </div>
           </div>
-
+          {error && <p className="text-red-500 text-sm">{error}</p>}{' '}
+          {/* Error message */}
           {/* Modal Buttons */}
           <div className="flex justify-end mt-4">
             <button
               type="button"
               className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mr-3"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                if (setCurrentAccountId) {
+                  // setCurrentAccountId(prev => !prev)
+                }
+                setLoginModal(false);
+              }}
             >
               Cancel
             </button>
@@ -121,7 +125,7 @@ const CreateNewAccountModal = ({
               type="submit"
               className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              Create
+              Login
             </button>
           </div>
         </form>
@@ -130,4 +134,4 @@ const CreateNewAccountModal = ({
   );
 };
 
-export default CreateNewAccountModal;
+export default LoginAccount;

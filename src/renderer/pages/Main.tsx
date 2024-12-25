@@ -1,15 +1,20 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-nested-ternary */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/function-component-definition */
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { IAccount } from '../../types';
 import CreateNewAccountModal from '../components/CreateNewAccountModal';
+import LoginAccount from '../components/LoginAccount';
 
 const Main = ({ setRefreshState }: { setRefreshState: any }) => {
   const [accounts, setAccounts] = useState<IAccount[]>([]);
+  const [loginModal, setLoginModal] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate();
+  const [selectedAccount, setSelectedAccount] = useState<number>();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -19,11 +24,15 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
     })();
   }, [refresh]);
 
-  const handleClick = (accountId: number) => {
-    localStorage.setItem('currentAccountId', `${accountId}`);
-    navigate('/home');
-    setRefreshState((prev: any) => !prev);
+  // const handleClick = (accountId: number) => {
+  //   localStorage.setItem('currentAccountId', `${accountId}`);
+  //   navigate('/home');
+  //   setRefreshState((prev: any) => !prev);
+  // };
+  const handleClick = () => {
+    setLoginModal((prev) => !prev);
   };
+
   const date = new Date('');
 
   return date.getFullYear() === 2025 &&
@@ -47,7 +56,7 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
         Tàhà Jameel
       </h1>
     </div>
-  ) : (
+  ) : localStorage.getItem('currentAccountId') === null ? (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-lg w-full">
         <h1 className="text-2xl font-semibold text-gray-800 text-center mb-6">
@@ -63,7 +72,8 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
                 key={account.id}
                 className="w-full px-4 py-3 flex items-center justify-between border rounded-lg hover:bg-gray-50 focus:ring focus:ring-indigo-200 focus:outline-none"
                 onClick={() => {
-                  handleClick(account.id as number);
+                  handleClick();
+                  setSelectedAccount(account.id);
                 }}
               >
                 <div>
@@ -94,7 +104,22 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
           setRefreshState={setRefresh}
         />
       )}
+      {loginModal && (
+        <LoginAccount
+          selectedAccount={selectedAccount}
+          setRefreshState={setRefreshState}
+          setLoginModal={setLoginModal}
+        />
+      )}
     </div>
+  ) : (
+    <LoginAccount
+      // @ts-ignore
+      // selectedAccount={+localStorage.getItem('currentAccountId')}
+      selectedAccount={3}
+      setRefreshState={setRefreshState}
+      setLoginModal={setLoginModal}
+    />
   );
 };
 

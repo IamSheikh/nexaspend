@@ -82,13 +82,13 @@ const Header = ({
       </h1>
       <div>
         <button
-          className="bg-white  text-black font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"
+          className="bg-white  text-black font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2 border-[1px] border-purple-500 border-solid"
           type="button"
           onClick={() => {
             setAccountModalOpen((prev: any) => !prev);
           }}
         >
-          {currentAccount?.name}
+          Welcome to {currentAccount?.name}
         </button>
         <button
           className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"

@@ -1,4 +1,6 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react/require-default-props */
 /* eslint-disable react/function-component-definition */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
@@ -10,10 +12,11 @@ const AccountsModal = ({
   setAccountModalOpen,
   setCurrentAccountId,
   setRefreshState,
+  setLoginModal,
 }: {
   setAccountModalOpen: any;
   setCurrentAccountId: any;
-
+  setLoginModal: any;
   setRefreshState: any;
 }) => {
   const [accounts, setAccounts] = useState<IAccount[]>([]);
@@ -29,11 +32,15 @@ const AccountsModal = ({
   }, [refresh]);
 
   const handleClick = (accountId: number) => {
-    localStorage.removeItem('currentAccountId');
-    localStorage.setItem('currentAccountId', `${accountId}`);
+    // localStorage.removeItem('currentAccountId');
+    // localStorage.setItem('currentAccountId', `${accountId}`);
+    // setCurrentAccountId(accountId);
+    // setAccountModalOpen((prev: any) => !prev);
+    // setRefreshState((prev: any) => !prev);
+    // localStorage.setItem('currentAccountId', `${accountId}`);
     setCurrentAccountId(accountId);
-    setAccountModalOpen((prev: any) => !prev);
-    setRefreshState((prev: any) => !prev);
+    // setRefreshState((prev: any) => !prev);
+    setLoginModal((prev: any) => !prev);
   };
 
   return (

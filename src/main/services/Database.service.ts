@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable prettier/prettier */
 import fs from 'fs';
-// import path from 'path';
+import path from 'path';
 import { app } from 'electron';
 import sqlite3 from 'sqlite3';
 

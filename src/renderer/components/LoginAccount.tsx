@@ -76,7 +76,7 @@ const LoginAccount = ({
       setRefreshState((prev: any) => !prev);
       setLoginModal(false);
       if (setAccountModal) {
-        setAccountModal((prev: any) => !prev);
+        setAccountModal(false);
       }
     }
   };

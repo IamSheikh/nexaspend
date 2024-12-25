@@ -237,6 +237,8 @@ const Home = ({
         setSearchData={setSearchData}
         setTextColor={setTextColor}
         setAccountModalOpen={setAccountsModalOpen}
+        setCurrentAccountId={setCurrentAccountId}
+        setLoginModal={setLoginModal}
         currentAccountId={currentAccountId}
         refreshState={refreshState}
       />
@@ -319,6 +321,7 @@ const Home = ({
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           setRefreshState={setRefreshState}
+          refreshState={refreshState}
         />
       )}
 
@@ -338,6 +341,7 @@ const Home = ({
         totalPages={totalPages}
         searchData={searchData}
         currentAccountId={currentAccountId}
+        refreshState={refreshState}
       />
 
       {/* Update Daybook Model */}

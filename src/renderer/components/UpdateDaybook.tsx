@@ -27,6 +27,7 @@ const UpdateDaybook = ({
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [accounts, setAccounts] = useState<IAccount[]>([]);
   const [isInputDisabled, setIsInputDisabled] = useState(true);
+  const originalAccount = selectedDaybook.accountId;
 
   useEffect(() => {
     (async () => {
@@ -51,9 +52,11 @@ const UpdateDaybook = ({
       setIncomeCategories(filteredIncomeCategories);
       setExpenseCategories(filteredExpenseCategories);
 
-      const clone = { ...selectedDaybook };
-      clone.categoryId = filteredExpenseCategories[0].id;
-      setSelectedDaybook(clone);
+      if (selectedDaybook.accountId !== originalAccount) {
+        const clone = { ...selectedDaybook };
+        clone.categoryId = filteredExpenseCategories[0].id;
+        setSelectedDaybook(clone);
+      }
     })();
   }, [selectedDaybook.accountId]);
 

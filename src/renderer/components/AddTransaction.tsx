@@ -15,10 +15,12 @@ const AddTransaction = ({
   activeTab,
   setActiveTab,
   setRefreshState,
+  refreshState,
 }: {
   activeTab: any;
   setActiveTab: any;
   setRefreshState: any;
+  refreshState: any;
 }) => {
   const date = new Date();
   const formattedDate = new Date(
@@ -63,7 +65,7 @@ const AddTransaction = ({
 
   useEffect(() => {
     getData();
-  }, []);
+  }, [refreshState]);
 
   const handleDateClick = () => {
     if (dateInputRef.current) {

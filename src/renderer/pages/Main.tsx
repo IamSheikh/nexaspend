@@ -25,13 +25,18 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
       if (allAccounts.length === 0) {
         localStorage.removeItem('currentAccountId');
       }
+
       setAccounts(allAccounts);
     })();
   }, [refresh]);
 
   useEffect(() => {
-    if (localStorage.getItem('currentAccountId') !== undefined) {
+    if (localStorage.getItem('currentAccountId') !== null) {
+      console.log(localStorage.getItem('currentAccountId'));
       setLoginModal(true);
+      console.log('hi');
+    } else {
+      setLoginModal(false);
     }
   }, []);
 
@@ -67,8 +72,8 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
         Tàhà Jameel
       </h1>
     </div>
-  ) : localStorage.getItem('currentAccountId') === null &&
-    localStorage.getItem('currentAccountId') !== undefined ? (
+  ) : localStorage.getItem('currentAccountId') === null ||
+    localStorage.getItem('currentAccountId') === undefined ? (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-lg w-full">
         <h1 className="text-2xl font-semibold text-gray-800 text-center mb-6">

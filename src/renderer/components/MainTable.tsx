@@ -27,6 +27,7 @@ const MainTable = ({
   searchData,
   printTable,
   currentAccountId,
+  refreshState,
 }: {
   printingMode: any;
   activeTab: any;
@@ -43,6 +44,7 @@ const MainTable = ({
   totalPages: any;
   searchData: any;
   currentAccountId: any;
+  refreshState: any;
 }) => {
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
@@ -65,7 +67,7 @@ const MainTable = ({
       setExpenseCategories(filteredExpenseCategories);
       setIncomeCategories(filteredIncomeCategories);
     })();
-  }, [currentAccountId]);
+  }, [currentAccountId, refreshState]);
 
   return (
     <div

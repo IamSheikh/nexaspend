@@ -162,13 +162,16 @@ function updatePinOfAccount() {
 
     if (exists) {
       // If the column exists, update the rows where accountId is NULL
-      db.run(`UPDATE ${tableName} SET pin = 1 WHERE pin IS NULL`, (er: any) => {
-        if (er) {
-          console.error('Error updating accountId:', err);
-        } else {
-          console.log('Successfully updated accountId where it was NULL.');
-        }
-      });
+      db.run(
+        `UPDATE ${tableName} SET pin = '1234' WHERE pin IS NULL`,
+        (er: any) => {
+          if (er) {
+            console.error('Error updating accountId:', err);
+          } else {
+            console.log('Successfully updated accountId where it was NULL.');
+          }
+        },
+      );
     } else {
       console.log(`Column ${columnName} does not exist in ${tableName}.`);
     }

@@ -15,12 +15,16 @@ const LoginAccount = ({
   setLoginModal,
   setAccountModal,
   setCurrentAccountId,
+  loginModal,
+  setIsShowingChooseAccount,
 }: {
   selectedAccount: any;
   setRefreshState: any;
   setLoginModal: any;
   setAccountModal?: any;
   setCurrentAccountId?: any;
+  loginModal?: any;
+  setIsShowingChooseAccount?: any;
 }) => {
   const [pin, setPin] = useState(['', '', '', '']);
   const [error, setError] = useState('');
@@ -29,13 +33,11 @@ const LoginAccount = ({
 
   useEffect(() => {
     (async () => {
-      console.log(selectedAccount);
       const allAccounts =
         (await window.electron.getAllAccounts()) as IAccount[];
       const currentAccount = allAccounts.find(
         (acc) => acc.id === +selectedAccount,
       );
-      console.log(currentAccount);
       setAccount(currentAccount);
     })();
   }, [selectedAccount]);
@@ -108,18 +110,22 @@ const LoginAccount = ({
           {/* Error message */}
           {/* Modal Buttons */}
           <div className="flex justify-end mt-4">
-            <button
-              type="button"
-              className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mr-3"
-              onClick={() => {
-                if (setCurrentAccountId) {
-                  // setCurrentAccountId(prev => !prev)
-                }
-                setLoginModal(false);
-              }}
-            >
-              Cancel
-            </button>
+            {loginModal ? (
+              <button
+                type="button"
+                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mr-3"
+                onClick={() => {
+                  if (setCurrentAccountId) {
+                    // setCurrentAccountId(prev => !prev)
+                  }
+                  setLoginModal(false);
+                }}
+              >
+                Cancel
+              </button>
+            ) : (
+              ''
+            )}
 
             <button
               type="submit"
@@ -128,6 +134,16 @@ const LoginAccount = ({
               Login
             </button>
           </div>
+          <button
+            type="button"
+            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 mr-3 w-full mt-5"
+            onClick={() => {
+              setLoginModal((prev: any) => !prev);
+              setIsShowingChooseAccount((prev: any) => !prev);
+            }}
+          >
+            Choose Different Account
+          </button>
         </form>
       </div>
     </div>

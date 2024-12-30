@@ -293,6 +293,8 @@ const SecondaryHeader = ({
                 categoryId: 'ALL',
                 entryType: 'ALL',
               });
+              setBackgroundColor('white');
+              setTextColor('black');
             }}
           >
             X
@@ -360,8 +362,8 @@ const SecondaryHeader = ({
           <div className="flex">
             <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
               {
-                expenseCategories?.find(
-                  (category) => category.id === searchData.categoryId,
+                allCategories?.find(
+                  (category) => category.id === +searchData.categoryId,
                 )?.name
               }
               :{' '}
@@ -409,8 +411,8 @@ const SecondaryHeader = ({
                 <br />
                 {
                   // @ts-ignore
-                  expenseCategories?.find(
-                    (category) => category.id === searchData.categoryId,
+                  allCategories?.find(
+                    (category) => category.id === +searchData.categoryId,
                   ).name
                 }
               </h2>

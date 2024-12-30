@@ -49,30 +49,7 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
     setLoginModal((prev) => !prev);
   };
 
-  const date = new Date('');
-
-  return date.getFullYear() === 2025 &&
-    date.getMonth() === 0 &&
-    date.getDate() === 1 ? (
-    <div className="mt-4 ml-4">
-      <h1>
-        <b>🎉 Happy New Year, Ladies and Gentlemen! 🎉</b>
-        <br />
-        As we step into 2025, I want to thank you for all your support over the
-        years. However, I must announce that this app will no longer work
-        starting this year. It&apos;s been an amazing journey, but every story
-        has its end. That said, if you don’t bring me a guitar this year, I
-        might just build an app to auto-send reminders to your inbox every hour.
-        😏 Let’s make 2025 a harmonious year—literally! Wishing you success,
-        joy, and better decision-making this year!
-        <br />
-        <br />
-        Warm regards,
-        <br />
-        Tàhà Jameel
-      </h1>
-    </div>
-  ) : localStorage.getItem('currentAccountId') === null ||
+  return localStorage.getItem('currentAccountId') === null ||
     localStorage.getItem('currentAccountId') === undefined ? (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-lg w-full">

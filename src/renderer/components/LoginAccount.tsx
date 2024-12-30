@@ -95,7 +95,7 @@ const LoginAccount = ({
                 <input
                   key={index}
                   id={`pin-${index}`}
-                  type="text"
+                  type="password"
                   maxLength={1}
                   required
                   value={digit}

@@ -66,6 +66,8 @@ const electronHandler = {
 
   addAccount: (account: IAccount) => ipcRenderer.invoke('addAccount', account),
   getAllAccounts: () => ipcRenderer.invoke('getAllAccounts'),
+  updateAccount: (account: IAccount) =>
+    ipcRenderer.invoke('updateAccount', account),
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

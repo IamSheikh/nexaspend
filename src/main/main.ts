@@ -40,7 +40,11 @@ import {
   updateCategory,
 } from './services/Category.service';
 import { IAccount } from '../types';
-import { addAccount, getAllAccounts } from './services/Account.service';
+import {
+  addAccount,
+  getAllAccounts,
+  updateAccount,
+} from './services/Account.service';
 
 class AppUpdater {
   constructor() {
@@ -134,6 +138,10 @@ ipcMain.handle('addAccount', (_, account: IAccount) => {
 
 ipcMain.handle('getAllAccounts', () => {
   return getAllAccounts();
+});
+
+ipcMain.handle('updateAccount', (_, account: IAccount) => {
+  updateAccount(account);
 });
 
 /*

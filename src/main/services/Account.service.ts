@@ -29,4 +29,16 @@ const getAllAccounts = async () => {
   }
 };
 
-export { addAccount, getAllAccounts };
+const updateAccount = async (account: IAccount) => {
+  const db = connect();
+  const query = `UPDATE Account SET name = ?, pin = ? WHERE id = ?`;
+
+  db.run(query, [account.name, account.pin, account.id], (err: any) => {
+    if (err) {
+      return console.log(err.message);
+    }
+    console.log('Account Updated Successfully 📅');
+  });
+};
+
+export { addAccount, getAllAccounts, updateAccount };

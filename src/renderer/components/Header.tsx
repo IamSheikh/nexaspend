@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
@@ -7,9 +9,10 @@
 /* eslint-disable react/function-component-definition */
 /* eslint-disable no-undef */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { IAccount } from '../../types';
 import CreateNewAccountModal from './CreateNewAccountModal';
+import EditAccount from './EditAccount';
 
 const Header = ({
   printingMode,
@@ -43,6 +46,15 @@ const Header = ({
   const [currentAccount, setCurrentAccount] = useState<IAccount>();
   const [accounts, setAccounts] = useState<IAccount[]>([]);
   const [isAccountModal, setIsAccountModal] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isEditAccountModalShowing, setIsEditAccountModalShowing] =
+    useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<IAccount>();
+
+  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
+  const closeDropdown = () => setIsDropdownOpen(false);
+  const dropdownRef = useRef<any>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -73,86 +85,165 @@ const Header = ({
     setLoginModal((prev: any) => !prev);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false); // Close dropdown
+      }
+    };
+
+    // Attach event listener
+    document.addEventListener('mousedown', handleClickOutside);
+
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div
-      className={`flex justify-between mt-2 mb-2 p-2 top-0 sticky z-50 bg-white ${printingMode && 'hidden'}`}
-    >
-      <h1
-        className="text-4xl font-bold cursor-pointer"
-        onClick={() => {
-          setActiveTab('Transaction');
-          setIsViewingCategoryShowing(false);
-          setRefreshState((prev: any) => !prev);
-          setSearchData({
-            startDate: '',
-            endDate: '',
-            categoryId: 'ALL',
-            entryType: 'ALL',
-          });
-          setBackgroundColor('white');
-          setTextColor('black');
-        }}
+    <>
+      <div
+        className={`flex justify-between items-center p-2 top-0 sticky z-50 bg-white ${
+          printingMode ? 'hidden' : ''
+        }`}
+        style={{ height: '64px' }} // Fixed header height to avoid layout shifting
       >
-        <span className="text-red-500">A</span>
-        <span className="text-orange-500">Q</span>
-        <span className="text-yellow-300">A</span>
-        <span className="text-green-500">S</span>
-        <span className="text-blue-500">A</span>
-        {/* <span className="text-violet-500">p</span>
-          <span className="text-red-500">e</span>
-          <span className="text-orange-500">n</span>
-          <span className="text-yellow-300">d</span> */}
-      </h1>
-      <div className="flex">
-        <div className="flex items-center">
-          <span className="text-gray-700 text-lg">Welcome to</span>
-          <select
-            className="ml-2 px-4 py-2 border rounded-lg bg-gray-200 hover:bg-gray-300 focus:ring focus:ring-indigo-200 focus:outline-none"
-            onChange={(e) => handleClick(Number(e.target.value))}
-            value={currentAccount?.id || ''}
-          >
-            {accounts.length > 0 ? (
-              accounts.map((account) => (
-                <option key={account.id} value={account.id}>
-                  {account.name}
-                </option>
-              ))
-            ) : (
-              <option value="" disabled>
-                No accounts available
-              </option>
+        {/* Logo Section */}
+        <h1
+          className="text-4xl font-bold cursor-pointer"
+          onClick={() => {
+            setActiveTab('Transaction');
+            setIsViewingCategoryShowing(false);
+            setRefreshState((prev: any) => !prev);
+            setSearchData({
+              startDate: '',
+              endDate: '',
+              categoryId: 'ALL',
+              entryType: 'ALL',
+            });
+            setBackgroundColor('white');
+            setTextColor('black');
+          }}
+        >
+          {['A', 'Q', 'A', 'S', 'A'].map((letter, index) => (
+            <span
+              key={index}
+              className={`${
+                [
+                  'text-red-500',
+                  'text-orange-500',
+                  'text-yellow-300',
+                  'text-green-500',
+                  'text-blue-500',
+                ][index]
+              }`}
+            >
+              {letter}
+            </span>
+          ))}
+        </h1>
+
+        {/* Action Buttons */}
+        <div className="flex items-center ml-3">
+          <div className="flex items-center relative mr-2">
+            {/* Text + Button Wrapper */}
+            <div className="flex items-center">
+              <span className="text-gray-700 text-lg">Welcome to</span>
+              <button
+                className="ml-2 px-4 py-2 border rounded-lg bg-white hover:bg-gray-50 focus:ring focus:ring-indigo-200 focus:outline-none"
+                type="button"
+                onClick={toggleDropdown}
+                ref={buttonRef}
+              >
+                {currentAccount?.name || 'Select Account'}
+              </button>
+            </div>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div
+                className="absolute left-0 mt-2 bg-white border rounded-lg shadow-lg z-50 w-[16.5rem]"
+                style={{
+                  top: '100%', // Position the dropdown directly below the button
+                  left: '0', // Align it to the left of the parent container
+                }}
+                ref={dropdownRef}
+              >
+                {accounts.map((account) => (
+                  <div
+                    key={account.id}
+                    className="flex items-center justify-between px-4 py-2 hover:bg-gray-100"
+                  >
+                    <span className="text-gray-700">{account.name}</span>
+                    <div className="flex space-x-2">
+                      <button
+                        className="text-indigo-500 hover:underline"
+                        onClick={() => {
+                          handleClick(account?.id as number);
+                          closeDropdown();
+                        }}
+                        type="button"
+                      >
+                        Select
+                      </button>
+                      <button
+                        className="text-gray-500 hover:text-gray-700"
+                        type="button"
+                        onClick={() => {
+                          setSelectedAccount(account);
+                          setIsEditAccountModalShowing((prev) => !prev);
+                          // alert('Edit account functionality here');
+                          closeDropdown();
+                        }}
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <div
+                  // key={account.id}
+                  className="flex items-center justify-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  onClick={() => setIsAccountModal(true)}
+                >
+                  <span>Add Account</span>
+                </div>
+              </div>
             )}
-          </select>
-        </div>
-        <div className="flex items-center">
+          </div>
           <button
-            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-3"
+            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
             type="button"
-            onClick={() => {
-              setIsModalOpen(true);
-            }}
+            onClick={() => setIsModalOpen(true)}
           >
             Category
-          </button>
-          <button
-            className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 ml-3"
-            type="button"
-            onClick={() => {
-              setIsAccountModal(true);
-            }}
-          >
-            Add Account
           </button>
         </div>
       </div>
 
+      {/* Modal for Adding New Account */}
       {isAccountModal && (
         <CreateNewAccountModal
           setIsModalOpen={setIsAccountModal}
           setRefreshState={setRefreshState}
         />
       )}
-    </div>
+
+      {isEditAccountModalShowing && (
+        <EditAccount
+          selectedAccount={selectedAccount}
+          setIsModalOpen={setIsEditAccountModalShowing}
+          setRefreshState={setRefreshState}
+          setSelectedAccount={setSelectedAccount}
+        />
+      )}
+    </>
   );
 };
 

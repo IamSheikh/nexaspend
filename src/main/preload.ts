@@ -3,6 +3,7 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import IDaybook from '../types/IDaybook';
 import ICategory from '../types/ICategory';
+import IAccount from '../types/IAccount';
 
 export type Channels = 'ipc-example';
 
@@ -28,14 +29,23 @@ const electronHandler = {
   // Daybook
 
   addDaybook: (daybook: IDaybook) => ipcRenderer.invoke('addDaybook', daybook),
-  getAllDaybook: () => ipcRenderer.invoke('getAllDaybook'),
-  getLastTenDaybook: () => ipcRenderer.invoke('getLastTenDaybook'),
+  getAllDaybook: (accountId: number) =>
+    ipcRenderer.invoke('getAllDaybook', accountId),
+  getLastTenDaybook: (accountId: number) =>
+    ipcRenderer.invoke('getLastTenDaybook', accountId),
   getDaybookByFilters: (
     dateRange: Array<string> | null,
     entryType: string,
     categoryId: string,
+    accountId: number,
   ) =>
-    ipcRenderer.invoke('getDaybookByFilters', dateRange, entryType, categoryId),
+    ipcRenderer.invoke(
+      'getDaybookByFilters',
+      dateRange,
+      entryType,
+      categoryId,
+      accountId,
+    ),
   updateDaybook: (daybook: IDaybook) =>
     ipcRenderer.invoke('updateDaybook', daybook),
   deleteDaybook: (id: number) => ipcRenderer.invoke('deleteDaybook', id),
@@ -44,12 +54,20 @@ const electronHandler = {
 
   addCategory: (category: ICategory) =>
     ipcRenderer.invoke('addCategory', category),
-  getAllCategories: () => ipcRenderer.invoke('getAllCategories'),
-  getCategoriesByFilters: (entryType: string) =>
-    ipcRenderer.invoke('getCategoriesByFilters', entryType),
+  getAllCategories: (accountId: number) =>
+    ipcRenderer.invoke('getAllCategories', accountId),
+  getCategoriesByFilters: (entryType: string, accountId: number) =>
+    ipcRenderer.invoke('getCategoriesByFilters', entryType, accountId),
   updateCategory: (category: ICategory) =>
     ipcRenderer.invoke('updateCategory', category),
   deleteCategory: (id: number) => ipcRenderer.invoke('deleteCategory', id),
+
+  // Account
+
+  addAccount: (account: IAccount) => ipcRenderer.invoke('addAccount', account),
+  getAllAccounts: () => ipcRenderer.invoke('getAllAccounts'),
+  updateAccount: (account: IAccount) =>
+    ipcRenderer.invoke('updateAccount', account),
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

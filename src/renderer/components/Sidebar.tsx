@@ -24,6 +24,8 @@ const Sidebar = ({
   setResults,
   setBackgroundColor,
   setTextColor,
+  currentAccountId,
+  refreshState,
 }: {
   toggleSidebar: any;
   isOpen: any;
@@ -34,6 +36,8 @@ const Sidebar = ({
   setResults: any;
   setBackgroundColor: any;
   setTextColor: any;
+  currentAccountId: any;
+  refreshState: any;
 }) => {
   const ref = useRef<any>(null);
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
@@ -41,14 +45,15 @@ const Sidebar = ({
 
   useEffect(() => {
     (async () => {
-      const allCategories =
-        (await window.electron.getAllCategories()) as ICategory[];
+      const allCategories = (await window.electron.getAllCategories(
+        currentAccountId,
+      )) as ICategory[];
       const filteredCategories = allCategories.filter(
         (category: any) => category.type === 'EXPENSE',
       );
       setExpenseCategories(filteredCategories);
     })();
-  }, []);
+  }, [refreshState]);
 
   const handlePrint = useReactToPrint({
     contentRef: ref,
@@ -81,6 +86,15 @@ const Sidebar = ({
           ? `${new Date().toLocaleDateString('default', { month: 'long' })}, 
             ${new Date().getFullYear()}`
           : `${searchData.startDate} to ${searchData.endDate}`}
+      </h2>
+      <h2 className={`${!printingMode && 'hidden'} text-center mt-4`}>
+        Total Category Expenses: Rs.{' '}
+        {numeral(
+          currentMonthExpenses.reduce(
+            (total: any, item: any) => total + item.amount,
+            0,
+          ),
+        ).format('0,0')}
       </h2>
       <div className="flex flex-col px-4 py-2">
         <table className="min-w-full divide-y divide-gray-700">
@@ -118,6 +132,8 @@ const Sidebar = ({
                             ],
                         searchData.entryType,
                         clone.categoryId,
+                        // @ts-ignore
+                        +localStorage.getItem('currentAccountId'),
                       );
                     setResults(filteredResults);
                     setIsOpen(false);

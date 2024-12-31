@@ -20,6 +20,8 @@ const AddCategoryModal = ({
   const [categoryInputData, setCategoryInputData] = useState<ICategory>({
     name: '',
     type: 'EXPENSE',
+    // @ts-ignore
+    accountId: +localStorage.getItem('currentAccountId'),
   });
 
   const handleModalSubmit = async (e: FormEvent) => {
@@ -32,6 +34,8 @@ const AddCategoryModal = ({
     setCategoryInputData({
       name: '',
       type: 'EXPENSE',
+      // @ts-ignore
+      accountId: +localStorage.getItem('currentAccountId'),
     });
     setRefreshState((prev: any) => !prev);
   };

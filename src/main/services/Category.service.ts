@@ -6,21 +6,25 @@ import ICategory from '../../types/ICategory';
 
 const addCategory = async (category: ICategory) => {
   const db = connect();
-  const query = `INSERT INTO Category (name, type) VALUES (?, ?)`;
+  const query = `INSERT INTO Category (name, type, accountId) VALUES (?, ?, ?)`;
 
-  db.run(query, [category.name, category.type], (err: any) => {
-    if (err) {
-      return console.log(err.message);
-    }
-    console.log('New Daybook Added Successfully 🤡');
-  });
+  db.run(
+    query,
+    [category.name, category.type, category.accountId],
+    (err: any) => {
+      if (err) {
+        return console.log(err.message);
+      }
+      console.log('New Daybook Added Successfully 🤡');
+    },
+  );
 };
 
-const getAllCategories = async () => {
+const getAllCategories = async (accountId: number) => {
   const db = connect();
   const dbAll = promisify(db.all).bind(db);
   try {
-    const query = `SELECT * FROM Category`;
+    const query = `SELECT * FROM Category WHERE accountId = '${accountId}'`;
     const row = dbAll(query);
     return row;
   } catch (err) {
@@ -28,7 +32,7 @@ const getAllCategories = async () => {
   }
 };
 
-const getCategoriesByFilters = async (entryType: string) => {
+const getCategoriesByFilters = async (entryType: string, accountId: number) => {
   const db = connect();
   const dbAll = promisify(db.all).bind(db);
   try {
@@ -36,7 +40,7 @@ const getCategoriesByFilters = async (entryType: string) => {
     if (entryType === 'ALL') {
       query = 'SELECT * FROM Category';
     } else {
-      query = `SELECT * FROM Category WHERE type = '${entryType}'`;
+      query = `SELECT * FROM Category WHERE type = '${entryType}' AND accountId = '${accountId}'`;
     }
     const rows = dbAll(query);
     return rows;
@@ -47,13 +51,17 @@ const getCategoriesByFilters = async (entryType: string) => {
 
 const updateCategory = async (category: ICategory) => {
   const db = connect();
-  const query = `UPDATE Category SET name = ? WHERE id = ?`;
-  db.run(query, [category.name, category.id], (err: any) => {
-    if (err) {
-      return console.error(err.message);
-    }
-    console.log('Category updated successfully Clown 🤡');
-  });
+  const query = `UPDATE Category SET name = ?, accountId = ? WHERE id = ?`;
+  db.run(
+    query,
+    [category.name, category.accountId, category.id],
+    (err: any) => {
+      if (err) {
+        return console.error(err.message);
+      }
+      console.log('Category updated successfully Clown 🤡');
+    },
+  );
 };
 
 const deleteCategory = async (id: number) => {

@@ -10,6 +10,7 @@ import numeral from 'numeral';
 import {
   calculateLuminance,
   formatDate,
+  formatDateWithDDMMYYYY,
   getFirstAndLastDayOfLastMonth,
   getFirstAndLastDayOfMonth,
   getRandomColor,
@@ -30,6 +31,7 @@ const SecondaryHeader = ({
   results,
   setResults,
   setCurrentPage,
+  refreshState,
 }: {
   activeTab: any;
   printingMode: any;
@@ -44,11 +46,16 @@ const SecondaryHeader = ({
   results: any;
   setResults: any;
   setCurrentPage: any;
+  refreshState: any;
 }) => {
   const [allCategories, setAllCategories] = useState<ICategory[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
+  const [todayExpenses, setTodayExpenses] = useState<IDaybook[]>([]);
   const [previousMonthResults, setPreviousMonthResults] = useState<IDaybook[]>(
+    [],
+  );
+  const [currentMonthResults, setCurrentMonthResults] = useState<IDaybook[]>(
     [],
   );
   const startDateRef = useRef<any>(null);
@@ -56,8 +63,10 @@ const SecondaryHeader = ({
 
   useEffect(() => {
     (async () => {
-      const categories =
-        (await window.electron.getAllCategories()) as ICategory[];
+      const categories = (await window.electron.getAllCategories(
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      )) as ICategory[];
       const filteredExpenseCategories = categories.filter(
         (category) => category.type === 'EXPENSE',
       );
@@ -74,10 +83,33 @@ const SecondaryHeader = ({
         [previousMonthFirstDay, previousMonthLastDay],
         'ALL',
         'ALL',
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
       );
       setPreviousMonthResults(previous);
+
+      const { firstDay: monthFirstDay, lastDay: monthLastDay } =
+        getFirstAndLastDayOfMonth();
+      const current = await window.electron.getDaybookByFilters(
+        [monthFirstDay, monthLastDay],
+        'ALL',
+        'ALL',
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      );
+      setCurrentMonthResults(current);
+
+      const todayExpense = await window.electron.getDaybookByFilters(
+        [formatDate(new Date()), formatDate(new Date())],
+        'EXPENSE',
+        'ALL',
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      );
+      setTodayExpenses(todayExpense);
     })();
-  }, []);
+  }, [refreshState]);
+
   const handleSearch = async () => {
     const isThereDates = searchData.startDate !== '' && searchData.endDate;
     const filteredResults = await window.electron.getDaybookByFilters(
@@ -89,6 +121,8 @@ const SecondaryHeader = ({
           ],
       searchData.entryType,
       searchData.categoryId,
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
     );
 
     setResults(filteredResults);
@@ -97,7 +131,7 @@ const SecondaryHeader = ({
 
   return (
     <div
-      className={`px-2 flex z-30 top-[79px] sticky bg-white justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
+      className={`px-2 flex z-[45] top-[5.4rem] sticky bg-white justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
     >
       <button
         onClick={toggleSidebar}
@@ -106,11 +140,13 @@ const SecondaryHeader = ({
       >
         ☰
       </button>
+
+      {/* Date Range Picker & Filters */}
       <div
         className={`flex items-center ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
       >
-        {/* Date Range Picker */}
         <div className="flex">
+          {/* Start Date Picker */}
           <div className="flex items-center">
             <label
               htmlFor="startDate"
@@ -136,6 +172,8 @@ const SecondaryHeader = ({
               }}
             />
           </div>
+
+          {/* End Date Picker */}
           <div className="flex items-center ml-1">
             <label
               htmlFor="endDate"
@@ -162,7 +200,7 @@ const SecondaryHeader = ({
             />
           </div>
 
-          {/* Income/Expense Dropdown */}
+          {/* Entry Type Dropdown */}
           <div className="flex items-center ml-1">
             <label
               htmlFor="entryType"
@@ -196,23 +234,19 @@ const SecondaryHeader = ({
             </label>
             <select
               id="category"
-              className={`border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2 ${
-                searchData.categoryId !== 'ALL' && 'focus:ring-0'
-              }`}
+              className={`border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2 ${searchData.categoryId !== 'ALL' && 'focus:ring-0'}`}
               style={{ backgroundColor, color: textColor }}
               value={searchData.categoryId}
               onChange={(e) => {
                 const clone = { ...searchData };
                 clone.categoryId = e.target.value;
                 setSearchData(clone);
-
                 if (e.target.value === 'ALL') {
                   setBackgroundColor('white');
                   setTextColor('black');
                 } else {
                   const newColor = getRandomColor();
                   setBackgroundColor(newColor);
-
                   setTextColor(calculateLuminance(newColor));
                 }
               }}
@@ -239,8 +273,8 @@ const SecondaryHeader = ({
           </div>
         </div>
 
-        {/* Search Button */}
-        <div className="ml-2">
+        {/* Search and Reset Button */}
+        <div className="ml-2 flex">
           <button
             type="button"
             className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -259,66 +293,141 @@ const SecondaryHeader = ({
                 categoryId: 'ALL',
                 entryType: 'ALL',
               });
+              setBackgroundColor('white');
+              setTextColor('black');
             }}
           >
             X
           </button>
         </div>
       </div>
-      <div className="flex flex-col">
-        <div className="mr-2 flex items-center text-red-500">
-          <h2 className="text-sm font-semibold">
+
+      {/* Transaction Summary Section */}
+      <div className="flex flex-col ml-10">
+        {/* Previous Month */}
+        <div className="flex mb-1">
+          <h2 className="text-sm font-semibold text-red-500 w-[200px]">
             {new Date(
               new Date().setMonth(new Date().getMonth() - 1),
             ).toLocaleString('default', { month: 'long' })}
-            , {new Date().getFullYear()}:{' '}
+            , {new Date().getFullYear()}:
           </h2>
-          {/* <div className="flex flex-wrap justify-end items-center gap-4 mb-4"> */}
-          <p className="ml-5">
+          <p className="ml-3 text-left w-[100px]">
             {numeral(
               previousMonthResults
                 .filter((da) => da.type === 'EXPENSE')
-                .reduce((total: number, item: any) => {
-                  return total + item.amount;
-                }, 0),
+                .reduce((total: number, item: any) => total + item.amount, 0),
             ).format('0,0')}
           </p>
-          {/* </div> */}
         </div>
-        <div className="flex items-center">
-          <h2 className="text-sm font-semibold text-blue-800">
+
+        {/* Current Month */}
+        <div className="flex mb-1">
+          <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
             {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
-            {new Date().getFullYear()}:{' '}
+            {new Date().getFullYear()}:
           </h2>
-          {/* <div className="flex flex-wrap justify-end items-center gap-4 mb-4"> */}
-          <p className="ml-5">
+          <p className="ml-3 text-left w-[100px]">
             {numeral(
-              results
+              currentMonthResults
                 .filter((da: any) => da.type === 'EXPENSE')
-                .reduce((total: number, item: any) => {
-                  return total + item.amount;
-                }, 0),
+                .reduce((total: number, item: any) => total + item.amount, 0),
             ).format('0,0')}
           </p>
-          {/* </div> */}
         </div>
-        <div className="flex items-center">
-          <h2 className="text-sm font-semibold text-blue-800">Today:</h2>
-          {/* <div className="flex flex-wrap justify-end items-center gap-4 mb-4"> */}
-          <p className="ml-5">
-            {numeral(
-              results
-                .filter(
-                  (da: any) =>
-                    da.type === 'EXPENSE' && da.date === formatDate(new Date()),
-                )
-                .reduce((total: number, item: any) => {
-                  return total + item.amount;
-                }, 0),
-            ).format('0,0')}
-          </p>
-          {/* </div> */}
-        </div>
+
+        {/* Today */}
+        {searchData.startDate === '' &&
+        searchData.endDate === '' &&
+        searchData.categoryId === 'ALL' ? (
+          <div className="flex">
+            <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+              Today:{' '}
+            </h2>
+            <p className="ml-3 text-left w-[100px]">
+              {numeral(
+                todayExpenses
+                  .filter((da: any) => da.date === formatDate(new Date()))
+                  .reduce((total: number, item: any) => total + item.amount, 0),
+              ).format('0,0')}
+            </p>
+          </div>
+        ) : (
+          ''
+        )}
+
+        {searchData.startDate === '' &&
+        searchData.endDate === '' &&
+        searchData.categoryId !== 'ALL' ? (
+          <div className="flex">
+            <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+              {
+                allCategories?.find(
+                  (category) => category.id === +searchData.categoryId,
+                )?.name
+              }
+              :{' '}
+            </h2>
+            <p className="ml-3 text-left w-[100px]">
+              {numeral(
+                results
+                  .filter((da: any) => da.type === 'EXPENSE')
+                  .reduce((total: number, item: any) => total + item.amount, 0),
+              ).format('0,0')}
+            </p>
+          </div>
+        ) : (
+          ''
+        )}
+
+        {/* Custom Date Range */}
+        {searchData.startDate !== '' &&
+          searchData.endDate !== '' &&
+          searchData.categoryId === 'ALL' && (
+            <div className="flex">
+              <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
+                {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
+                {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
+              </h2>
+              <p className="ml-5 text-left w-[100px]">
+                {numeral(
+                  results
+                    .filter((da: any) => da.type === 'EXPENSE')
+                    .reduce(
+                      (total: number, item: any) => total + item.amount,
+                      0,
+                    ),
+                ).format('0,0')}
+              </p>
+            </div>
+          )}
+        {searchData.startDate !== '' &&
+          searchData.endDate !== '' &&
+          searchData.categoryId !== 'ALL' && (
+            <div className="flex">
+              <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
+                {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
+                {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
+                <br />
+                {
+                  // @ts-ignore
+                  allCategories?.find(
+                    (category) => category.id === +searchData.categoryId,
+                  ).name
+                }
+              </h2>
+              <p className="ml-5 text-left w-[100px]">
+                {numeral(
+                  results
+                    .filter((da: any) => da.type === 'EXPENSE')
+                    .reduce(
+                      (total: number, item: any) => total + item.amount,
+                      0,
+                    ),
+                ).format('0,0')}
+              </p>
+            </div>
+          )}
       </div>
     </div>
   );

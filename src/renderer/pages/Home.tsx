@@ -1,3 +1,7 @@
+/* eslint-disable promise/no-nesting */
+/* eslint-disable promise/catch-or-return */
+/* eslint-disable new-cap */
+/* eslint-disable promise/always-return */
 /* eslint-disable prettier/prettier */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
@@ -14,6 +18,7 @@ import { Bounce, ToastContainer } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 import { IDaybook, ICategory } from '../../types';
 import '../styles/dist/dist.css';
 import { getFirstAndLastDayOfMonth } from '../utils';
@@ -29,14 +34,25 @@ import EditCategoryModal from '../components/EditCategoryModal';
 import ViewCategories from '../components/ViewCategories';
 import SecondaryHeader from '../components/SecondaryHeader';
 import MainTable from '../components/MainTable';
+import AccountsModal from '../components/AccountsModal';
+import LoginAccount from '../components/LoginAccount';
+import Charts from '../components/Charts';
 
-const Home = () => {
+const Home = ({
+  refreshState,
+  setRefreshState,
+}: {
+  refreshState: any;
+  setRefreshState: any;
+}) => {
   const tableRef = useRef(null);
+  const sideBarRef = useRef(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [accountsModalOpen, setAccountsModalOpen] = useState(false);
+  const [loginModal, setLoginModal] = useState(false);
   const [results, setResults] = useState<IDaybook[]>([]);
-  const [refreshState, setRefreshState] = useState(false);
+  // const [refreshState, setRefreshState] = useState(false);
   const [searchData, setSearchData] = useState({
     startDate: '',
     endDate: '',
@@ -52,11 +68,13 @@ const Home = () => {
   const [isDeleteTransactionModalOpen, setIsDeleteTransactionModalOpen] =
     useState(false);
   const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
-  const [currentMonthExpenses, setCurrentMonthExpenses] = useState<IDaybook[]>(
-    [],
-  );
+  const [, setCurrentMonthExpenses] = useState<IDaybook[]>([]);
   const [isViewCategoryShowing, setIsViewingCategoryShowing] = useState(false);
   const [printingMode, setPrintingMode] = useState(false);
+  const [currentAccountId, setCurrentAccountId] = useState(
+    // @ts-ignore
+    +localStorage.getItem('currentAccountId'),
+  );
 
   const [isOpen, setIsOpen] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState('white');
@@ -72,63 +90,6 @@ const Home = () => {
   const handlePrint = useReactToPrint({
     contentRef: tableRef,
   });
-
-  const handleDownloadPDF = () => {
-    setPrintingMode(true);
-
-    setTimeout(async () => {
-      // eslint-disable-next-line new-cap
-      const pdf = new jsPDF() as any;
-      const table = tableRef.current as any;
-
-      const rows: any = [];
-      const headers: any = [];
-
-      // Extract table headers
-      table.querySelectorAll('thead tr th').forEach((th: any) => {
-        if (th.textContent !== 'Actions') {
-          headers.push(th.textContent);
-        }
-      });
-
-      // Extract table rows
-      table.querySelectorAll('tbody tr').forEach((tr: any) => {
-        const row: any = [];
-        tr.querySelectorAll('td').forEach((td: any) => {
-          row.push(td.textContent);
-        });
-        rows.push(row);
-      });
-
-      // Use jsPDF AutoTable to generate table in PDF
-      // pdf.autoTable({
-      //   head: [headers],
-      //   body: rows,
-      //   styles: { fontSize: 10, halign: 'center', valign: 'middle' },
-      // });
-      pdf.autoTable({
-        head: [headers],
-        body: rows,
-        headStyles: {
-          fillColor: [255, 255, 255], // White background for header
-          textColor: [0, 0, 0], // Black text color for header
-          fontStyle: 'bold', // Bold text style for header
-        },
-        styles: {
-          cellPadding: 3, // Cell padding
-          fontSize: 10, // Font size for table content
-          halign: 'center', // Horizontal alignment
-          valign: 'middle', // Vertical alignment
-        },
-        theme: 'striped', // Optional: Change table style ('striped', 'grid', or 'plain')
-      });
-
-      // Save the PDF
-      pdf.save('table.pdf');
-
-      setPrintingMode(false);
-    }, 1000);
-  };
 
   useEffect(() => {
     const handleKeyDown = (event: any) => {
@@ -155,6 +116,8 @@ const Home = () => {
       [firstDay, lastDay],
       'ALL',
       'ALL',
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
     );
     setResults(lastTenDaybook);
 
@@ -162,8 +125,16 @@ const Home = () => {
       [firstDay, lastDay],
       'ALL',
       'ALL',
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
     );
     setCurrentMonthExpenses(findD);
+
+    setCurrentAccountId(
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
+    );
+    // console.log(+localStorage.getItem('currentAccountId'));
   };
 
   useEffect(() => {
@@ -171,15 +142,89 @@ const Home = () => {
   }, [refreshState]);
 
   const totalPages = Math.ceil(results.length / itemsPerPage);
-  const currentData = results.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  const currentData = printingMode
+    ? results
+    : results.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage,
+      );
   const handlePageChange = (page: any) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
+
+  const printTable = () => {
+    setPrintingMode(true);
+    setTimeout(() => {
+      handlePrint();
+      setPrintingMode(false);
+    }, 0);
+  };
+
+  const handleDownloadPDF = () => {
+    setPrintingMode(true);
+
+    setTimeout(() => {
+      const element = document.getElementById('table-container');
+      html2canvas(element as any).then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4',
+        });
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.height;
+
+        // Calculate the total content height from the image
+        const imgProps = pdf.getImageProperties(imgData);
+        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        let currentHeight = 0;
+        let offset = 0;
+
+        // Add the first page
+        pdf.addImage(imgData, 'PNG', 0, offset, pdfWidth, imgHeight);
+        currentHeight += imgHeight;
+
+        // Loop to handle content overflow
+        while (currentHeight > pageHeight) {
+          offset = -pageHeight; // move the image position to the next page
+          currentHeight -= pageHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, offset, pdfWidth, imgHeight);
+        }
+
+        // Save the PDF
+        pdf.save('table-styled.pdf');
+      });
+
+      setPrintingMode(false);
+    }, 0);
+  };
+
+  const handleClickOutside = (event: any) => {
+    // If the click is outside the sidebar, close the sidebar
+    // @ts-ignore
+    if (sideBarRef.current && !sideBarRef.current.contains(event.target)) {
+      setIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    // Cleanup event listener when component is unmounted or sidebar is closed
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   return (
     <div>
@@ -192,19 +237,28 @@ const Home = () => {
         setRefreshState={setRefreshState}
         setSearchData={setSearchData}
         setTextColor={setTextColor}
+        setAccountModalOpen={setAccountsModalOpen}
+        setCurrentAccountId={setCurrentAccountId}
+        setLoginModal={setLoginModal}
+        currentAccountId={currentAccountId}
+        refreshState={refreshState}
       />
 
-      <Sidebar
-        currentMonthExpenses={currentMonthExpenses}
-        isOpen={isOpen}
-        searchData={searchData}
-        setIsOpen={setIsOpen}
-        setResults={setResults}
-        setSearchData={setSearchData}
-        toggleSidebar={toggleSidebar}
-        setBackgroundColor={setBackgroundColor}
-        setTextColor={setTextColor}
-      />
+      <div ref={sideBarRef}>
+        <Sidebar
+          currentMonthExpenses={results}
+          isOpen={isOpen}
+          searchData={searchData}
+          setIsOpen={setIsOpen}
+          setResults={setResults}
+          setSearchData={setSearchData}
+          toggleSidebar={toggleSidebar}
+          setBackgroundColor={setBackgroundColor}
+          setTextColor={setTextColor}
+          currentAccountId={currentAccountId}
+          refreshState={refreshState}
+        />
+      </div>
 
       <Tabs
         printingMode={printingMode}
@@ -236,6 +290,15 @@ const Home = () => {
         transition={Bounce}
       />
 
+      {accountsModalOpen && (
+        <AccountsModal
+          setAccountModalOpen={setAccountsModalOpen}
+          setCurrentAccountId={setCurrentAccountId}
+          setRefreshState={setRefreshState}
+          setLoginModal={setLoginModal}
+        />
+      )}
+
       {/* Tab: Transaction */}
       <SecondaryHeader
         activeTab={activeTab}
@@ -251,6 +314,7 @@ const Home = () => {
         setTextColor={setTextColor}
         textColor={textColor}
         toggleSidebar={toggleSidebar}
+        refreshState={refreshState}
       />
 
       {activeTab !== 'Transaction' && (
@@ -258,6 +322,19 @@ const Home = () => {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           setRefreshState={setRefreshState}
+          refreshState={refreshState}
+        />
+      )}
+
+      {activeTab !== 'Add Transaction' && (
+        <Charts
+          currentAccountId={currentAccountId}
+          refreshState={refreshState}
+          setSearchData={setSearchData}
+          setResults={setResults}
+          setBackgroundColor={setBackgroundColor}
+          setTextColor={setTextColor}
+          searchData={searchData}
         />
       )}
 
@@ -267,16 +344,17 @@ const Home = () => {
         currentPage={currentPage}
         handleDownloadPDF={handleDownloadPDF}
         handlePageChange={handlePageChange}
-        handlePrint={handlePrint}
+        printTable={printTable}
         printingMode={printingMode}
-        setIsDeleteTransactionModalOpen={setIsDeleteCategoryModalOpen}
+        setIsDeleteTransactionModalOpen={setIsDeleteTransactionModalOpen}
         setIsUpdateDaybook={setIsUpdateDaybook}
-        setPrintingMode={setPrintingMode}
         setRefreshState={setRefreshState}
         setSelectedDaybook={setSelectedDaybook}
         tableRef={tableRef}
         totalPages={totalPages}
         searchData={searchData}
+        currentAccountId={currentAccountId}
+        refreshState={refreshState}
       />
 
       {/* Update Daybook Model */}
@@ -286,6 +364,7 @@ const Home = () => {
           setIsUpdateDaybook={setIsUpdateDaybook}
           setRefreshState={setRefreshState}
           setSelectedDaybook={setSelectedDaybook}
+          setIsDeleteTransactionModalOpen={setIsDeleteTransactionModalOpen}
         />
       )}
 
@@ -324,6 +403,16 @@ const Home = () => {
           setIsEditCategoryModalOpen={setIsEditCategoryModalOpen}
           setRefreshState={setRefreshState}
           setSelectedCategory={setSelectedCategory}
+        />
+      )}
+
+      {loginModal && (
+        <LoginAccount
+          selectedAccount={currentAccountId}
+          setLoginModal={setLoginModal}
+          setRefreshState={setRefreshState}
+          setAccountModal={setAccountsModalOpen}
+          setCurrentAccountId={setCurrentAccountId}
         />
       )}
     </div>

@@ -3,7 +3,15 @@
 @tailwind utilities;
 
 @media print {
+  /* @page {
+    margin-top: 5mm;
+    margin-bottom: 5mm;
+  } */
   .no-print {
     display: none;
+  }
+
+  .specific-thead {
+    display: table-header-group;
   }
 }

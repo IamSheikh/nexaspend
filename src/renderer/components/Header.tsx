@@ -106,7 +106,7 @@ const Header = ({
     };
   }, []);
 
-  const date = new Date('1-1-2024');
+  const date = new Date();
 
   return (
     <>

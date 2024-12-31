@@ -36,6 +36,7 @@ import SecondaryHeader from '../components/SecondaryHeader';
 import MainTable from '../components/MainTable';
 import AccountsModal from '../components/AccountsModal';
 import LoginAccount from '../components/LoginAccount';
+import Charts from '../components/Charts';
 
 const Home = ({
   refreshState,
@@ -321,6 +322,13 @@ const Home = ({
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           setRefreshState={setRefreshState}
+          refreshState={refreshState}
+        />
+      )}
+
+      {activeTab !== 'Add Transaction' && (
+        <Charts
+          currentAccountId={currentAccountId}
           refreshState={refreshState}
         />
       )}

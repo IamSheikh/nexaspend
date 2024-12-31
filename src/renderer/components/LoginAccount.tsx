@@ -139,7 +139,9 @@ const LoginAccount = ({
             className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 mr-3 w-full mt-5"
             onClick={() => {
               setLoginModal((prev: any) => !prev);
-              setIsShowingChooseAccount((prev: any) => !prev);
+              if (setIsShowingChooseAccount) {
+                setIsShowingChooseAccount((prev: any) => !prev);
+              }
             }}
           >
             Choose Different Account

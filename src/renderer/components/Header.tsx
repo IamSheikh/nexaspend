@@ -106,6 +106,8 @@ const Header = ({
     };
   }, []);
 
+  const date = new Date('1-1-2024');
+
   return (
     <>
       <div
@@ -147,6 +149,12 @@ const Header = ({
               {letter}
             </span>
           ))}
+        </h1>
+
+        <h1 className="text-center text-xl font-semibold">
+          {date.getDate() === 1 &&
+            date.getMonth() + 1 === 1 &&
+            'Happy New Year, Clown 🤡'}
         </h1>
 
         {/* Action Buttons */}

@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-unused-expressions */
 /* eslint-disable camelcase */
 /* eslint-disable consistent-return */
 /* eslint-disable no-unsafe-optional-chaining */
@@ -14,15 +15,26 @@ import { ICategory, IDaybook } from '../../types';
 import colors from '../utils/100000_colors';
 import hover_colors from '../utils/100000_hover_colors';
 import { getFirstAndLastDayOfMonth } from '../utils';
+import { calculateLuminance, getRandomColor } from '../utils/colors';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Charts = ({
+  searchData,
   currentAccountId,
   refreshState,
+  setSearchData,
+  setResults,
+  setBackgroundColor,
+  setTextColor,
 }: {
+  searchData: any;
   currentAccountId: number;
   refreshState: any;
+  setSearchData: any;
+  setResults: any;
+  setBackgroundColor: any;
+  setTextColor: any;
 }) => {
   const [expenseChartData, setExpenseChartData] = useState<any>(null);
   const [incomeChartData, setIncomeChartData] = useState<any>(null);
@@ -34,6 +46,11 @@ const Charts = ({
     setExpenseChartData(null);
     setIncomeChartData(null);
   }, [currentAccountId]);
+
+  const [helpMe, setHelpMe] = useState<any>();
+  const [helpMePlz, setHelpMePlz] = useState<any>();
+  const [handleExpenseClick, setHandleExpenseClick] = useState<any>();
+  const [handleIncomeClick, setHandleIncomeClick] = useState<any>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,17 +132,66 @@ const Charts = ({
         };
       });
 
+      setHelpMe(() => (tooltipItem: any) => {
+        // Get category name and percentage
+        const categoryName = tooltipItem.label;
+        const percentage = parseInt(tooltipItem.raw, 10).toFixed(2);
+        // Find the total amount for the category
+        const categoryId = expenseCategories.find(
+          (category) => category.name === categoryName,
+        )?.id;
+        const totalAmount = categoryId ? aggregatedData[categoryId] : 0;
+
+        // Return tooltip content with category total
+        return `${percentage}% (${numeral(totalAmount).format('0,0')})`;
+      });
+
+      setHandleExpenseClick(() => async (event: any) => {
+        const { chart } = event;
+        const activePoints = chart.getElementsAtEventForMode(
+          event.native,
+          'nearest',
+          { intersect: true },
+          false,
+        );
+
+        if (activePoints.length > 0) {
+          const firstPoint = activePoints[0];
+          const categoryId = expenseCategories[firstPoint.index].id;
+          const randomColor = getRandomColor();
+          const isThereDates =
+            searchData.startDate !== '' && searchData.endDate;
+          const filteredResults = await window.electron.getDaybookByFilters(
+            isThereDates
+              ? [searchData.startDate, searchData.endDate]
+              : [
+                  getFirstAndLastDayOfMonth().firstDay,
+                  getFirstAndLastDayOfMonth().lastDay,
+                ],
+            searchData.entryType,
+            `${categoryId}`,
+            // @ts-ignore
+            +localStorage.getItem('currentAccountId'),
+          );
+          setResults(filteredResults);
+          setSearchData((prev: any) => ({ ...prev, categoryId }));
+          setBackgroundColor(randomColor);
+          setTextColor(calculateLuminance(randomColor));
+          // You can use the categoryId for further processing or navigation
+        }
+      });
+
       // Step 5: Update chart data
       setExpenseChartData({
         labels,
         datasets: [
           {
-            label: 'Expense Distribution (%)',
             data,
             backgroundColor: result.map((item) => item.backgroundColor),
             hoverBackgroundColor: result.map((item) => item.hoverColor),
           },
         ],
+        options: {},
       });
     };
 
@@ -211,12 +277,62 @@ const Charts = ({
         };
       });
 
+      setHelpMePlz(() => (tooltipItem: any) => {
+        // Get category name and percentage
+        const categoryName = tooltipItem.label;
+        const percentage = parseInt(tooltipItem.raw, 10).toFixed(2);
+        // Find the total amount for the category
+        const categoryId = expenseCategories.find(
+          (category) => category.name === categoryName,
+        )?.id;
+        const totalAmount = categoryId ? aggregatedData[categoryId] : 0;
+
+        // Return tooltip content with category total
+        return `${percentage}% (${numeral(totalAmount).format('0,0')})`;
+      });
+
+      setHandleIncomeClick(() => async (event: any) => {
+        const { chart } = event;
+        const activePoints = chart.getElementsAtEventForMode(
+          event.native,
+          'nearest',
+          { intersect: true },
+          false,
+        );
+
+        if (activePoints.length > 0) {
+          const firstPoint = activePoints[0];
+          const categoryId = expenseCategories[firstPoint.index].id;
+
+          const randomColor = getRandomColor();
+          const isThereDates =
+            searchData.startDate !== '' && searchData.endDate;
+          const filteredResults = await window.electron.getDaybookByFilters(
+            isThereDates
+              ? [searchData.startDate, searchData.endDate]
+              : [
+                  getFirstAndLastDayOfMonth().firstDay,
+                  getFirstAndLastDayOfMonth().lastDay,
+                ],
+            searchData.entryType,
+            `${categoryId}`,
+            // @ts-ignore
+            +localStorage.getItem('currentAccountId'),
+          );
+          setResults(filteredResults);
+          setSearchData((prev: any) => ({ ...prev, categoryId }));
+          setBackgroundColor(randomColor);
+          setTextColor(calculateLuminance(randomColor));
+          // You can use the categoryId for further processing or navigation
+        }
+      });
+
       // Step 5: Update chart data
       setIncomeChartData({
         labels,
         datasets: [
           {
-            label: 'Income Distribution (%)',
+            label: '',
             data,
             backgroundColor: result.map((item) => item.backgroundColor),
             hoverBackgroundColor: result.map((item) => item.hoverColor),
@@ -309,14 +425,17 @@ const Charts = ({
           options={{
             responsive: true,
             plugins: {
+              legend: {
+                display: false,
+              },
               tooltip: {
-                enabled: (context) => {
-                  // If value is 1, return false to hide the tooltip
-                  const value = context?.tooltip?.dataPoints?.[0]?.raw;
-                  return value !== 1;
+                enabled: true,
+                callbacks: {
+                  label: helpMe,
                 },
               },
             },
+            onClick: handleExpenseClick,
           }}
         />
         <h1 className="mt-5">
@@ -369,32 +488,16 @@ const Charts = ({
                   const value = context?.tooltip?.dataPoints?.[0]?.raw;
                   return value !== 1;
                 },
-              },
-              legend: {
-                display: true,
-                position: 'top', // Legend position at the top
-                labels: {
-                  // Customize legend size for space management
-                  boxWidth: 10,
-                  padding: 10,
-                  // @ts-ignore
-                  filter: (legendItem) => legendItem.index < 10, // Limit number of categories in legend
-                  // @ts-ignore
-                  generateLabels: (chart) => {
-                    const labels = chart.data.labels || [];
-                    return labels.slice(0, 10).map((label, index) => {
-                      return {
-                        text: label,
-                        fillStyle:
-                          // @ts-ignore
-                          chart?.data?.datasets[0].backgroundColor[index],
-                        index,
-                      };
-                    });
-                  },
+                callbacks: {
+                  label: helpMePlz,
                 },
               },
+              legend: {
+                display: false,
+              },
             },
+
+            onClick: handleIncomeClick,
           }}
         />
 

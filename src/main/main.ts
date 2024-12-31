@@ -200,6 +200,7 @@ const createWindow = async () => {
   });
 
   mainWindow.maximize();
+  mainWindow.setMenuBarVisibility(false);
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {

@@ -330,6 +330,11 @@ const Home = ({
         <Charts
           currentAccountId={currentAccountId}
           refreshState={refreshState}
+          setSearchData={setSearchData}
+          setResults={setResults}
+          setBackgroundColor={setBackgroundColor}
+          setTextColor={setTextColor}
+          searchData={searchData}
         />
       )}
 

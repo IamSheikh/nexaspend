@@ -181,12 +181,12 @@ const MainTable = ({
                   {da.details}
                 </td>
                 <td
-                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
+                  className={`border border-gray-300 text-right px-2 ${printingMode && 'pb-2'}`}
                 >
                   {da.type === 'INCOME' && numeral(da.amount).format('0,0')}
                 </td>
                 <td
-                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
+                  className={`border border-gray-300 text-right px-2 ${printingMode && 'pb-2'}`}
                 >
                   {da.type === 'EXPENSE' && numeral(da.amount).format('0,0')}
                 </td>

@@ -310,7 +310,13 @@ const SecondaryHeader = ({
             {new Date(
               new Date().setMonth(new Date().getMonth() - 1),
             ).toLocaleString('default', { month: 'long' })}
-            , {new Date().getFullYear()}:
+            ,{' '}
+            {new Date(
+              new Date().setMonth(new Date().getMonth() - 1),
+            ).toLocaleString('default', { month: 'long' }) === 'December'
+              ? new Date().getFullYear() - 1
+              : new Date().getFullYear()}
+            :
           </h2>
           <p className="ml-3 text-left w-[100px]">
             {numeral(

@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable camelcase */
 /* eslint-disable consistent-return */
@@ -11,6 +12,7 @@ import React, { useEffect, useState } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import numeral from 'numeral';
+// import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { ICategory, IDaybook } from '../../types';
 import colors from '../utils/100000_colors';
 import hover_colors from '../utils/100000_hover_colors';
@@ -191,7 +193,6 @@ const Charts = ({
             hoverBackgroundColor: result.map((item) => item.hoverColor),
           },
         ],
-        options: {},
       });
     };
 

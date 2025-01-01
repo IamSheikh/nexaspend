@@ -413,6 +413,7 @@ const Home = ({
           setRefreshState={setRefreshState}
           setAccountModal={setAccountsModalOpen}
           setCurrentAccountId={setCurrentAccountId}
+          setIsShowingChooseAccount={setAccountsModalOpen}
         />
       )}
     </div>

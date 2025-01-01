@@ -140,7 +140,7 @@ const LoginAccount = ({
             onClick={() => {
               setLoginModal((prev: any) => !prev);
               if (setIsShowingChooseAccount) {
-                setIsShowingChooseAccount((prev: any) => !prev);
+                setIsShowingChooseAccount(true);
               }
             }}
           >

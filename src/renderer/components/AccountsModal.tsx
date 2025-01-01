@@ -50,6 +50,7 @@ const AccountsModal = ({
           <h2 className="text-xl font-semibold mb-4">All Accounts</h2>
           <button
             className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mr-3"
+            style={{ display: setLoginModal ? 'none' : 'block' }}
             type="button"
             onClick={() => {
               setAccountModalOpen((prev: any) => !prev);

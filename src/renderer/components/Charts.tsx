@@ -18,6 +18,7 @@ import colors from '../utils/100000_colors';
 import hover_colors from '../utils/100000_hover_colors';
 import { getFirstAndLastDayOfMonth } from '../utils';
 import { calculateLuminance, getRandomColor } from '../utils/colors';
+import getFirstAndLastDayOfMonthFromDate from '../utils/getFirstAndLastDayOfMonthFromDate';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -53,6 +54,14 @@ const Charts = ({
   const [helpMePlz, setHelpMePlz] = useState<any>();
   const [handleExpenseClick, setHandleExpenseClick] = useState<any>();
   const [handleIncomeClick, setHandleIncomeClick] = useState<any>();
+  const [currentDate1, setCurrentDate1] = useState(new Date());
+  const [currentDate2, setCurrentDate2] = useState(new Date());
+  const [
+    doesExpenseMonthHaveTransactions,
+    setDoesExpenseMonthHaveTransactions,
+  ] = useState(true);
+  const [doesIncomeMonthHaveTransactions, setDoesIncomeMonthHaveTransactions] =
+    useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,15 +77,14 @@ const Charts = ({
 
       // Check if there are no expense categories
       if (!expenseCategories || expenseCategories.length === 0) {
-        console.log('No expense categories available.');
         return;
       }
 
       // Fetch all transactions for the current account
       const allTransactions = (await window.electron.getDaybookByFilters(
         [
-          getFirstAndLastDayOfMonth().firstDay,
-          getFirstAndLastDayOfMonth().lastDay,
+          getFirstAndLastDayOfMonthFromDate(currentDate1.toString()).firstDay,
+          getFirstAndLastDayOfMonthFromDate(currentDate1.toString()).lastDay,
         ],
         'ALL',
         'ALL',
@@ -90,9 +98,11 @@ const Charts = ({
 
       // Check if there are no expense transactions
       if (!expenseTransactions || expenseTransactions.length === 0) {
-        console.log('No expense transactions available.');
+        // setExpenseChartData(null);
+        setDoesExpenseMonthHaveTransactions(false);
         return;
       }
+      setDoesExpenseMonthHaveTransactions(true);
 
       // Step 1: Aggregate the data by categoryId (sum up amounts for the same category)
       const aggregatedData = expenseTransactions.reduce(
@@ -204,7 +214,7 @@ const Charts = ({
     };
 
     fetchData();
-  }, [refreshState]);
+  }, [refreshState, currentDate1]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -226,8 +236,8 @@ const Charts = ({
       // Fetch all transactions for the current account
       const allTransactions = (await window.electron.getDaybookByFilters(
         [
-          getFirstAndLastDayOfMonth().firstDay,
-          getFirstAndLastDayOfMonth().lastDay,
+          getFirstAndLastDayOfMonthFromDate(currentDate2.toString()).firstDay,
+          getFirstAndLastDayOfMonthFromDate(currentDate2.toString()).lastDay,
         ],
         'ALL',
         'ALL',
@@ -241,9 +251,10 @@ const Charts = ({
 
       // Check if there are no transactions
       if (!incomeTransactions || incomeTransactions.length === 0) {
-        console.log('No income transactions available.');
+        setDoesIncomeMonthHaveTransactions(false);
         return;
       }
+      setDoesIncomeMonthHaveTransactions(true);
 
       // Step 1: Aggregate the data by categoryId (sum up amounts for the same category)
       const aggregatedData = incomeTransactions.reduce(
@@ -350,14 +361,14 @@ const Charts = ({
     };
 
     fetchData();
-  }, [refreshState]);
+  }, [refreshState, currentDate2]);
 
   useEffect(() => {
     (async () => {
       const allTransactions = (await window.electron.getDaybookByFilters(
         [
-          getFirstAndLastDayOfMonth().firstDay,
-          getFirstAndLastDayOfMonth().lastDay,
+          getFirstAndLastDayOfMonthFromDate(currentDate1.toString()).firstDay,
+          getFirstAndLastDayOfMonthFromDate(currentDate1.toString()).lastDay,
         ],
         'ALL',
         'ALL',
@@ -366,23 +377,39 @@ const Charts = ({
       const allExpenses = allTransactions.filter(
         (transaction) => transaction.type === 'EXPENSE',
       );
-      const allIncome = allTransactions.filter(
-        (transaction) => transaction.type === 'INCOME',
-      );
 
       const expensesTotal = allExpenses.reduce(
         (total: number, item: any) => total + item.amount,
         0,
       );
+
+      setTotalExpense(expensesTotal);
+    })();
+  }, [refreshState, currentDate1]);
+
+  useEffect(() => {
+    (async () => {
+      const allTransactions = (await window.electron.getDaybookByFilters(
+        [
+          getFirstAndLastDayOfMonthFromDate(currentDate2.toString()).firstDay,
+          getFirstAndLastDayOfMonthFromDate(currentDate2.toString()).lastDay,
+        ],
+        'ALL',
+        'ALL',
+        currentAccountId,
+      )) as IDaybook[];
+      const allIncome = allTransactions.filter(
+        (transaction) => transaction.type === 'INCOME',
+      );
+
       const incomeTotal = allIncome.reduce(
         (total: number, item: any) => total + item.amount,
         0,
       );
 
-      setTotalExpense(expensesTotal);
       setTotalIncome(incomeTotal);
     })();
-  }, [refreshState]);
+  }, [refreshState, currentDate2]);
 
   if (!expenseChartData) {
     // return (
@@ -393,128 +420,225 @@ const Charts = ({
     // return;
   }
 
+  const handleNextMonth = () => {
+    setCurrentDate1(
+      (prevDate) =>
+        new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 1),
+    );
+  };
+
+  const handlePreviousMonth = () => {
+    setCurrentDate1(
+      (prevDate) =>
+        new Date(prevDate.getFullYear(), prevDate.getMonth() - 1, 1),
+    );
+  };
+
+  const handleIncomeNextMonth = () => {
+    setCurrentDate2(
+      (prevDate) =>
+        new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 1),
+    );
+  };
+
+  const handleIncomePreviousMonth = () => {
+    setCurrentDate2(
+      (prevDate) =>
+        new Date(prevDate.getFullYear(), prevDate.getMonth() - 1, 1),
+    );
+  };
+
   return (
     <div className="flex justify-center items-center space-x-2 p-4 bg-gray-100">
       {/* <div className="w-72 min-h-72 bg-white rounded-lg shadow-md flex-col flex items-center justify-center p-4"> */}
-      <div className="w-80 min-h-72 h-96 bg-white rounded-lg shadow-md flex items-center flex-col justify-center p-4">
-        <div className="mt-1">
-          {!expenseChartData ? (
-            <h1 className="text-xl font-medium">No Expense</h1>
+      <div className="w-80 min-h-72 h-96 bg-white rounded-lg shadow-md flex flex-col items-center justify-center p-4">
+        {/* Display a message if no expense data is available */}
+        {!expenseChartData && (
+          <h1 className="text-xl font-medium text-gray-700">No Expense</h1>
+        )}
+
+        {/* Month Navigator */}
+        <div className="relative flex justify-between items-center w-full py-2 px-4 rounded-md mt-1">
+          <button
+            className="text-sm text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded transition"
+            type="button"
+            onClick={handlePreviousMonth}
+          >
+            &#8592; Prev
+          </button>
+          <div className="text-center flex self-center justify-self-center text-lg font-medium z-30">
+            {currentDate1.toLocaleDateString('default', { month: 'short' })},{' '}
+            {currentDate1.getFullYear()}
+          </div>
+          <button
+            className="text-sm text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded transition"
+            type="button"
+            onClick={handleNextMonth}
+          >
+            Next &#8594;
+          </button>
+        </div>
+
+        {/* Doughnut Chart */}
+        <div className="w-full flex-grow">
+          {doesExpenseMonthHaveTransactions ? (
+            <Doughnut
+              data={
+                !expenseChartData
+                  ? {
+                      labels: [],
+                      datasets: [
+                        {
+                          data: [1, 1, 1, 1], // Placeholder values for empty chart
+                          backgroundColor: [
+                            '#E0E0E0',
+                            '#C0C0C0',
+                            '#B0B0B0',
+                            '#A0A0A0',
+                          ],
+                          hoverBackgroundColor: [
+                            '#E0E0E0',
+                            '#C0C0C0',
+                            '#B0B0B0',
+                            '#A0A0A0',
+                          ],
+                        },
+                      ],
+                    }
+                  : expenseChartData
+              }
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    enabled: true,
+                    callbacks: {
+                      label: helpMe, // Custom tooltip formatting function
+                    },
+                  },
+                },
+                onClick: handleExpenseClick, // Click event handler for the chart
+              }}
+            />
           ) : (
-            <h1 className="text-xl font-medium">Monthly Expense Breakdown</h1>
+            <div className="flex justify-center items-center h-full">
+              <h1 className="text-2xl font-medium">No Expense</h1>
+            </div>
           )}
         </div>
-        <Doughnut
-          data={
-            !expenseChartData
-              ? {
-                  labels: [],
-                  datasets: [
-                    {
-                      data: [1, 1, 1, 1], // Single value of 0 to display empty chart
-                      backgroundColor: [
-                        '#E0E0E0',
-                        '#C0C0C0',
-                        '#B0B0B0',
-                        '#A0A0A0',
-                      ],
 
-                      hoverBackgroundColor: [
-                        '#E0E0E0',
-                        '#C0C0C0',
-                        '#B0B0B0',
-                        '#A0A0A0',
-                      ],
-                    },
-                  ],
-                }
-              : expenseChartData
-          }
-          options={{
-            responsive: true,
-            plugins: {
-              legend: {
-                display: false,
-              },
-              tooltip: {
-                enabled: true,
-                callbacks: {
-                  label: helpMe,
-                },
-              },
-            },
-            onClick: handleExpenseClick,
-          }}
-        />
-        <h1 className="mt-5">
-          Total Expenses:{' '}
-          <span className="font-semibold">
-            {numeral(totalExpense).format('0,0')}
-          </span>
-        </h1>
+        {/* Total Expenses */}
+        {doesExpenseMonthHaveTransactions && (
+          <h1 className="mt-4 text-gray-800 text-center">
+            Total Expenses:{' '}
+            <span className="font-semibold text-gray-900">
+              {numeral(totalExpense).format('0,0')}
+            </span>
+          </h1>
+        )}
       </div>
+
       <div className="w-80 min-h-72 h-96 bg-white rounded-lg shadow-md flex items-center flex-col justify-center p-4">
-        <div className="mt-1">
+        {/* <div className="mt-1">
           {!incomeChartData ? (
             <h1 className="text-xl font-medium">No Income</h1>
           ) : (
-            <h1 className="text-xl font-medium">Monthly Income Breakdown</h1>
+            <div>
+              {new Date().toLocaleDateString('default', {
+                month: 'short',
+              })}
+              , {new Date().getFullYear()}
+            </div>
           )}
+        </div> */}
+        {!incomeChartData && (
+          <h1 className="text-xl font-medium text-gray-700">No Expense</h1>
+        )}
+
+        {/* Month Navigator */}
+        <div className="relative flex justify-between items-center w-full py-2 px-4 rounded-md mt-1">
+          <button
+            className="text-sm text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded transition"
+            type="button"
+            onClick={handleIncomePreviousMonth}
+          >
+            &#8592; Prev
+          </button>
+          <div className="text-center flex self-center justify-self-center text-lg font-medium z-30">
+            {currentDate2.toLocaleDateString('default', { month: 'short' })},{' '}
+            {currentDate2.getFullYear()}
+          </div>
+          <button
+            className="text-sm text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded transition"
+            type="button"
+            onClick={handleIncomeNextMonth}
+          >
+            Next &#8594;
+          </button>
         </div>
-        <Doughnut
-          data={
-            !incomeChartData
-              ? {
-                  labels: [],
-                  datasets: [
-                    {
-                      data: [1, 1, 1, 1], // Single value of 0 to display empty chart
-                      backgroundColor: [
-                        '#E0E0E0',
-                        '#C0C0C0',
-                        '#B0B0B0',
-                        '#A0A0A0',
-                      ],
+        {doesIncomeMonthHaveTransactions ? (
+          <Doughnut
+            data={
+              !incomeChartData
+                ? {
+                    labels: [],
+                    datasets: [
+                      {
+                        data: [1, 1, 1, 1], // Single value of 0 to display empty chart
+                        backgroundColor: [
+                          '#E0E0E0',
+                          '#C0C0C0',
+                          '#B0B0B0',
+                          '#A0A0A0',
+                        ],
 
-                      hoverBackgroundColor: [
-                        '#E0E0E0',
-                        '#C0C0C0',
-                        '#B0B0B0',
-                        '#A0A0A0',
-                      ],
-                    },
-                  ],
-                }
-              : incomeChartData
-          }
-          options={{
-            responsive: true,
-            plugins: {
-              tooltip: {
-                enabled: (context) => {
-                  // If value is 1, return false to hide the tooltip
-                  const value = context?.tooltip?.dataPoints?.[0]?.raw;
-                  return value !== 1;
+                        hoverBackgroundColor: [
+                          '#E0E0E0',
+                          '#C0C0C0',
+                          '#B0B0B0',
+                          '#A0A0A0',
+                        ],
+                      },
+                    ],
+                  }
+                : incomeChartData
+            }
+            options={{
+              responsive: true,
+              plugins: {
+                tooltip: {
+                  enabled: (context) => {
+                    // If value is 1, return false to hide the tooltip
+                    const value = context?.tooltip?.dataPoints?.[0]?.raw;
+                    return value !== 1;
+                  },
+                  callbacks: {
+                    label: helpMePlz,
+                  },
                 },
-                callbacks: {
-                  label: helpMePlz,
+                legend: {
+                  display: false,
                 },
               },
-              legend: {
-                display: false,
-              },
-            },
 
-            onClick: handleIncomeClick,
-          }}
-        />
+              onClick: handleIncomeClick,
+            }}
+          />
+        ) : (
+          <div className="flex justify-center items-center h-full">
+            <h1>No Income</h1>
+          </div>
+        )}
 
-        <h1 className="mt-5">
-          Total Income:{' '}
-          <span className="font-semibold">
-            {numeral(totalIncome).format('0,0')}
-          </span>
-        </h1>
+        {doesIncomeMonthHaveTransactions && (
+          <h1 className="mt-5">
+            Total Income:{' '}
+            <span className="font-semibold">
+              {numeral(totalIncome).format('0,0')}
+            </span>
+          </h1>
+        )}
       </div>
     </div>
   );

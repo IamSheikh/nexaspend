@@ -1126,6 +1126,11 @@ video {
   line-height: 1.75rem;
 }
 
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
 .font-bold {
   font-weight: 700;
 }
@@ -1183,11 +1188,6 @@ video {
   color: rgb(34 197 94 / var(--tw-text-opacity));
 }
 
-.text-green-700 {
-  --tw-text-opacity: 1;
-  color: rgb(21 128 61 / var(--tw-text-opacity));
-}
-
 .text-indigo-500 {
   --tw-text-opacity: 1;
   color: rgb(99 102 241 / var(--tw-text-opacity));
@@ -1211,6 +1211,16 @@ video {
 .text-yellow-300 {
   --tw-text-opacity: 1;
   color: rgb(253 224 71 / var(--tw-text-opacity));
+}
+
+.text-violet-500 {
+  --tw-text-opacity: 1;
+  color: rgb(139 92 246 / var(--tw-text-opacity));
+}
+
+.text-yellow-500 {
+  --tw-text-opacity: 1;
+  color: rgb(234 179 8 / var(--tw-text-opacity));
 }
 
 .shadow-lg {

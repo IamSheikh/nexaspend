@@ -134,6 +134,8 @@ const Charts = ({
         };
       });
 
+      let selectedCategoryId: number = 0;
+
       setHelpMe(() => (tooltipItem: any) => {
         // Get category name and percentage
         const categoryName = tooltipItem.label;
@@ -143,6 +145,9 @@ const Charts = ({
           (category) => category.name === categoryName,
         )?.id;
         const totalAmount = categoryId ? aggregatedData[categoryId] : 0;
+        if (categoryId) {
+          selectedCategoryId = categoryId;
+        }
 
         // Return tooltip content with category total
         return `${percentage}% (${numeral(totalAmount).format('0,0')})`;
@@ -158,8 +163,10 @@ const Charts = ({
         );
 
         if (activePoints.length > 0) {
-          const firstPoint = activePoints[0];
-          const categoryId = expenseCategories[firstPoint.index].id;
+          // const firstPoint = activePoints[0];
+          // const categoryId = expenseCategories.find(
+          //   (category) => category.id === firstPoint.index,
+          // );
           const randomColor = getRandomColor();
           const isThereDates =
             searchData.startDate !== '' && searchData.endDate;
@@ -170,13 +177,13 @@ const Charts = ({
                   getFirstAndLastDayOfMonth().firstDay,
                   getFirstAndLastDayOfMonth().lastDay,
                 ],
-            searchData.entryType,
-            `${categoryId}`,
+            'ALL',
+            `${selectedCategoryId}`,
             // @ts-ignore
             +localStorage.getItem('currentAccountId'),
           );
           setResults(filteredResults);
-          setSearchData((prev: any) => ({ ...prev, categoryId }));
+          setSearchData({ ...searchData, categoryId: selectedCategoryId });
           setBackgroundColor(randomColor);
           setTextColor(calculateLuminance(randomColor));
           // You can use the categoryId for further processing or navigation
@@ -212,7 +219,7 @@ const Charts = ({
 
       // Check if there are no categories or empty data
       if (!expenseCategories || expenseCategories.length === 0) {
-        console.log('No income categories available.');
+        // console.log('No income categories available.');
         return;
       }
 
@@ -321,7 +328,7 @@ const Charts = ({
             +localStorage.getItem('currentAccountId'),
           );
           setResults(filteredResults);
-          setSearchData((prev: any) => ({ ...prev, categoryId }));
+          setSearchData({ ...searchData, categoryId });
           setBackgroundColor(randomColor);
           setTextColor(calculateLuminance(randomColor));
           // You can use the categoryId for further processing or navigation

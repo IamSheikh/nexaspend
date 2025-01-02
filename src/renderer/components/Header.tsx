@@ -171,9 +171,32 @@ const Header = ({
           <div className="flex items-center relative mr-2">
             {/* Text + Button Wrapper */}
             <div className="flex items-center">
-              <span className="text-green-500 text-lg font-bold">
+              {['W', 'e', 'l', 'c', 'o', 'm', 'e', ' ', 't', 'o'].map(
+                (letter, index) => (
+                  <span
+                    key={index}
+                    className={`${
+                      [
+                        'text-red-500',
+                        'text-orange-500',
+                        'text-yellow-300',
+                        'text-green-500',
+                        'text-blue-500',
+                        'text-violet-500',
+                        'text-red-500',
+                        '',
+                        'text-orange-500',
+                        'text-yellow-500',
+                      ][index]
+                    } text-3xl font-bold `}
+                  >
+                    {letter === ' ' ? '\u00A0' : letter}
+                  </span>
+                ),
+              )}
+              {/* <span className="text-green-500 text-lg font-bold">
                 Welcome to
-              </span>
+              </span> */}
               <button
                 className="ml-2 px-4 py-2 border rounded-lg bg-white hover:bg-gray-50 focus:ring focus:ring-indigo-200 focus:outline-none"
                 style={{ backgroundColor, color: textColor }}

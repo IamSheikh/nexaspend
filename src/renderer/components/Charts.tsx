@@ -394,7 +394,7 @@ const Charts = ({
   }
 
   return (
-    <div className="flex justify-center items-center space-x-4 p-4 bg-gray-100">
+    <div className="flex justify-center items-center space-x-2 p-4 bg-gray-100">
       {/* <div className="w-72 min-h-72 bg-white rounded-lg shadow-md flex-col flex items-center justify-center p-4"> */}
       <div className="w-80 min-h-72 h-96 bg-white rounded-lg shadow-md flex items-center flex-col justify-center p-4">
         <div className="mt-1">

@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react';
 import { IAccount } from '../../types';
 import CreateNewAccountModal from './CreateNewAccountModal';
 import EditAccount from './EditAccount';
+import { calculateLuminance, getRandomColor } from '../utils';
 
 const Header = ({
   printingMode,
@@ -52,6 +53,8 @@ const Header = ({
   const [isEditAccountModalShowing, setIsEditAccountModalShowing] =
     useState(false);
   const [selectedAccount, setSelectedAccount] = useState<IAccount>();
+  const [backgroundColor, setBG] = useState<any>();
+  const [textColor, setTC] = useState<any>();
 
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
   const closeDropdown = () => setIsDropdownOpen(false);
@@ -64,6 +67,10 @@ const Header = ({
         (await window.electron.getAllAccounts()) as IAccount[];
       setAccounts(allAccounts);
     })();
+
+    const newColor = getRandomColor();
+    setBG(newColor);
+    setTC(calculateLuminance(newColor));
   }, [refreshState]);
 
   useEffect(() => {
@@ -164,9 +171,12 @@ const Header = ({
           <div className="flex items-center relative mr-2">
             {/* Text + Button Wrapper */}
             <div className="flex items-center">
-              <span className="text-gray-700 text-lg">Welcome to</span>
+              <span className="text-green-500 text-lg font-bold">
+                Welcome to
+              </span>
               <button
                 className="ml-2 px-4 py-2 border rounded-lg bg-white hover:bg-gray-50 focus:ring focus:ring-indigo-200 focus:outline-none"
+                style={{ backgroundColor, color: textColor }}
                 type="button"
                 onClick={toggleDropdown}
                 ref={buttonRef}

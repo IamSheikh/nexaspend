@@ -80,6 +80,8 @@ const Home = ({
   const [backgroundColor, setBackgroundColor] = useState('white');
   const [textColor, setTextColor] = useState('black');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isAddTransactionModalOpen, setIsAddTransactionModalOpen] =
+    useState(false);
 
   const itemsPerPage = 20;
 
@@ -318,26 +320,26 @@ const Home = ({
         refreshState={refreshState}
       />
 
-      {activeTab !== 'Transaction' && (
+      {isAddTransactionModalOpen && (
         <AddTransaction
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
           setRefreshState={setRefreshState}
           refreshState={refreshState}
+          isAddTransactionModalOpen={isAddTransactionModalOpen}
+          setIsAddTransactionModalOpen={setIsAddTransactionModalOpen}
         />
       )}
 
-      {activeTab !== 'Add Transaction' && (
-        <Charts
-          currentAccountId={currentAccountId}
-          refreshState={refreshState}
-          setSearchData={setSearchData}
-          setResults={setResults}
-          setBackgroundColor={setBackgroundColor}
-          setTextColor={setTextColor}
-          searchData={searchData}
-        />
-      )}
+      {/* {isAddTransactionModalOpen && ( */}
+      <Charts
+        currentAccountId={currentAccountId}
+        refreshState={refreshState}
+        setSearchData={setSearchData}
+        setResults={setResults}
+        setBackgroundColor={setBackgroundColor}
+        setTextColor={setTextColor}
+        searchData={searchData}
+      />
+      {/* )} */}
 
       <MainTable
         activeTab={activeTab}
@@ -417,6 +419,24 @@ const Home = ({
           setIsShowingChooseAccount={setAccountsModalOpen}
         />
       )}
+      {!loginModal &&
+        !isViewCategoryShowing &&
+        !isDeleteCategoryModalOpen &&
+        !isDeleteTransactionModalOpen &&
+        !isEditCategoryModalOpen &&
+        !isUpdateDaybook &&
+        !accountsModalOpen &&
+        !isModalOpen && (
+          <button
+            className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white px-4 py-2 shadow-lg rounded-full z-[50000]"
+            type="button"
+            onClick={() => {
+              setIsAddTransactionModalOpen(true);
+            }}
+          >
+            +
+          </button>
+        )}
     </div>
   );
 };

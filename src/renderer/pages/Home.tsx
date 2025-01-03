@@ -21,7 +21,7 @@ import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import { IDaybook, ICategory } from '../../types';
 import '../styles/dist/dist.css';
-import { getFirstAndLastDayOfMonth } from '../utils';
+import { formatDate, getFirstAndLastDayOfMonth } from '../utils';
 import AddCategoryModal from '../components/AddCategoryModal';
 import AddTransaction from '../components/AddTransaction';
 import Header from '../components/Header';
@@ -112,8 +112,9 @@ const Home = ({
 
   const getData = async () => {
     const { firstDay, lastDay } = getFirstAndLastDayOfMonth();
+    const today = formatDate(new Date());
     const lastTenDaybook = await window.electron.getDaybookByFilters(
-      [firstDay, lastDay],
+      [today, today],
       'ALL',
       'ALL',
       // @ts-ignore

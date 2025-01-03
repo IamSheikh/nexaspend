@@ -15,7 +15,7 @@ const Tabs = ({
 }) => {
   return (
     <div
-      className={`flex justify-around border-b top-[50px] sticky z-40 bg-white  border-gray-300 ${activeTab === '' && 'hidden'} ${printingMode && 'hidden'}`}
+      className={`flex justify-around border-b top-[60px] sticky z-40 bg-white  border-gray-300 ${activeTab === '' && 'hidden'} ${printingMode && 'hidden'}`}
     >
       {['Transaction', 'Add Transaction'].map((tab) => (
         <button

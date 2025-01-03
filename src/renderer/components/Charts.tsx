@@ -147,10 +147,8 @@ const Charts = ({
       let selectedCategoryId: number = 0;
 
       setHelpMe(() => (tooltipItem: any) => {
-        // Get category name and percentage
         const categoryName = tooltipItem.label;
         const percentage = parseInt(tooltipItem.raw, 10).toFixed(2);
-        // Find the total amount for the category
         const categoryId = expenseCategories.find(
           (category) => category.name === categoryName,
         )?.id;
@@ -159,7 +157,6 @@ const Charts = ({
           selectedCategoryId = categoryId;
         }
 
-        // Return tooltip content with category total
         return `${percentage}% (${numeral(totalAmount).format('0,0')})`;
       });
 
@@ -173,13 +170,9 @@ const Charts = ({
         );
 
         if (activePoints.length > 0) {
-          // const firstPoint = activePoints[0];
-          // const categoryId = expenseCategories.find(
-          //   (category) => category.id === firstPoint.index,
-          // );
           const randomColor = getRandomColor();
           const isThereDates =
-            searchData.startDate !== '' && searchData.endDate;
+            searchData.startDate !== '' && searchData.endDate !== '';
           const filteredResults = await window.electron.getDaybookByFilters(
             isThereDates
               ? [searchData.startDate, searchData.endDate]
@@ -214,7 +207,7 @@ const Charts = ({
     };
 
     fetchData();
-  }, [refreshState, currentDate1]);
+  }, [refreshState, currentDate1, searchData]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -361,7 +354,7 @@ const Charts = ({
     };
 
     fetchData();
-  }, [refreshState, currentDate2]);
+  }, [refreshState, currentDate2, searchData]);
 
   useEffect(() => {
     (async () => {
@@ -448,15 +441,68 @@ const Charts = ({
     );
   };
 
+  function getRandomDarkColor() {
+    // Generate random RGB values with a bias towards darker shades
+    const r = Math.floor(Math.random() * 100);
+    const g = Math.floor(Math.random() * 100);
+    const b = Math.floor(Math.random() * 100);
+
+    // Convert RGB to hex
+    const color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+
+    return color;
+  }
+
+  const handleMoreDetails = async () => {
+    const { firstDay, lastDay } = getFirstAndLastDayOfMonthFromDate(
+      currentDate1.toString(),
+    );
+    const allTransactions = (await window.electron.getDaybookByFilters(
+      [firstDay, lastDay],
+      'ALL',
+      'ALL',
+      currentAccountId,
+    )) as IDaybook[];
+    const allExpenses = allTransactions.filter(
+      (transaction) => transaction.type === 'EXPENSE',
+    );
+
+    setResults(allExpenses);
+    setSearchData({
+      ...searchData,
+      startDate: firstDay,
+      endDate: lastDay,
+      entryType: 'EXPENSE',
+    });
+  };
+
+  const handleIncomeMoreDetails = async () => {
+    const { firstDay, lastDay } = getFirstAndLastDayOfMonthFromDate(
+      currentDate1.toString(),
+    );
+    const allTransactions = (await window.electron.getDaybookByFilters(
+      [firstDay, lastDay],
+      'ALL',
+      'ALL',
+      currentAccountId,
+    )) as IDaybook[];
+    const allIncome = allTransactions.filter(
+      (transaction) => transaction.type === 'INCOME',
+    );
+
+    setResults(allIncome);
+    setSearchData({
+      ...searchData,
+      startDate: firstDay,
+      endDate: lastDay,
+      entryType: 'INCOME',
+    });
+  };
+
   return (
     <div className="flex justify-center items-center space-x-2 p-4 bg-gray-100">
       {/* <div className="w-72 min-h-72 bg-white rounded-lg shadow-md flex-col flex items-center justify-center p-4"> */}
-      <div className="w-80 min-h-72 h-96 bg-white rounded-lg shadow-md flex flex-col items-center justify-center p-4">
-        {/* Display a message if no expense data is available */}
-        {!expenseChartData && (
-          <h1 className="text-xl font-medium text-gray-700">No Expense</h1>
-        )}
-
+      <div className="w-80 min-h-96 h-[26rem] bg-white rounded-lg shadow-md flex flex-col items-center justify-center p-4">
         {/* Month Navigator */}
         <div className="relative flex justify-between items-center w-full py-2 px-4 rounded-md mt-1">
           <button
@@ -522,41 +568,68 @@ const Charts = ({
               }}
             />
           ) : (
-            <div className="flex justify-center items-center h-full">
-              <h1 className="text-2xl font-medium">No Expense</h1>
-            </div>
+            <Doughnut
+              data={{
+                labels: [],
+                datasets: [
+                  {
+                    data: [1, 1, 1, 1], // Placeholder values for empty chart
+                    backgroundColor: [
+                      '#E0E0E0',
+                      '#C0C0C0',
+                      '#B0B0B0',
+                      '#A0A0A0',
+                    ],
+                    hoverBackgroundColor: [
+                      '#E0E0E0',
+                      '#C0C0C0',
+                      '#B0B0B0',
+                      '#A0A0A0',
+                    ],
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    enabled: true,
+                    callbacks: {
+                      label: helpMe, // Custom tooltip formatting function
+                    },
+                  },
+                },
+                onClick: handleExpenseClick, // Click event handler for the chart
+              }}
+            />
           )}
         </div>
 
         {/* Total Expenses */}
         {doesExpenseMonthHaveTransactions && (
-          <h1 className="mt-4 text-gray-800 text-center">
-            Total Expenses:{' '}
-            <span className="font-semibold text-gray-900">
-              {numeral(totalExpense).format('0,0')}
-            </span>
-          </h1>
+          <>
+            <h1 className="mt-4 text-gray-800 text-center">
+              Total Expenses:{' '}
+              <span className="font-semibold text-gray-900">
+                {numeral(totalExpense).format('0,0')}
+              </span>
+            </h1>
+            <button
+              type="button"
+              style={{
+                color: getRandomDarkColor(),
+              }}
+              className="font-medium"
+              onClick={handleMoreDetails}
+            >
+              More Details
+            </button>
+          </>
         )}
       </div>
 
-      <div className="w-80 min-h-72 h-96 bg-white rounded-lg shadow-md flex items-center flex-col justify-center p-4">
-        {/* <div className="mt-1">
-          {!incomeChartData ? (
-            <h1 className="text-xl font-medium">No Income</h1>
-          ) : (
-            <div>
-              {new Date().toLocaleDateString('default', {
-                month: 'short',
-              })}
-              , {new Date().getFullYear()}
-            </div>
-          )}
-        </div> */}
-        {!incomeChartData && (
-          <h1 className="text-xl font-medium text-gray-700">No Expense</h1>
-        )}
-
-        {/* Month Navigator */}
+      <div className="w-80 min-h-96 h-[26rem] bg-white rounded-lg shadow-md flex items-center flex-col justify-center p-4">
         <div className="relative flex justify-between items-center w-full py-2 px-4 rounded-md mt-1">
           <button
             className="text-sm text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded transition"
@@ -626,18 +699,65 @@ const Charts = ({
             }}
           />
         ) : (
-          <div className="flex justify-center items-center h-full">
-            <h1>No Income</h1>
-          </div>
+          <Doughnut
+            data={{
+              labels: [],
+              datasets: [
+                {
+                  data: [1, 1, 1, 1], // Single value of 0 to display empty chart
+                  backgroundColor: ['#E0E0E0', '#C0C0C0', '#B0B0B0', '#A0A0A0'],
+
+                  hoverBackgroundColor: [
+                    '#E0E0E0',
+                    '#C0C0C0',
+                    '#B0B0B0',
+                    '#A0A0A0',
+                  ],
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              plugins: {
+                tooltip: {
+                  enabled: (context) => {
+                    // If value is 1, return false to hide the tooltip
+                    const value = context?.tooltip?.dataPoints?.[0]?.raw;
+                    return value !== 1;
+                  },
+                  callbacks: {
+                    label: helpMePlz,
+                  },
+                },
+                legend: {
+                  display: false,
+                },
+              },
+
+              onClick: handleIncomeClick,
+            }}
+          />
         )}
 
         {doesIncomeMonthHaveTransactions && (
-          <h1 className="mt-5">
-            Total Income:{' '}
-            <span className="font-semibold">
-              {numeral(totalIncome).format('0,0')}
-            </span>
-          </h1>
+          <>
+            <h1 className="mt-5">
+              Total Income:{' '}
+              <span className="font-semibold">
+                {numeral(totalIncome).format('0,0')}
+              </span>
+            </h1>
+            <button
+              type="button"
+              style={{
+                color: getRandomDarkColor(),
+              }}
+              className="font-medium"
+              onClick={handleIncomeMoreDetails}
+            >
+              More Details
+            </button>
+          </>
         )}
       </div>
     </div>

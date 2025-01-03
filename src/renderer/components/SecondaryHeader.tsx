@@ -131,7 +131,7 @@ const SecondaryHeader = ({
 
   return (
     <div
-      className={`px-2 flex z-[45] top-[5.4rem] sticky bg-white justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
+      className={`px-2 flex z-[45] top-[5.9rem] sticky bg-white justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
     >
       <button
         onClick={toggleSidebar}

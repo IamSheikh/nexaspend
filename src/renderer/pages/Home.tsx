@@ -19,7 +19,7 @@ import { useReactToPrint } from 'react-to-print';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
-import { IDaybook, ICategory } from '../../types';
+import { IDaybook, ICategory, IParty } from '../../types';
 import '../styles/dist/dist.css';
 import { formatDate, getFirstAndLastDayOfMonth } from '../utils';
 import AddCategoryModal from '../components/AddCategoryModal';
@@ -37,6 +37,10 @@ import MainTable from '../components/MainTable';
 import AccountsModal from '../components/AccountsModal';
 import LoginAccount from '../components/LoginAccount';
 import Charts from '../components/Charts';
+import AddParty from '../components/AddParty';
+import ViewParties from '../components/ViewParties';
+import DeletePartyModal from '../components/DeletePartyModal';
+import EditPartyModal from '../components/EditPartyModal';
 
 const Home = ({
   refreshState,
@@ -82,6 +86,13 @@ const Home = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddTransactionModalOpen, setIsAddTransactionModalOpen] =
     useState(false);
+  const [isTableFooterShowing, setIsTableFooterShowing] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isAddPartyModalShowing, setIsAddPartyModalShowing] = useState(false);
+  const [isViewingPartyShowing, setIsViewingPartyShowing] = useState(false);
+  const [selectedParty, setSelectedParty] = useState<IParty>();
+  const [isEditPartyModalOpen, setIsEditPartyModalOpen] = useState(false);
+  const [isDeletePartyModalOpen, setIsDeletePartyModalOpen] = useState(false);
 
   const itemsPerPage = 20;
 
@@ -245,6 +256,9 @@ const Home = ({
         setLoginModal={setLoginModal}
         currentAccountId={currentAccountId}
         refreshState={refreshState}
+        activeTab={activeTab}
+        setIsAddPartyModalOpen={setIsAddPartyModalShowing}
+        setIsViewingPartyShowing={setIsViewingPartyShowing}
       />
 
       <div ref={sideBarRef}>
@@ -329,17 +343,18 @@ const Home = ({
         />
       )}
 
-      {/* {isAddTransactionModalOpen && ( */}
-      <Charts
-        currentAccountId={currentAccountId}
-        refreshState={refreshState}
-        setSearchData={setSearchData}
-        setResults={setResults}
-        setBackgroundColor={setBackgroundColor}
-        setTextColor={setTextColor}
-        searchData={searchData}
-      />
-      {/* )} */}
+      {activeTab === 'Transaction' && (
+        <Charts
+          currentAccountId={currentAccountId}
+          refreshState={refreshState}
+          setSearchData={setSearchData}
+          setResults={setResults}
+          setBackgroundColor={setBackgroundColor}
+          setTextColor={setTextColor}
+          searchData={searchData}
+          setIsTableFooterShowing={setIsTableFooterShowing}
+        />
+      )}
 
       <MainTable
         activeTab={activeTab}
@@ -358,6 +373,7 @@ const Home = ({
         searchData={searchData}
         currentAccountId={currentAccountId}
         refreshState={refreshState}
+        isTableFooterShowing={isTableFooterShowing}
       />
 
       {/* Update Daybook Model */}
@@ -371,7 +387,6 @@ const Home = ({
         />
       )}
 
-      {/* Delete Category Modal */}
       {isDeleteCategoryModalOpen && (
         <DeleteCategoryModal
           selectedCategory={selectedCategory}
@@ -381,13 +396,21 @@ const Home = ({
         />
       )}
 
-      {/* Delete Transaction Modal */}
       {isDeleteTransactionModalOpen && (
         <DeleteTransaction
           selectedDaybook={selectedDaybook}
           setIsDeleteTransactionModalOpen={setIsDeleteTransactionModalOpen}
           setRefreshState={setRefreshState}
           setSelectedDaybook={setSelectedDaybook}
+        />
+      )}
+
+      {isDeletePartyModalOpen && (
+        <DeletePartyModal
+          selectedParty={selectedParty}
+          setIsDeletePartyModalOpen={setIsDeletePartyModalOpen}
+          setRefreshState={setRefreshState}
+          setSelectedParty={setSelectedParty}
         />
       )}
 
@@ -400,12 +423,40 @@ const Home = ({
         />
       )}
 
+      {isEditPartyModalOpen && (
+        <EditPartyModal
+          selectedParty={selectedParty}
+          setIsEditPartyModalOpen={setIsEditPartyModalOpen}
+          setRefreshState={setRefreshState}
+          setSelectedParty={setSelectedParty}
+        />
+      )}
+
       {isViewCategoryShowing && (
         <ViewCategories
           setIsDeleteCategoryModalOpen={setIsDeleteCategoryModalOpen}
           setIsEditCategoryModalOpen={setIsEditCategoryModalOpen}
           setRefreshState={setRefreshState}
           setSelectedCategory={setSelectedCategory}
+        />
+      )}
+
+      {isViewingPartyShowing && (
+        <ViewParties
+          setRefreshState={setRefreshState}
+          setSelectedParty={setSelectedParty}
+          setIsDeletePartyModalOpen={setIsDeletePartyModalOpen}
+          refreshState={refreshState}
+          setIsEditPartyModalOpen={setIsEditPartyModalOpen}
+        />
+      )}
+
+      {isAddPartyModalShowing && (
+        <AddParty
+          setActiveTab={setActiveTab}
+          setIsModalOpen={setIsAddPartyModalShowing}
+          setIsViewingPartyShowing={setIsViewingPartyShowing}
+          setRefreshState={setRefreshState}
         />
       )}
 
@@ -428,13 +479,19 @@ const Home = ({
         !accountsModalOpen &&
         !isModalOpen && (
           <button
-            className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white px-4 py-2 shadow-lg rounded-full z-[50000]"
+            className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 px-2 py-2 text-white shadow-lg rounded-md z-[50000] transition-all duration-300 ease-in-out"
             type="button"
-            onClick={() => {
-              setIsAddTransactionModalOpen(true);
-            }}
+            onClick={() => setIsAddTransactionModalOpen(true)}
+            onMouseEnter={() => setIsHovered(true)} // Hover starts
+            onMouseLeave={() => setIsHovered(false)} // Hover ends
           >
-            +
+            <span
+              className={`inline-block transition-all duration-500 ease-in-out ${
+                isHovered ? 'w-auto px-4' : 'w-12 px-2'
+              }`}
+            >
+              {isHovered ? 'Add Entry' : '+'}
+            </span>
           </button>
         )}
     </div>

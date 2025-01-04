@@ -39,12 +39,24 @@ import {
   getCategoriesByFilters,
   updateCategory,
 } from './services/Category.service';
-import { IAccount } from '../types';
+import { IAccount, IParty, ILedger } from '../types';
 import {
   addAccount,
   getAllAccounts,
   updateAccount,
 } from './services/Account.service';
+import {
+  addParty,
+  deleteParty,
+  getAllParties,
+  updateParty,
+} from './services/Party.service';
+import {
+  addLedger,
+  getAllLedgers,
+  updateLedger,
+  deleteLedger,
+} from './services/Ledger.service';
 
 class AppUpdater {
   constructor() {
@@ -72,6 +84,7 @@ addColumnIfNotExists('Category', 'accountId');
 addColumnIfNotExists('Account', 'pin');
 
 // Merry Christmas
+
 updateAccountIdOfDaybook();
 updateAccountIdOfCategory();
 updatePinOfAccount();
@@ -142,6 +155,42 @@ ipcMain.handle('getAllAccounts', () => {
 
 ipcMain.handle('updateAccount', (_, account: IAccount) => {
   updateAccount(account);
+});
+
+// Party
+
+ipcMain.handle('addParty', (_, party: IParty) => {
+  addParty(party);
+});
+
+ipcMain.handle('getAllParties', (_, accountId: number) => {
+  return getAllParties(accountId);
+});
+
+ipcMain.handle('updateParty', (_, party: IParty) => {
+  updateParty(party);
+});
+
+ipcMain.handle('deleteParty', (_, id: number) => {
+  deleteParty(id);
+});
+
+// Ledger
+
+ipcMain.handle('addLedger', (_, ledger: ILedger) => {
+  addLedger(ledger);
+});
+
+ipcMain.handle('getAllLedgers', (_, accountId: number) => {
+  return getAllLedgers(accountId);
+});
+
+ipcMain.handle('updateLedger', (_, ledger: ILedger) => {
+  updateLedger(ledger);
+});
+
+ipcMain.handle('deleteLedger', (_, id: number) => {
+  deleteLedger(id);
 });
 
 /*

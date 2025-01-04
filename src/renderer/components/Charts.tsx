@@ -30,6 +30,7 @@ const Charts = ({
   setResults,
   setBackgroundColor,
   setTextColor,
+  setIsTableFooterShowing,
 }: {
   searchData: any;
   currentAccountId: number;
@@ -38,6 +39,7 @@ const Charts = ({
   setResults: any;
   setBackgroundColor: any;
   setTextColor: any;
+  setIsTableFooterShowing: any;
 }) => {
   const [expenseChartData, setExpenseChartData] = useState<any>(null);
   const [incomeChartData, setIncomeChartData] = useState<any>(null);
@@ -474,6 +476,7 @@ const Charts = ({
       endDate: lastDay,
       entryType: 'EXPENSE',
     });
+    setIsTableFooterShowing(true);
   };
 
   const handleIncomeMoreDetails = async () => {
@@ -497,6 +500,8 @@ const Charts = ({
       endDate: lastDay,
       entryType: 'INCOME',
     });
+
+    setIsTableFooterShowing(true);
   };
 
   return (

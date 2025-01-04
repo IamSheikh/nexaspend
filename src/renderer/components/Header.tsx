@@ -31,6 +31,9 @@ const Header = ({
   refreshState,
   setCurrentAccountId,
   setLoginModal,
+  activeTab,
+  setIsAddPartyModalOpen,
+  setIsViewingPartyShowing,
 }: {
   printingMode: any;
   setActiveTab: any;
@@ -45,6 +48,9 @@ const Header = ({
   refreshState: any;
   setCurrentAccountId: any;
   setLoginModal: any;
+  activeTab: any;
+  setIsAddPartyModalOpen: any;
+  setIsViewingPartyShowing: any;
 }) => {
   const [currentAccount, setCurrentAccount] = useState<IAccount>();
   const [accounts, setAccounts] = useState<IAccount[]>([]);
@@ -131,6 +137,7 @@ const Header = ({
           onClick={() => {
             setActiveTab('Transaction');
             setIsViewingCategoryShowing(false);
+            setIsViewingPartyShowing(false);
             setRefreshState((prev: any) => !prev);
             setSearchData({
               startDate: '',
@@ -276,13 +283,23 @@ const Header = ({
               </div>
             )}
           </div>
-          <button
-            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Category
-          </button>
+          {activeTab === 'Transaction' ? (
+            <button
+              className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Category
+            </button>
+          ) : (
+            <button
+              className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              type="button"
+              onClick={() => setIsAddPartyModalOpen(true)}
+            >
+              Party
+            </button>
+          )}
         </div>
       </div>
 

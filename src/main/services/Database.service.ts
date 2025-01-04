@@ -43,10 +43,28 @@ const loadModels = () => {
     )
     .toString();
 
+  const partyModel = fs
+    .readFileSync(
+      !isDebug
+        ? path.join(process.resourcesPath, 'models', 'Party.model.sql')
+        : './src/main/models/Party.model.sql',
+    )
+    .toString();
+
+  const ledgerModel = fs
+    .readFileSync(
+      !isDebug
+        ? path.join(process.resourcesPath, 'models', 'Ledger.model.sql')
+        : './src/main/models/Ledger.model.sql',
+    )
+    .toString();
+
   db.serialize(() => {
     db.run(daybookModel);
     db.run(categoryModel);
     db.run(accountModel);
+    db.run(partyModel);
+    db.run(ledgerModel);
   });
 };
 

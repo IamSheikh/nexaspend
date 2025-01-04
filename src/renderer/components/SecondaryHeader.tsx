@@ -305,7 +305,7 @@ const SecondaryHeader = ({
       {/* Transaction Summary Section */}
       <div className="flex flex-col ml-10">
         {/* Previous Month */}
-        <div className="flex mb-1">
+        <div className="flex">
           <h2 className="text-sm font-semibold text-red-500 w-[200px]">
             {new Date(
               new Date().setMonth(new Date().getMonth() - 1),
@@ -327,8 +327,10 @@ const SecondaryHeader = ({
           </p>
         </div>
 
+        <div className="border-t-2 border-gray-200" />
+
         {/* Current Month */}
-        <div className="flex mb-1">
+        <div className="flex">
           <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
             {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
             {new Date().getFullYear()}:
@@ -341,6 +343,8 @@ const SecondaryHeader = ({
             ).format('0,0')}
           </p>
         </div>
+
+        <div className="border-t-2 border-gray-200" />
 
         {/* Today */}
         {searchData.startDate === '' &&

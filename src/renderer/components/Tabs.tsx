@@ -17,7 +17,7 @@ const Tabs = ({
     <div
       className={`flex justify-around border-b top-[60px] sticky z-40 bg-white  border-gray-300 ${activeTab === '' && 'hidden'} ${printingMode && 'hidden'}`}
     >
-      {['Transaction'].map((tab) => (
+      {['Transaction', 'Ledger'].map((tab) => (
         <button
           type="button"
           key={tab}
@@ -28,7 +28,7 @@ const Tabs = ({
               : 'hover:text-black'
           }`}
         >
-          {tab}
+          {tab === 'Transaction' ? 'Daybook' : tab}
         </button>
       ))}
     </div>

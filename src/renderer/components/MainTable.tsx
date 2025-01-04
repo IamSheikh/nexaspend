@@ -28,6 +28,7 @@ const MainTable = ({
   printTable,
   currentAccountId,
   refreshState,
+  isTableFooterShowing,
 }: {
   printingMode: any;
   activeTab: any;
@@ -45,6 +46,7 @@ const MainTable = ({
   searchData: any;
   currentAccountId: any;
   refreshState: any;
+  isTableFooterShowing: any;
 }) => {
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
@@ -229,67 +231,69 @@ const MainTable = ({
         </table>
       </div>
 
-      <div className="flex w-[95vw] justify-between">
-        <div className="flex justify-start self-start items-start mt-4 ml-2">
-          <button
-            className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
-            type="button"
-            onClick={() => {
-              printTable();
-            }}
-          >
-            Print
-          </button>
-          <button
-            className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
-            type="button"
-            onClick={handleDownloadPDF}
-          >
-            Download
-          </button>
-        </div>
+      {isTableFooterShowing && (
+        <div className="flex w-[95vw] justify-between">
+          <div className="flex justify-start self-start items-start mt-4 ml-2">
+            <button
+              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
+              type="button"
+              onClick={() => {
+                printTable();
+              }}
+            >
+              Print
+            </button>
+            <button
+              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
+              type="button"
+              onClick={handleDownloadPDF}
+            >
+              Download
+            </button>
+          </div>
 
-        <div className="flex justify-end self-end items-end mt-4 ml-2 mr-5">
-          <button
-            onClick={() => handlePageChange(1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            type="button"
-          >
-            {'<<'}
-          </button>
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            type="button"
-          >
-            {'<'}
-          </button>
-          <button
-            className="px-3 py-1 mx-1 rounded bg-blue-500 text-white"
-            type="button"
-          >
-            {currentPage} of {totalPages === 0 ? '1' : totalPages}
-          </button>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            type="button"
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-          >
-            {'>'}
-          </button>
-          <button
-            onClick={() => handlePageChange(totalPages)}
-            type="button"
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-          >
-            {'>>'}
-          </button>
+          <div className="flex justify-end self-end items-end mt-4 ml-2 mr-5">
+            <button
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              type="button"
+            >
+              {'<<'}
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              type="button"
+            >
+              {'<'}
+            </button>
+            <button
+              className="px-3 py-1 mx-1 rounded bg-blue-500 text-white"
+              type="button"
+            >
+              {currentPage} of {totalPages === 0 ? '1' : totalPages}
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              type="button"
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              {'>'}
+            </button>
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              type="button"
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              {'>>'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

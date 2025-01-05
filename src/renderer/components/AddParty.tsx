@@ -167,7 +167,10 @@ const AddParty = ({
             <button
               type="button"
               className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mr-3"
-              onClick={() => setIsModalOpen(false)}
+              onClick={() => {
+                setIsModalOpen(false);
+                setActiveTab('Ledger');
+              }}
             >
               Cancel
             </button>
@@ -184,7 +187,7 @@ const AddParty = ({
               onClick={() => {
                 setIsViewingPartyShowing(true);
                 setIsModalOpen(false);
-                setActiveTab('');
+                setActiveTab('liquidation');
               }}
             >
               View Parties

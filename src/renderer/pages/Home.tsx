@@ -19,7 +19,7 @@ import { useReactToPrint } from 'react-to-print';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
-import { IDaybook, ICategory, IParty } from '../../types';
+import { IDaybook, ICategory, IParty, ILedger } from '../../types';
 import '../styles/dist/dist.css';
 import { formatDate, getFirstAndLastDayOfMonth } from '../utils';
 import AddCategoryModal from '../components/AddCategoryModal';
@@ -41,6 +41,8 @@ import AddParty from '../components/AddParty';
 import ViewParties from '../components/ViewParties';
 import DeletePartyModal from '../components/DeletePartyModal';
 import EditPartyModal from '../components/EditPartyModal';
+import AddLedger from '../components/AddLedger';
+import MainLedgerTable from '../components/MainLedgerTable';
 
 const Home = ({
   refreshState,
@@ -86,6 +88,7 @@ const Home = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddTransactionModalOpen, setIsAddTransactionModalOpen] =
     useState(false);
+  const [isAddLedgerModalOpen, setIsAddLedgerModalOpen] = useState(false);
   const [isTableFooterShowing, setIsTableFooterShowing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isAddPartyModalShowing, setIsAddPartyModalShowing] = useState(false);
@@ -93,6 +96,10 @@ const Home = ({
   const [selectedParty, setSelectedParty] = useState<IParty>();
   const [isEditPartyModalOpen, setIsEditPartyModalOpen] = useState(false);
   const [isDeletePartyModalOpen, setIsDeletePartyModalOpen] = useState(false);
+  const [ledgerResults, setLedgerResults] = useState<ILedger[]>([]);
+  const [ledgerCurrentPage, setLedgerCurrentPage] = useState(1);
+  const ledgerTableRef = useRef<any>();
+  const [isLedgerTableFooterShowing] = useState(true);
 
   const itemsPerPage = 20;
 
@@ -135,6 +142,13 @@ const Home = ({
     );
     setResults(lastTenDaybook);
 
+    const ledgerDatae = await window.electron.getAllLedgers(
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
+    );
+
+    setLedgerResults(ledgerDatae);
+
     const findD = await window.electron.getDaybookByFilters(
       [firstDay, lastDay],
       'ALL',
@@ -165,6 +179,19 @@ const Home = ({
   const handlePageChange = (page: any) => {
     if (page > 0 && page <= totalPages) {
       setCurrentPage(page);
+    }
+  };
+
+  const ledgerTotalPages = Math.ceil(ledgerResults.length / itemsPerPage);
+  const currentLedgerData = printingMode
+    ? ledgerResults
+    : ledgerResults.slice(
+        (ledgerCurrentPage - 1) * itemsPerPage,
+        ledgerCurrentPage * itemsPerPage,
+      );
+  const handleLedgerPageChange = (page: any) => {
+    if (page > 0 && page <= totalPages) {
+      setLedgerCurrentPage(page);
     }
   };
 
@@ -215,6 +242,18 @@ const Home = ({
         pdf.save('table-styled.pdf');
       });
 
+      setPrintingMode(false);
+    }, 0);
+  };
+
+  const handleLedgerPrint = useReactToPrint({
+    contentRef: ledgerTableRef,
+  });
+
+  const printLedgerTable = () => {
+    setPrintingMode(true);
+    setTimeout(() => {
+      handleLedgerPrint();
       setPrintingMode(false);
     }, 0);
   };
@@ -343,6 +382,15 @@ const Home = ({
         />
       )}
 
+      {isAddLedgerModalOpen && (
+        <AddLedger
+          setRefreshState={setRefreshState}
+          isAddLedgerModalOpen={isAddLedgerModalOpen}
+          refreshState={refreshState}
+          setIsAddLedgerModalOpen={setIsAddLedgerModalOpen}
+        />
+      )}
+
       {activeTab === 'Transaction' && (
         <Charts
           currentAccountId={currentAccountId}
@@ -353,6 +401,7 @@ const Home = ({
           setTextColor={setTextColor}
           searchData={searchData}
           setIsTableFooterShowing={setIsTableFooterShowing}
+          results={results}
         />
       )}
 
@@ -374,6 +423,23 @@ const Home = ({
         currentAccountId={currentAccountId}
         refreshState={refreshState}
         isTableFooterShowing={isTableFooterShowing}
+      />
+
+      {/* Ledger Table */}
+
+      <MainLedgerTable
+        activeTab={activeTab}
+        currentAccountId={currentAccountId}
+        printingMode={printingMode}
+        refreshState={refreshState}
+        setRefreshState={setRefreshState}
+        currentLedgerData={currentLedgerData}
+        handleLedgerPageChange={handleLedgerPageChange}
+        ledgerCurrentPage={ledgerCurrentPage}
+        ledgerTableRef={ledgerTableRef}
+        ledgerTotalPages={ledgerTotalPages}
+        printLedgerTable={printLedgerTable}
+        isLedgerTableFooterShowing={isLedgerTableFooterShowing}
       />
 
       {/* Update Daybook Model */}
@@ -478,10 +544,18 @@ const Home = ({
         !isUpdateDaybook &&
         !accountsModalOpen &&
         !isModalOpen && (
+          // <div className="fire-wrapper">
+          // <div className="fire-overlay"></div>
           <button
             className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 px-2 py-2 text-white shadow-lg rounded-md z-[50000] transition-all duration-300 ease-in-out"
             type="button"
-            onClick={() => setIsAddTransactionModalOpen(true)}
+            onClick={() => {
+              if (activeTab === 'Transaction') {
+                setIsAddTransactionModalOpen(true);
+              } else if (activeTab === 'Ledger') {
+                setIsAddLedgerModalOpen(true);
+              }
+            }}
             onMouseEnter={() => setIsHovered(true)} // Hover starts
             onMouseLeave={() => setIsHovered(false)} // Hover ends
           >
@@ -493,6 +567,7 @@ const Home = ({
               {isHovered ? 'Add Entry' : '+'}
             </span>
           </button>
+          // </div>
         )}
     </div>
   );

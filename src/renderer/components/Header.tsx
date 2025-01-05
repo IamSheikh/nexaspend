@@ -283,7 +283,7 @@ const Header = ({
               </div>
             )}
           </div>
-          {activeTab === 'Transaction' ? (
+          {activeTab === 'Transaction' || activeTab === 'homicide' ? (
             <button
               className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
               type="button"
@@ -292,6 +292,9 @@ const Header = ({
               Category
             </button>
           ) : (
+            ''
+          )}
+          {activeTab === 'Ledger' && (
             <button
               className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
               type="button"

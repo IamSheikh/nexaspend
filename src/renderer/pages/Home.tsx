@@ -16,9 +16,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bounce, ToastContainer } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import html2canvas from 'html2canvas';
 import { IDaybook, ICategory, IParty, ILedger } from '../../types';
 import '../styles/dist/dist.css';
 import { formatDate, getFirstAndLastDayOfMonth } from '../utils';
@@ -200,12 +197,39 @@ const Home = ({
 
   const handlePreview = (target: any) => {
     return new Promise(() => {
-      const data = target.contentWindow.document.documentElement.outerHTML;
-      const blob = new Blob([data], { type: 'text/html' });
+      const data = target.contentWindow.document.documentElement.innerHTML;
+
+      const styles = target.contentWindow.document.querySelectorAll(
+        'style, link[rel="stylesheet"]',
+      );
+      let injectedStyles = '';
+
+      styles.forEach((style: any) => {
+        if (style.tagName === 'STYLE') {
+          injectedStyles += `<style>${style.innerHTML}</style>`;
+        } else if (style.tagName === 'LINK') {
+          injectedStyles += `<link rel="stylesheet" href="${style.href}">`;
+        }
+      });
+
+      const fullContent = `
+      <html>
+        <head>
+          ${injectedStyles}
+        </head>
+        <body>
+          ${data}
+        </body>
+      </html>
+    `;
+
+      const blob = new Blob([fullContent], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
+
       window.electron.preview(url);
     });
   };
+
   const handlePrint = useReactToPrint({
     // content: () => tableRef.current,
     contentRef: tableRef,
@@ -223,55 +247,19 @@ const Home = ({
 
   const handleDownloadPDF = () => {
     setPrintingMode(true);
-
-    setTimeout(() => {
-      const element = document.getElementById('table-container');
-      html2canvas(element as any).then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4',
-        });
-
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.height;
-
-        // Calculate the total content height from the image
-        const imgProps = pdf.getImageProperties(imgData);
-        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-        let currentHeight = 0;
-        let offset = 0;
-
-        // Add the first page
-        pdf.addImage(imgData, 'PNG', 0, offset, pdfWidth, imgHeight);
-        currentHeight += imgHeight;
-
-        // Loop to handle content overflow
-        while (currentHeight > pageHeight) {
-          offset = -pageHeight; // move the image position to the next page
-          currentHeight -= pageHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, offset, pdfWidth, imgHeight);
-        }
-
-        // Save the PDF
-        pdf.save('table-styled.pdf');
-      });
-
-      setPrintingMode(false);
-    }, 0);
   };
 
-  const handleLedgerPrint = useReactToPrint({
+  const handleLedgerPint = useReactToPrint({
+    // content: () => tableRef.current,
     contentRef: ledgerTableRef,
+    documentTitle: 'Test',
+    print: handlePreview,
   });
 
   const printLedgerTable = () => {
     setPrintingMode(true);
     setTimeout(() => {
-      handleLedgerPrint();
+      handleLedgerPint();
       setPrintingMode(false);
     }, 0);
   };
@@ -316,6 +304,7 @@ const Home = ({
         activeTab={activeTab}
         setIsAddPartyModalOpen={setIsAddPartyModalShowing}
         setIsViewingLedgerShowing={setIsViewingLedgerShowing}
+        setIsTableFooterShowing={setIsTableFooterShowing}
       />
 
       <div ref={sideBarRef}>

@@ -97,12 +97,48 @@ const MainLedgerTable = ({
       className={`${!printingMode && 'flex justify-center self-center items-center flex-col mb-4'} ${activeTab !== 'Ledger' && ''}`}
     >
       <div
-        className={`flex flex-col justify-center items-center `}
+        className="flex flex-col justify-center items-center w-full"
         ref={ledgerTableRef}
       >
         <h1 className="text-2xl font-semibold mt-4">
           {selectedParty.partyName} Ledger:
         </h1>
+
+        <div className="flex justify-center items-center mt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 w-full mt-4 px-8">
+            <div className="flex">
+              <span className="font-semibold text-gray-700">
+                Mobile Number:
+              </span>
+              <span className="ml-2 text-gray-900">
+                {selectedParty.mobileNumber}
+              </span>
+            </div>
+            <div className="flex">
+              <span className="font-semibold text-gray-700">Address:</span>
+              <span className="ml-2 text-gray-900">
+                {selectedParty.address}
+              </span>
+            </div>
+            <div className="flex">
+              <span className="font-semibold text-gray-700">Email:</span>
+              <span className="ml-2 text-gray-900">{selectedParty.email}</span>
+            </div>
+            <div className="flex">
+              <span className="font-semibold text-gray-700">Details:</span>
+              <span className="ml-2 text-gray-900">
+                {selectedParty.details}
+              </span>
+            </div>
+            <div className="flex justify-center items-center self-center col-span-2">
+              <span className="font-semibold text-gray-700">Balance:</span>
+              <span className="ml-2 text-gray-900">
+                {numeral(selectedParty.balance).format('0,0')}
+              </span>
+            </div>
+          </div>
+        </div>
+
         <div
           className={`flex items-center ml-12 ${printingMode && 'hidden'} mt-5`}
         >
@@ -224,35 +260,35 @@ const MainLedgerTable = ({
           >
             <tr className="bg-gray-200">
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
                 Date
               </th>
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
                 Type
               </th>
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
-              >
-                Party
-              </th>
-              <th
-                className={`border border-gray-300 ${printingMode && 'px-2 pb-2 mb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
                 Details
               </th>
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
-                Amount
+                You Gave
               </th>
-              {/* <th
-                className={`border border-gray-300 ${printingMode && 'hidden'} no-print`}
+              <th
+                className={`border border-gray-300 ${printingMode && 'text-center w-32'}`}
               >
-                Actions
-              </th> */}
+                You Received
+              </th>
+              <th
+                className={`border border-gray-300 ${printingMode && 'text-center w-32'}`}
+              >
+                Balance
+              </th>
             </tr>
           </thead>
 
@@ -267,7 +303,7 @@ const MainLedgerTable = ({
                 }}
               >
                 <td
-                  className={`border border-gray-300 ${printingMode && 'pb-2'}`}
+                  className={`border border-gray-300 ${printingMode && 'pb-2 w-32'}`}
                 >
                   {da.date}
                 </td>
@@ -281,53 +317,25 @@ const MainLedgerTable = ({
                 <td
                   className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
                 >
-                  {/* {allCate.find((c) => c.id === da.categoryId)?.name} */}
-                  {
-                    allParties.find((party) => party.id === da.partyId)
-                      ?.partyName
-                  }
-                </td>
-                <td
-                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
-                >
                   {da.details}
                 </td>
                 <td
                   className={`border border-gray-300 text-right px-2 ${printingMode && 'pb-2'}`}
                 >
-                  {numeral(da.amount).format('0,0')}
+                  {da.transaction_type === 'YOU GAVE' &&
+                    numeral(da.amount).format('0,0')}
                 </td>
-                {/* <td
-                  className={`border border-gray-300 items-center justify-center flex ${printingMode && 'hidden'} no-print`}
+                <td
+                  className={`border border-gray-300 text-right px-2 ${printingMode && 'pb-2'}`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsUpdateDaybook(true);
-                      setSelectedDaybook(da);
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 512 512"
-                      width="16"
-                      height="20"
-                    >
-                      <path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    className="bg-transparent font-semibold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ml-2"
-                    onClick={async () => {
-                      setSelectedDaybook(da);
-                      setIsDeleteTransactionModalOpen(true);
-                      setRefreshState((prev: any) => !prev);
-                    }}
-                  >
-                    X
-                  </button>
-                </td> */}
+                  {da.transaction_type === 'YOU RECEIVED' &&
+                    numeral(da.amount).format('0,0')}
+                </td>
+                <td
+                  className={`border border-gray-300 text-right px-2 ${printingMode && 'pb-2'}`}
+                >
+                  {numeral(selectedParty.balance).format('0,0')}
+                </td>
               </tr>
             ))}
           </tbody>

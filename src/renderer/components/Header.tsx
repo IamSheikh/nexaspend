@@ -34,6 +34,7 @@ const Header = ({
   activeTab,
   setIsAddPartyModalOpen,
   setIsViewingLedgerShowing,
+  setIsTableFooterShowing,
 }: {
   printingMode: any;
   setActiveTab: any;
@@ -51,6 +52,7 @@ const Header = ({
   activeTab: any;
   setIsAddPartyModalOpen: any;
   setIsViewingLedgerShowing: any;
+  setIsTableFooterShowing: any;
 }) => {
   const [currentAccount, setCurrentAccount] = useState<IAccount>();
   const [accounts, setAccounts] = useState<IAccount[]>([]);
@@ -94,8 +96,6 @@ const Header = ({
   }, [refreshState]);
 
   const handleClick = (accountId: number) => {
-    // const newAccount = accounts.find((account) => account.id === accountId);
-    // setCurrentAccount(newAccount);
     setCurrentAccountId(accountId);
     setLoginModal((prev: any) => !prev);
   };
@@ -108,7 +108,7 @@ const Header = ({
         buttonRef.current &&
         !buttonRef.current.contains(event.target as Node)
       ) {
-        setIsDropdownOpen(false); // Close dropdown
+        setIsDropdownOpen(false);
       }
     };
 
@@ -138,6 +138,7 @@ const Header = ({
             setActiveTab('Transaction');
             setIsViewingCategoryShowing(false);
             setIsViewingLedgerShowing(false);
+            setIsTableFooterShowing(false);
             setRefreshState((prev: any) => !prev);
             setSearchData({
               startDate: '',

@@ -107,9 +107,9 @@ const Home = ({
     setIsOpen(!isOpen);
   };
 
-  const handlePrint = useReactToPrint({
-    contentRef: tableRef,
-  });
+  // const handlePrint = useReactToPrint({
+  //   contentRef: tableRef,
+  // });
 
   useEffect(() => {
     const handleKeyDown = (event: any) => {
@@ -117,7 +117,7 @@ const Home = ({
         event.preventDefault();
         setPrintingMode(true);
         setTimeout(() => {
-          handlePrint();
+          // handlePrint();
           setPrintingMode(false);
         }, 1000);
       }
@@ -197,6 +197,21 @@ const Home = ({
       setLedgerCurrentPage(page);
     }
   };
+
+  const handlePreview = (target: any) => {
+    return new Promise(() => {
+      const data = target.contentWindow.document.documentElement.outerHTML;
+      const blob = new Blob([data], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      window.electron.preview(url);
+    });
+  };
+  const handlePrint = useReactToPrint({
+    // content: () => tableRef.current,
+    contentRef: tableRef,
+    documentTitle: 'Test',
+    print: handlePreview,
+  });
 
   const printTable = () => {
     setPrintingMode(true);

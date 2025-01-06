@@ -98,6 +98,10 @@ const electronHandler = {
     ),
   updateLedger: (ledger: ILedger) => ipcRenderer.invoke('updateLedger', ledger),
   deleteLedger: (id: number) => ipcRenderer.invoke('deleteLedger', id),
+
+  // Preview
+
+  preview: (url: any) => ipcRenderer.invoke('preview', url),
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

@@ -110,17 +110,17 @@ const MainTable = ({
           >
             <tr className="bg-gray-200">
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center px-2 pb-2'}`}
               >
                 Date
               </th>
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
                 Type
               </th>
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
                 Category
               </th>
@@ -130,12 +130,12 @@ const MainTable = ({
                 Details
               </th>
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
                 Income
               </th>
               <th
-                className={`border border-gray-300 ${printingMode && 'px-2 pb-2 mb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
                 Expense
               </th>
@@ -158,7 +158,7 @@ const MainTable = ({
                 }}
               >
                 <td
-                  className={`border border-gray-300 ${printingMode && 'pb-2'}`}
+                  className={`border border-gray-300 px-2  ${printingMode && 'pb-2 w-28'}`}
                 >
                   {da.date}
                 </td>

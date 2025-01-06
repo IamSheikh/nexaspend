@@ -1,3 +1,6 @@
+/* eslint-disable no-return-assign */
+/* eslint-disable no-param-reassign */
+/* eslint-disable prefer-template */
 /* eslint global-require: off, no-console: off, promise/always-return: off */
 
 /**
@@ -205,6 +208,47 @@ ipcMain.handle('updateLedger', (_, ledger: ILedger) => {
 
 ipcMain.handle('deleteLedger', (_, id: number) => {
   deleteLedger(id);
+});
+
+const printOptions = {
+  silent: false,
+  size: 'A4',
+  landscape: false,
+};
+
+ipcMain.handle('preview', async (_: any, url: any) => {
+  let win = new BrowserWindow({
+    title: 'Print Preview',
+    show: false,
+    autoHideMenuBar: true,
+  });
+
+  win.webContents.once('did-finish-load', () => {
+    win.webContents
+      .printToPDF(printOptions)
+      .then((data: any) => {
+        const buf = Buffer.from(data);
+        data = buf.toString('base64');
+        // @ts-ignore
+        const ur = 'data:application/pdf;base64,' + data;
+
+        // @ts-ignore
+        win.webContents.on('ready-to-show', () => {
+          win.once('page-title-updated', (e) => e.preventDefault());
+          win.show();
+        });
+
+        // @ts-ignore
+        win.webContents.on('closed', () => (win = null));
+        win.loadURL(ur);
+      })
+      .catch((error) => {
+        throw error;
+      });
+  });
+
+  await win.loadURL(url);
+  return 'shown preview window';
 });
 
 /*

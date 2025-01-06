@@ -80,12 +80,12 @@ const AddLedger = ({
     if (inputData.transaction_type === 'YOU GAVE') {
       await window.electron.updateParty({
         ...findParty,
-        balance: findParty?.balance + +inputData.amount,
+        balance: findParty?.balance - inputData.amount,
       });
     } else if (inputData.transaction_type === 'YOU RECEIVED') {
       await window.electron.updateParty({
         ...findParty,
-        balance: findParty?.balance - inputData.amount,
+        balance: findParty?.balance + inputData.amount,
       });
     }
 

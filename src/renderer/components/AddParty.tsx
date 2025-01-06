@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/function-component-definition */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
@@ -9,12 +10,10 @@ import { IParty } from '../../types';
 const AddParty = ({
   setActiveTab,
   setIsModalOpen,
-  setIsViewingPartyShowing,
   setRefreshState,
 }: {
   setIsModalOpen: any;
   setActiveTab: any;
-  setIsViewingPartyShowing: any;
   setRefreshState: any;
 }) => {
   const [partyInputData, setPartyInputData] = useState<IParty>({
@@ -181,7 +180,7 @@ const AddParty = ({
             >
               Submit
             </button>
-            <button
+            {/* <button
               type="button"
               className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ml-2"
               onClick={() => {
@@ -191,7 +190,7 @@ const AddParty = ({
               }}
             >
               View Parties
-            </button>
+            </button> */}
           </div>
         </form>
       </div>

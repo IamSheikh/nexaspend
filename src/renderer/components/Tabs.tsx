@@ -8,10 +8,12 @@ const Tabs = ({
   printingMode,
   activeTab,
   setActiveTab,
+  setIsViewingLedgerShowing,
 }: {
   printingMode: any;
   activeTab: any;
   setActiveTab: any;
+  setIsViewingLedgerShowing: any;
 }) => {
   return (
     <div
@@ -21,7 +23,12 @@ const Tabs = ({
         <button
           type="button"
           key={tab}
-          onClick={() => setActiveTab(tab)}
+          onClick={() => {
+            setActiveTab(tab);
+            if (tab === 'Transaction') {
+              setIsViewingLedgerShowing(false);
+            }
+          }}
           className={`pb-2 text-gray-600  ${
             activeTab === tab
               ? 'border-b-2 border-black text-black'

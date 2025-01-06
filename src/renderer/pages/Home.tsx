@@ -92,7 +92,7 @@ const Home = ({
   const [isTableFooterShowing, setIsTableFooterShowing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isAddPartyModalShowing, setIsAddPartyModalShowing] = useState(false);
-  const [isViewingPartyShowing, setIsViewingPartyShowing] = useState(false);
+  const [isViewingLedgerShowing, setIsViewingLedgerShowing] = useState(false);
   const [selectedParty, setSelectedParty] = useState<IParty>();
   const [isEditPartyModalOpen, setIsEditPartyModalOpen] = useState(false);
   const [isDeletePartyModalOpen, setIsDeletePartyModalOpen] = useState(false);
@@ -142,7 +142,10 @@ const Home = ({
     );
     setResults(lastTenDaybook);
 
-    const ledgerDatae = await window.electron.getAllLedgers(
+    const ledgerDatae = await window.electron.getLedgerByFilters(
+      [firstDay, lastDay],
+      'ALL',
+      selectedParty?.id as unknown as number,
       // @ts-ignore
       +localStorage.getItem('currentAccountId'),
     );
@@ -167,7 +170,7 @@ const Home = ({
 
   useEffect(() => {
     getData();
-  }, [refreshState]);
+  }, [refreshState, selectedParty]);
 
   const totalPages = Math.ceil(results.length / itemsPerPage);
   const currentData = printingMode
@@ -297,7 +300,7 @@ const Home = ({
         refreshState={refreshState}
         activeTab={activeTab}
         setIsAddPartyModalOpen={setIsAddPartyModalShowing}
-        setIsViewingPartyShowing={setIsViewingPartyShowing}
+        setIsViewingLedgerShowing={setIsViewingLedgerShowing}
       />
 
       <div ref={sideBarRef}>
@@ -320,6 +323,7 @@ const Home = ({
         printingMode={printingMode}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        setIsViewingLedgerShowing={setIsViewingLedgerShowing}
       />
 
       {/* Modal */}
@@ -427,20 +431,25 @@ const Home = ({
 
       {/* Ledger Table */}
 
-      <MainLedgerTable
-        activeTab={activeTab}
-        currentAccountId={currentAccountId}
-        printingMode={printingMode}
-        refreshState={refreshState}
-        setRefreshState={setRefreshState}
-        currentLedgerData={currentLedgerData}
-        handleLedgerPageChange={handleLedgerPageChange}
-        ledgerCurrentPage={ledgerCurrentPage}
-        ledgerTableRef={ledgerTableRef}
-        ledgerTotalPages={ledgerTotalPages}
-        printLedgerTable={printLedgerTable}
-        isLedgerTableFooterShowing={isLedgerTableFooterShowing}
-      />
+      {isViewingLedgerShowing && (
+        <MainLedgerTable
+          activeTab={activeTab}
+          currentAccountId={currentAccountId}
+          printingMode={printingMode}
+          refreshState={refreshState}
+          setRefreshState={setRefreshState}
+          currentLedgerData={currentLedgerData}
+          handleLedgerPageChange={handleLedgerPageChange}
+          ledgerCurrentPage={ledgerCurrentPage}
+          ledgerTableRef={ledgerTableRef}
+          ledgerTotalPages={ledgerTotalPages}
+          printLedgerTable={printLedgerTable}
+          isLedgerTableFooterShowing={isLedgerTableFooterShowing}
+          selectedParty={selectedParty}
+          setLedgerResults={setLedgerResults}
+          setLedgerCurrentPage={setLedgerCurrentPage}
+        />
+      )}
 
       {/* Update Daybook Model */}
       {isUpdateDaybook && selectedDaybook && (
@@ -507,13 +516,14 @@ const Home = ({
         />
       )}
 
-      {isViewingPartyShowing && (
+      {activeTab === 'Ledger' && !isViewingLedgerShowing && (
         <ViewParties
           setRefreshState={setRefreshState}
           setSelectedParty={setSelectedParty}
           setIsDeletePartyModalOpen={setIsDeletePartyModalOpen}
           refreshState={refreshState}
           setIsEditPartyModalOpen={setIsEditPartyModalOpen}
+          setIsViewingLedgerShowing={setIsViewingLedgerShowing}
         />
       )}
 
@@ -521,7 +531,7 @@ const Home = ({
         <AddParty
           setActiveTab={setActiveTab}
           setIsModalOpen={setIsAddPartyModalShowing}
-          setIsViewingPartyShowing={setIsViewingPartyShowing}
+          // setIsViewingPartyShowing={setIsViewingPartyShowing}
           setRefreshState={setRefreshState}
         />
       )}

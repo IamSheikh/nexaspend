@@ -83,6 +83,19 @@ const electronHandler = {
   addLedger: (ledger: ILedger) => ipcRenderer.invoke('addLedger', ledger),
   getAllLedgers: (accountId: number) =>
     ipcRenderer.invoke('getAllLedgers', accountId),
+  getLedgerByFilters: (
+    dateRange: Array<string> | null,
+    transactionType: string,
+    partyId: number | string,
+    accountId: number,
+  ) =>
+    ipcRenderer.invoke(
+      'getLedgerByFilters',
+      dateRange,
+      transactionType,
+      partyId,
+      accountId,
+    ),
   updateLedger: (ledger: ILedger) => ipcRenderer.invoke('updateLedger', ledger),
   deleteLedger: (id: number) => ipcRenderer.invoke('deleteLedger', id),
 };

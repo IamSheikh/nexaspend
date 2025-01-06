@@ -33,7 +33,7 @@ const Header = ({
   setLoginModal,
   activeTab,
   setIsAddPartyModalOpen,
-  setIsViewingPartyShowing,
+  setIsViewingLedgerShowing,
 }: {
   printingMode: any;
   setActiveTab: any;
@@ -50,7 +50,7 @@ const Header = ({
   setLoginModal: any;
   activeTab: any;
   setIsAddPartyModalOpen: any;
-  setIsViewingPartyShowing: any;
+  setIsViewingLedgerShowing: any;
 }) => {
   const [currentAccount, setCurrentAccount] = useState<IAccount>();
   const [accounts, setAccounts] = useState<IAccount[]>([]);
@@ -137,7 +137,7 @@ const Header = ({
           onClick={() => {
             setActiveTab('Transaction');
             setIsViewingCategoryShowing(false);
-            setIsViewingPartyShowing(false);
+            setIsViewingLedgerShowing(false);
             setRefreshState((prev: any) => !prev);
             setSearchData({
               startDate: '',

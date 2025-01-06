@@ -40,6 +40,87 @@ const getAllLedgers = async (accountId: number) => {
   }
 };
 
+const getLedgerByFilters = async (
+  dateRange: Array<string> | null,
+  transactionType: string,
+  partyId: number | string,
+  accountId: number,
+) => {
+  const db = connect();
+  const dbAll = promisify(db.all).bind(db);
+
+  try {
+    let query = '';
+
+    // Case 1: All filters are applied
+    if (transactionType === 'ALL' && partyId === 'ALL' && dateRange !== null) {
+      query = `SELECT * FROM Ledger WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}' AND accountId = '${accountId}' ORDER BY id DESC`;
+    }
+    // Case 2: All specific filters are applied
+    else if (
+      transactionType !== 'ALL' &&
+      partyId !== 'ALL' &&
+      dateRange !== null
+    ) {
+      query = `SELECT * FROM Ledger WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}' AND transaction_type = '${transactionType}' AND partyId = '${parseInt(partyId as unknown as string, 10)}' AND accountId = '${accountId}' ORDER BY id DESC`;
+    }
+    // Case 3: Filter by date and partyId
+    else if (
+      transactionType === 'ALL' &&
+      partyId !== 'ALL' &&
+      dateRange !== null
+    ) {
+      query = `SELECT * FROM Ledger WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}' AND partyId = '${parseInt(partyId as unknown as string, 10)}' AND accountId = '${accountId}' ORDER BY id DESC`;
+    }
+    // Case 4: Filter by date and transactionType
+    else if (
+      transactionType !== 'ALL' &&
+      partyId === 'ALL' &&
+      dateRange !== null
+    ) {
+      query = `SELECT * FROM Ledger WHERE date BETWEEN '${dateRange[0]}' AND '${dateRange[1]}' AND transaction_type = '${transactionType}' AND accountId = '${accountId}' ORDER BY id DESC`;
+    }
+    // Case 5: No date range, all transaction types and parties
+    else if (
+      transactionType === 'ALL' &&
+      partyId === 'ALL' &&
+      dateRange === null
+    ) {
+      query = `SELECT * FROM Ledger WHERE accountId = '${accountId}' ORDER BY id DESC`;
+    }
+    // Case 6: No date range, filter by partyId
+    else if (
+      transactionType === 'ALL' &&
+      partyId !== 'ALL' &&
+      dateRange === null
+    ) {
+      query = `SELECT * FROM Ledger WHERE partyId = '${parseInt(partyId as unknown as string, 10)}' AND accountId = '${accountId}' ORDER BY id DESC`;
+    }
+    // Case 7: No date range, filter by transactionType
+    else if (
+      transactionType !== 'ALL' &&
+      partyId === 'ALL' &&
+      dateRange === null
+    ) {
+      query = `SELECT * FROM Ledger WHERE transaction_type = '${transactionType}' AND accountId = '${accountId}' ORDER BY id DESC`;
+    }
+    // Case 8: No date range, filter by transactionType and partyId
+    else if (
+      transactionType !== 'ALL' &&
+      partyId !== 'ALL' &&
+      dateRange === null
+    ) {
+      query = `SELECT * FROM Ledger WHERE transaction_type = '${transactionType}' AND partyId = '${parseInt(partyId as unknown as string, 10)}' AND accountId = '${accountId}' ORDER BY id DESC`;
+    }
+
+    // Execute query
+    const rows = await dbAll(query);
+    return rows;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 const updateLedger = async (ledger: ILedger) => {
   const db = connect();
   const query = `UPDATE Ledger SET partyId = ?, details = ?, amount = ?, transaction_type = ?, date = ?, accountId = ? WHERE id = ?`;
@@ -73,4 +154,10 @@ const deleteLedger = async (id: number) => {
   });
 };
 
-export { addLedger, getAllLedgers, updateLedger, deleteLedger };
+export {
+  addLedger,
+  getAllLedgers,
+  getLedgerByFilters,
+  updateLedger,
+  deleteLedger,
+};

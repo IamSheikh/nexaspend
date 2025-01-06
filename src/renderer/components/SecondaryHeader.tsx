@@ -143,7 +143,7 @@ const SecondaryHeader = ({
 
       {/* Date Range Picker & Filters */}
       <div
-        className={`flex items-center ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
+        className={`flex items-center ml-12 ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
       >
         <div className="flex">
           {/* Start Date Picker */}
@@ -303,7 +303,7 @@ const SecondaryHeader = ({
       </div>
 
       {/* Transaction Summary Section */}
-      <div className="flex flex-col ml-10">
+      <div className="flex flex-col opacity-0">
         {/* Previous Month */}
         <div className="flex">
           <h2 className="text-sm font-semibold text-red-500 w-[200px]">

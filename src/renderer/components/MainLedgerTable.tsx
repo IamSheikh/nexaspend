@@ -7,9 +7,10 @@
 /* eslint-disable react/function-component-definition */
 /* eslint-disable no-undef */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import numeral from 'numeral';
 import { IParty } from '../../types';
+import { getFirstAndLastDayOfMonth } from '../utils';
 
 const MainLedgerTable = ({
   printingMode,
@@ -29,6 +30,9 @@ const MainLedgerTable = ({
   currentAccountId,
   refreshState,
   isLedgerTableFooterShowing,
+  selectedParty,
+  setLedgerResults,
+  setLedgerCurrentPage,
 }: {
   printingMode: any;
   activeTab: any;
@@ -47,8 +51,18 @@ const MainLedgerTable = ({
   currentAccountId: any;
   refreshState: any;
   isLedgerTableFooterShowing: any;
+  selectedParty: any;
+  setLedgerResults: any;
+  setLedgerCurrentPage: any;
 }) => {
+  const startDateRef = useRef<any>();
+  const endDateRef = useRef<any>();
   const [allParties, setAllParties] = useState<IParty[]>([]);
+  const [ledgerSearchData, setLedgerSearchData] = useState({
+    startDate: '',
+    endDate: '',
+    transactionType: '',
+  });
 
   useEffect(() => {
     (async () => {
@@ -60,38 +74,146 @@ const MainLedgerTable = ({
     })();
   }, [currentAccountId, refreshState]);
 
+  const handleSearch = async () => {
+    const { firstDay, lastDay } = getFirstAndLastDayOfMonth();
+    const isThereDates =
+      ledgerSearchData.startDate !== '' && ledgerSearchData.endDate;
+    const filteredResults = await window.electron.getLedgerByFilters(
+      isThereDates
+        ? [ledgerSearchData.startDate, ledgerSearchData.endDate]
+        : [firstDay, lastDay],
+      ledgerSearchData.transactionType,
+      selectedParty.id,
+      // @ts-ignore
+      localStorage.getItem('currentAccountId'),
+    );
+
+    setLedgerResults(filteredResults);
+    setLedgerCurrentPage(1);
+  };
+
   return (
     <div
-      className={`${!printingMode && 'flex justify-center self-center items-center flex-col mb-4'} ${activeTab !== 'Ledger' && 'hidden'}`}
+      className={`${!printingMode && 'flex justify-center self-center items-center flex-col mb-4'} ${activeTab !== 'Ledger' && ''}`}
     >
       <div
         className={`flex flex-col justify-center items-center `}
         ref={ledgerTableRef}
       >
-        {/* {printingMode && (
-          <div className="text-center mb-2">
-            <h2 className="text-xl font-semibold">
-              {ledgerSearchData.categoryId === 'ALL'
-                ? 'All Categories Expenses'
-                : `${
-                    // @ts-ignore
-                    allCategories?.find(
-                      (category) => category.id === +searchData.categoryId,
-                    ).name
-                  } Expenses`}
-            </h2>
-            {searchData.startDate !== '' && searchData.endDate !== '' ? (
-              <h2>
-                {searchData.startDate} to {searchData.endDate}
-              </h2>
-            ) : (
-              <h2>
-                {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
-                {new Date().getFullYear()}
-              </h2>
-            )}
+        <h1 className="text-2xl font-semibold mt-4">
+          {selectedParty.partyName} Ledger:
+        </h1>
+        <div
+          className={`flex items-center ml-12 ${printingMode && 'hidden'} mt-5`}
+        >
+          <div className="flex">
+            {/* Start Date Picker */}
+            <div className="flex items-center">
+              <label
+                htmlFor="startDate"
+                className="text-sm font-medium text-gray-700"
+              >
+                Start Date:
+              </label>
+              <input
+                id="startDate"
+                type="date"
+                className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
+                ref={startDateRef}
+                onClick={() => {
+                  if (startDateRef.current) {
+                    startDateRef.current.showPicker();
+                  }
+                }}
+                value={ledgerSearchData.startDate}
+                onChange={(e) => {
+                  const clone = { ...ledgerSearchData };
+                  clone.startDate = e.target.value;
+                  setLedgerSearchData(clone);
+                }}
+              />
+            </div>
+
+            {/* End Date Picker */}
+            <div className="flex items-center ml-1">
+              <label
+                htmlFor="endDate"
+                className="text-sm font-medium text-gray-700"
+              >
+                End Date:
+              </label>
+              <input
+                id="endDate"
+                type="date"
+                className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
+                ref={endDateRef}
+                onClick={() => {
+                  if (endDateRef.current) {
+                    endDateRef.current.showPicker();
+                  }
+                }}
+                value={ledgerSearchData.endDate}
+                onChange={(e) => {
+                  const clone = { ...ledgerSearchData };
+                  clone.endDate = e.target.value;
+                  setLedgerSearchData(clone);
+                }}
+              />
+            </div>
+
+            {/* Entry Type Dropdown */}
+            <div className="flex items-center ml-1">
+              <label
+                htmlFor="entryType"
+                className="text-sm font-medium text-gray-700"
+              >
+                Transaction Type:
+              </label>
+              <select
+                id="entryType"
+                className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
+                value={ledgerSearchData.transactionType}
+                onChange={(e) => {
+                  const clone = { ...ledgerSearchData };
+                  clone.transactionType = e.target.value;
+                  setLedgerSearchData(clone);
+                }}
+              >
+                <option value="ALL">All</option>
+                <option value="YOU GAVE">You Gave</option>
+                <option value="YOU RECEIVED">You Received</option>
+              </select>
+            </div>
           </div>
-        )} */}
+
+          {/* Search and Reset Button */}
+          <div className="ml-2 flex">
+            <button
+              type="button"
+              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              onClick={handleSearch}
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              className="bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
+              onClick={() => {
+                setRefreshState((prev: any) => !prev);
+                // setSearchData({
+                //   startDate: '',
+                //   endDate: '',
+                //   categoryId: 'ALL',
+                //   entryType: 'ALL',
+                // });
+                // setBackgroundColor('white');
+                // setTextColor('black');
+              }}
+            >
+              X
+            </button>
+          </div>
+        </div>
         <table
           className={`border-collapse w-[95vw]  mt-5 `}
           id="table-container"
@@ -152,7 +274,9 @@ const MainLedgerTable = ({
                 <td
                   className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
                 >
-                  {da.transaction_type}
+                  {da.transaction_type === 'YOU GAVE'
+                    ? 'You Gave'
+                    : 'You Received'}
                 </td>
                 <td
                   className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}

@@ -881,16 +881,7 @@ const Charts = ({
               {numeral(
                 previousMonthResults
                   .filter((da) => da.type === 'INCOME')
-                  .reduce(
-                    (total: number, item: any) => total + item.amount,
-                    0,
-                  ) -
-                  previousMonthResults
-                    .filter((da) => da.type === 'EXPENSE')
-                    .reduce(
-                      (total: number, item: any) => total + item.amount,
-                      0,
-                    ),
+                  .reduce((total: number, item: any) => total + item.amount, 0),
               ).format('0,0')}
             </p>
           </div>
@@ -907,16 +898,7 @@ const Charts = ({
               {numeral(
                 currentMonthResults
                   .filter((da: any) => da.type === 'INCOME')
-                  .reduce(
-                    (total: number, item: any) => total + item.amount,
-                    0,
-                  ) -
-                  currentMonthResults
-                    .filter((da: any) => da.type === 'EXPENSE')
-                    .reduce(
-                      (total: number, item: any) => total + item.amount,
-                      0,
-                    ),
+                  .reduce((total: number, item: any) => total + item.amount, 0),
               ).format('0,0')}
             </p>
           </div>
@@ -938,13 +920,7 @@ const Charts = ({
                     .reduce(
                       (total: number, item: any) => total + item.amount,
                       0,
-                    ) -
-                    todayExpenses
-                      .filter((da: any) => da.date === formatDate(new Date()))
-                      .reduce(
-                        (total: number, item: any) => total + item.amount,
-                        0,
-                      ),
+                    ),
                 ).format('0,0')}
               </p>
             </div>
@@ -971,13 +947,7 @@ const Charts = ({
                     .reduce(
                       (total: number, item: any) => total + item.amount,
                       0,
-                    ) -
-                    results
-                      .filter((da: any) => da.type === 'EXPENSE')
-                      .reduce(
-                        (total: number, item: any) => total + item.amount,
-                        0,
-                      ),
+                    ),
                 ).format('0,0')}
               </p>
             </div>
@@ -1001,13 +971,7 @@ const Charts = ({
                       .reduce(
                         (total: number, item: any) => total + item.amount,
                         0,
-                      ) -
-                      results
-                        .filter((da: any) => da.type === 'EXPENSE')
-                        .reduce(
-                          (total: number, item: any) => total + item.amount,
-                          0,
-                        ),
+                      ),
                   ).format('0,0')}
                 </p>
               </div>
@@ -1034,17 +998,39 @@ const Charts = ({
                       .reduce(
                         (total: number, item: any) => total + item.amount,
                         0,
-                      ) -
-                      results
-                        .filter((da: any) => da.type === 'EXPENSE')
-                        .reduce(
-                          (total: number, item: any) => total + item.amount,
-                          0,
-                        ),
+                      ),
                   ).format('0,0')}
                 </p>
               </div>
             )}
+        </div>
+
+        <div className="flex flex-col items-center self-center w-full">
+          <h1 className="text-2xl font-semibold text-center">Balance</h1>
+
+          <div className="flex self-center w-full justify-center">
+            <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+              {/* {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
+              {new Date().getFullYear()}: */}
+              This Month:
+            </h2>
+            <p className="ml-3 text-left w-[100px]">
+              {numeral(
+                currentMonthResults
+                  .filter((da: any) => da.type === 'INCOME')
+                  .reduce(
+                    (total: number, item: any) => total + item.amount,
+                    0,
+                  ) -
+                  currentMonthResults
+                    .filter((da: any) => da.type === 'EXPENSE')
+                    .reduce(
+                      (total: number, item: any) => total + item.amount,
+                      0,
+                    ),
+              ).format('0,0')}
+            </p>
+          </div>
         </div>
       </div>
 

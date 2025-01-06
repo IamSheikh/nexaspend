@@ -56,6 +56,7 @@ import {
   getAllLedgers,
   updateLedger,
   deleteLedger,
+  getLedgerByFilters,
 } from './services/Ledger.service';
 
 class AppUpdater {
@@ -184,6 +185,19 @@ ipcMain.handle('addLedger', (_, ledger: ILedger) => {
 ipcMain.handle('getAllLedgers', (_, accountId: number) => {
   return getAllLedgers(accountId);
 });
+
+ipcMain.handle(
+  'getLedgerByFilters',
+  (
+    _,
+    dateRange: Array<string> | null,
+    transactionType: string,
+    partyId: number | string,
+    accountId: number,
+  ) => {
+    return getLedgerByFilters(dateRange, transactionType, partyId, accountId);
+  },
+);
 
 ipcMain.handle('updateLedger', (_, ledger: ILedger) => {
   updateLedger(ledger);

@@ -17,12 +17,14 @@ const ViewParties = ({
   setIsDeletePartyModalOpen,
   setIsEditPartyModalOpen,
   refreshState,
+  setIsViewingLedgerShowing,
 }: {
   setSelectedParty: any;
   setRefreshState: any;
   setIsDeletePartyModalOpen: any;
   refreshState: any;
   setIsEditPartyModalOpen: any;
+  setIsViewingLedgerShowing: any;
 }) => {
   const [parties, setParties] = useState<IParty[]>([]);
 
@@ -54,20 +56,37 @@ const ViewParties = ({
         </thead>
         <tbody>
           {parties.map((da, index) => (
-            <tr className="text-center">
+            <tr
+              className="text-center"
+              onClick={() => {
+                setIsViewingLedgerShowing((prev: any) => !prev);
+                setSelectedParty(da);
+              }}
+            >
               <td className="border border-gray-300 px-2">{index + 1}</td>
-              <td className="border border-gray-300 px-2">{da.partyName}</td>
-              <td className="border border-gray-300 px-2">{da.mobileNumber}</td>
-              <td className="border border-gray-300 px-2">{da.address}</td>
-              <td className="border border-gray-300 px-2">{da.email}</td>
-              <td className="border border-gray-300 px-2">{da.details}</td>
+              <td className="border border-gray-300 px-2 text-left">
+                {da.partyName}
+              </td>
+              <td className="border border-gray-300 px-2 text-left">
+                {da.mobileNumber}
+              </td>
+              <td className="border border-gray-300 px-2 text-left">
+                {da.address}
+              </td>
+              <td className="border border-gray-300 px-2 text-left">
+                {da.email}
+              </td>
+              <td className="border border-gray-300 px-2 text-left">
+                {da.details}
+              </td>
               <td className="border border-gray-300 px-2 text-right">
                 {numeral(da.balance).format('0,0')}
               </td>
               <td className="border border-gray-300 px-2 items-center justify-center flex">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setSelectedParty(da);
                     setIsEditPartyModalOpen(true);
                   }}
@@ -84,7 +103,8 @@ const ViewParties = ({
                 <button
                   type="button"
                   className="bg-transparent font-semibold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 ml-2"
-                  onClick={async () => {
+                  onClick={async (e) => {
+                    e.stopPropagation();
                     setSelectedParty(da);
                     setIsDeletePartyModalOpen(true);
                     setRefreshState((prev: any) => !prev);

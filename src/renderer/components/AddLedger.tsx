@@ -73,6 +73,22 @@ const AddLedger = ({
       type: 'success',
     });
 
+    const findParty = parties.find(
+      (party) => party.id === inputData.partyId,
+    ) as IParty;
+
+    if (inputData.transaction_type === 'YOU GAVE') {
+      await window.electron.updateParty({
+        ...findParty,
+        balance: findParty?.balance + +inputData.amount,
+      });
+    } else if (inputData.transaction_type === 'YOU RECEIVED') {
+      await window.electron.updateParty({
+        ...findParty,
+        balance: findParty?.balance - inputData.amount,
+      });
+    }
+
     setInputData({
       date: formatDate(formattedDate),
       amount: 0,

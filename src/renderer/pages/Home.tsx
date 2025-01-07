@@ -565,39 +565,39 @@ const Home = ({
           setIsShowingChooseAccount={setAccountsModalOpen}
         />
       )}
-      {!loginModal &&
+      {/* {!loginModal &&
         !isViewCategoryShowing &&
         !isDeleteCategoryModalOpen &&
         !isDeleteTransactionModalOpen &&
         !isEditCategoryModalOpen &&
         !isUpdateDaybook &&
         !accountsModalOpen &&
-        !isModalOpen && (
-          // <div className="fire-wrapper">
-          // <div className="fire-overlay"></div>
-          <button
-            className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 px-2 py-2 text-white shadow-lg rounded-md z-[50000] transition-all duration-300 ease-in-out"
-            type="button"
-            onClick={() => {
-              if (activeTab === 'Transaction') {
-                setIsAddTransactionModalOpen(true);
-              } else if (activeTab === 'Ledger') {
-                setIsAddLedgerModalOpen(true);
-              }
-            }}
-            onMouseEnter={() => setIsHovered(true)} // Hover starts
-            onMouseLeave={() => setIsHovered(false)} // Hover ends
-          >
-            <span
-              className={`inline-block transition-all duration-500 ease-in-out ${
-                isHovered ? 'w-auto px-4' : 'w-12 px-2'
-              }`}
-            >
-              {isHovered ? 'Add Entry' : '+'}
-            </span>
-          </button>
-          // </div>
-        )}
+        !isModalOpen && ( */}
+      {/* // <div className="fire-wrapper"> */}
+      {/* // <div className="fire-overlay"></div> */}
+      <button
+        className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 px-2 py-2 text-white shadow-lg rounded-md z-[50000] transition-all duration-300 ease-in-out"
+        type="button"
+        onClick={() => {
+          if (activeTab === 'Transaction') {
+            setIsAddTransactionModalOpen(true);
+          } else if (activeTab === 'Ledger') {
+            setIsAddLedgerModalOpen(true);
+          }
+        }}
+        onMouseEnter={() => setIsHovered(true)} // Hover starts
+        onMouseLeave={() => setIsHovered(false)} // Hover ends
+      >
+        <span
+          className={`inline-block transition-all duration-500 ease-in-out ${
+            isHovered ? 'w-auto px-4' : 'w-12 px-2'
+          }`}
+        >
+          {isHovered ? 'Add Entry' : '+'}
+        </span>
+      </button>
+      {/* // </div> */}
+      {/* )} */}
     </div>
   );
 };

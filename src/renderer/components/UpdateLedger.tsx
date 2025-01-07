@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-lonely-if */
 /* eslint-disable no-unsafe-optional-chaining */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
@@ -61,26 +62,90 @@ const UpdateLedger = ({
 
     await window.electron.updateLedger(selectedLedger as ILedger);
 
-    const findParty = parties.find(
-      (party) => party.id === selectedLedger.partyId,
-    ) as IParty;
+    if (clonedLedger?.partyId === selectedLedger.partyId) {
+      const findParty = parties.find(
+        (party) => party.id === selectedLedger.partyId,
+      ) as IParty;
 
-    if (selectedLedger.transaction_type === 'YOU GAVE') {
-      const newBalance =
-        // @ts-ignore
-        findParty.balance + clonedLedger?.amount - selectedLedger.amount;
-      await window.electron.updateParty({
-        ...findParty,
-        balance: newBalance,
-      });
+      if (clonedLedger?.transaction_type === selectedLedger.transaction_type) {
+        if (selectedLedger.transaction_type === 'YOU GAVE') {
+          const newBalance =
+            // @ts-ignore
+            findParty.balance + clonedLedger?.amount - selectedLedger.amount;
+          await window.electron.updateParty({
+            ...findParty,
+            balance: newBalance,
+          });
+        } else {
+          const newBalance =
+            // @ts-ignore
+            findParty.balance - clonedLedger?.amount + selectedLedger.amount;
+          await window.electron.updateParty({
+            ...findParty,
+            balance: newBalance,
+          });
+        }
+      } else {
+        if (selectedLedger.transaction_type === 'YOU RECEIVED') {
+          const newBalance =
+            // @ts-ignore
+            findParty.balance + 2 * clonedLedger?.amount;
+          await window.electron.updateParty({
+            ...findParty,
+            balance: newBalance,
+          });
+        } else if (
+          selectedLedger.transaction_type === 'YOU GAVE' &&
+          clonedLedger?.transaction_type === 'YOU GAVE'
+        ) {
+          // c'mon do something
+          const newBalance = findParty.balance - 2 * clonedLedger.amount;
+          await window.electron.updateParty({
+            ...findParty,
+            balance: newBalance,
+          });
+        }
+      }
     } else {
-      const newBalance =
+      const currentParty = parties.find(
         // @ts-ignore
-        findParty.balance - clonedLedger?.amount + selectedLedger.amount;
-      await window.electron.updateParty({
-        ...findParty,
-        balance: newBalance,
-      });
+        (party) => party.id === +clonedLedger?.partyId,
+      ) as IParty;
+      console.log(selectedLedger);
+      const newParty = parties.find(
+        (party) => party.id === +selectedLedger?.partyId,
+      ) as IParty;
+      // console.log(currentParty.balance + selectedLedger.amount);
+
+      if (selectedLedger.transaction_type === 'YOU GAVE') {
+        await window.electron.updateParty({
+          ...currentParty,
+          balance: currentParty.balance + selectedLedger.amount,
+        });
+
+        await window.electron.updateParty({
+          ...newParty,
+          balance: newParty.balance - selectedLedger.amount,
+        });
+      } else {
+        const newBalanceOfPreviousParty =
+          currentParty.balance - selectedLedger.amount;
+        const newBalanceOfNewParty =
+          // @ts-ignore
+          newParty.balance + selectedLedger.amount;
+
+        // findParty.balance + 2 * clonedLedger?.amount;
+
+        await window.electron.updateParty({
+          ...currentParty,
+          balance: newBalanceOfPreviousParty,
+        });
+
+        await window.electron.updateParty({
+          ...currentParty,
+          balance: newBalanceOfNewParty,
+        });
+      }
     }
 
     setRefreshState((prev: any) => !prev);
@@ -142,6 +207,91 @@ const UpdateLedger = ({
                 setSelectedLedger(clone);
               }}
             />
+          </div>
+
+          <div className="mt-4 w-full flex mb-4">
+            <label
+              htmlFor="transactionType"
+              className="text-sm font-medium text-gray-700 w-1/3"
+            >
+              Type:
+            </label>
+            <div className="flex items-center space-x-4 w-5/6">
+              <div className="flex items-center">
+                <input
+                  id="youGave"
+                  name="type"
+                  type="radio"
+                  value="YOU GAVE"
+                  className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
+                  required
+                  checked={selectedLedger.transaction_type === 'YOU GAVE'}
+                  onChange={(e) => {
+                    const clone = { ...selectedLedger };
+                    clone.transaction_type = e.target.value as
+                      | 'YOU GAVE'
+                      | 'YOU RECEIVED';
+                    setSelectedLedger(clone);
+                  }}
+                />
+                <label
+                  htmlFor="youGave"
+                  className="ml-2 text-sm font-medium text-gray-700"
+                >
+                  You GAVE
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  id="youReceived"
+                  name="type"
+                  type="radio"
+                  value="YOU RECEIVED"
+                  className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
+                  required
+                  checked={selectedLedger.transaction_type === 'YOU RECEIVED'}
+                  onChange={(e) => {
+                    const clone = { ...selectedLedger };
+                    clone.transaction_type = e.target.value as
+                      | 'YOU GAVE'
+                      | 'YOU RECEIVED';
+                    setSelectedLedger(clone);
+                  }}
+                />
+                <label
+                  htmlFor="youReceived"
+                  className="ml-2 text-sm font-medium text-gray-700"
+                >
+                  You Received
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center w-full mb-4">
+            <label
+              htmlFor="party"
+              className="text-sm font-medium text-gray-700 w-1/3"
+            >
+              Party:
+            </label>
+            <select
+              id="category"
+              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
+              required
+              value={selectedLedger.partyId}
+              onChange={(e) => {
+                const clone = { ...selectedLedger };
+                clone.partyId = +e.target.value;
+                setSelectedLedger(clone);
+              }}
+            >
+              {parties.map((party) => (
+                <option key={party.id} value={party.id}>
+                  {party.partyName}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Category */}

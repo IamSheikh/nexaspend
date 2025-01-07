@@ -40,6 +40,7 @@ import DeletePartyModal from '../components/DeletePartyModal';
 import EditPartyModal from '../components/EditPartyModal';
 import AddLedger from '../components/AddLedger';
 import MainLedgerTable from '../components/MainLedgerTable';
+import UpdateLedger from '../components/UpdateLedger';
 
 const Home = ({
   refreshState,
@@ -97,6 +98,8 @@ const Home = ({
   const [ledgerCurrentPage, setLedgerCurrentPage] = useState(1);
   const ledgerTableRef = useRef<any>();
   const [isLedgerTableFooterShowing] = useState(true);
+  const [isUpdateLedger, setIsUpdateLedger] = useState(false);
+  const [selectedLedger, setSelectedLedger] = useState<ILedger>();
 
   const itemsPerPage = 20;
 
@@ -167,6 +170,7 @@ const Home = ({
 
   useEffect(() => {
     getData();
+    console.log('die rn');
   }, [refreshState, selectedParty]);
 
   const totalPages = Math.ceil(results.length / itemsPerPage);
@@ -452,6 +456,17 @@ const Home = ({
           selectedParty={selectedParty}
           setLedgerResults={setLedgerResults}
           setLedgerCurrentPage={setLedgerCurrentPage}
+          setSelectedLedger={setSelectedLedger}
+          setIsUpdateLedger={setIsUpdateLedger}
+        />
+      )}
+
+      {isUpdateLedger && selectedLedger && (
+        <UpdateLedger
+          selectedLedger={selectedLedger}
+          setIsUpdateLedger={setIsUpdateLedger}
+          setRefreshState={setRefreshState}
+          setSelectedLedger={setSelectedLedger}
         />
       )}
 

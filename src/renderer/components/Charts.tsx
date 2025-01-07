@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable camelcase */
@@ -82,6 +83,7 @@ const Charts = ({
   const [todayIncome, setTodayIncome] = useState<IDaybook[]>([]);
 
   const [allCategory, setAllCategory] = useState<ICategory[]>([]);
+  const [thisMonthIncome, setThisMonthIncome] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -588,6 +590,17 @@ const Charts = ({
     setIsTableFooterShowing(true);
   };
 
+  useEffect(() => {
+    setThisMonthIncome(
+      currentMonthResults
+        .filter((da: any) => da.type === 'INCOME')
+        .reduce((total: number, item: any) => total + item.amount, 0) -
+        currentMonthResults
+          .filter((da: any) => da.type === 'EXPENSE')
+          .reduce((total: number, item: any) => total + item.amount, 0),
+    );
+  }, [currentMonthResults]);
+
   return (
     <div className="flex justify-center items-center space-x-2 p-4 bg-gray-100">
       {/* <div className="w-72 min-h-72 bg-white rounded-lg shadow-md flex-col flex items-center justify-center p-4"> */}
@@ -1015,20 +1028,15 @@ const Charts = ({
               This Month:
             </h2>
             <p className="ml-3 text-left w-[100px]">
-              {numeral(
-                currentMonthResults
-                  .filter((da: any) => da.type === 'INCOME')
-                  .reduce(
-                    (total: number, item: any) => total + item.amount,
-                    0,
-                  ) -
-                  currentMonthResults
-                    .filter((da: any) => da.type === 'EXPENSE')
-                    .reduce(
-                      (total: number, item: any) => total + item.amount,
-                      0,
-                    ),
-              ).format('0,0')}
+              {thisMonthIncome === 0 ? (
+                0
+              ) : Math.sign(thisMonthIncome) === 1 ? (
+                <span>{numeral(thisMonthIncome).format('0,0')}</span>
+              ) : (
+                <span className="text-red-500">
+                  {numeral(Math.abs(thisMonthIncome)).format('0,0')}
+                </span>
+              )}
             </p>
           </div>
         </div>

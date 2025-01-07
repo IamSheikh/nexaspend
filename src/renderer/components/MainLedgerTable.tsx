@@ -33,6 +33,8 @@ const MainLedgerTable = ({
   selectedParty,
   setLedgerResults,
   setLedgerCurrentPage,
+  setSelectedLedger,
+  setIsUpdateLedger,
 }: {
   printingMode: any;
   activeTab: any;
@@ -54,10 +56,13 @@ const MainLedgerTable = ({
   selectedParty: any;
   setLedgerResults: any;
   setLedgerCurrentPage: any;
+  setSelectedLedger: any;
+  setIsUpdateLedger: any;
 }) => {
   const startDateRef = useRef<any>();
   const endDateRef = useRef<any>();
   const [allParties, setAllParties] = useState<IParty[]>([]);
+  const [currentParty, setCurrenParty] = useState<IParty>();
   const [ledgerSearchData, setLedgerSearchData] = useState({
     startDate: '',
     endDate: '',
@@ -70,6 +75,8 @@ const MainLedgerTable = ({
         // @ts-ignore
         currentAccountId,
       )) as IParty[];
+      const cp = parties.find((party) => party.id === selectedParty.id);
+      setCurrenParty(cp);
       setAllParties(parties);
     })();
   }, [currentAccountId, refreshState]);
@@ -101,7 +108,7 @@ const MainLedgerTable = ({
         ref={ledgerTableRef}
       >
         <h1 className="text-2xl font-semibold mt-4">
-          {selectedParty.partyName} Ledger:
+          {selectedParty.partyName}:
         </h1>
 
         <div className="flex justify-center items-center mt-2">
@@ -133,7 +140,7 @@ const MainLedgerTable = ({
             <div className="flex justify-center items-center self-center col-span-2">
               <span className="font-semibold text-gray-700">Balance:</span>
               <span className="ml-2 text-gray-900">
-                {numeral(selectedParty.balance).format('0,0')}
+                {numeral(currentParty?.balance).format('0,0')}
               </span>
             </div>
           </div>
@@ -284,11 +291,11 @@ const MainLedgerTable = ({
               >
                 You Received
               </th>
-              <th
+              {/* <th
                 className={`border border-gray-300 ${printingMode && 'text-center w-32'}`}
               >
                 Balance
-              </th>
+              </th> */}
             </tr>
           </thead>
 
@@ -298,8 +305,8 @@ const MainLedgerTable = ({
                 className="text-center"
                 key={da.id}
                 onClick={() => {
-                  //   setIsUpdateDaybook(true);
-                  //   setSelectedDaybook(da);
+                  setSelectedLedger(da);
+                  setIsUpdateLedger(true);
                 }}
               >
                 <td
@@ -331,11 +338,11 @@ const MainLedgerTable = ({
                   {da.transaction_type === 'YOU RECEIVED' &&
                     numeral(da.amount).format('0,0')}
                 </td>
-                <td
+                {/* <td
                   className={`border border-gray-300 text-right px-2 ${printingMode && 'pb-2'}`}
                 >
                   {numeral(selectedParty.balance).format('0,0')}
-                </td>
+                </td> */}
               </tr>
             ))}
           </tbody>

@@ -11,7 +11,7 @@ import { useState, useEffect, useRef, FormEvent } from 'react';
 import { toast } from 'react-toastify';
 import IDaybook from '../../types/IDaybook';
 import { formatDate } from '../utils';
-import { ICategory } from '../../types';
+import { ICategory, IParty } from '../../types';
 
 const AddTransaction = ({
   setRefreshState,
@@ -42,6 +42,9 @@ const AddTransaction = ({
   });
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
+  const [parties, setParties] = useState<IParty[]>([]);
+  const [selectedPartyId, setSelectedPartyId] = useState('');
+  const [isAddLedger, setIsAddLedger] = useState(false);
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   const getData = async () => {
@@ -57,12 +60,20 @@ const AddTransaction = ({
       (category) => category.type === 'INCOME',
     );
 
+    const allParties = (await window.electron.getAllParties(
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
+    )) as IParty[];
+
+    setParties(allParties);
+
     setExpenseCategories(filteredExpenseCategories);
     setIncomeCategories(filteredIncomeCategories);
     setInputData({
       ...inputData,
       categoryId: filteredExpenseCategories[0].id as number,
     });
+    setSelectedPartyId(`${allParties[0].id}`);
   };
 
   useEffect(() => {
@@ -82,6 +93,45 @@ const AddTransaction = ({
     toast('Transaction added successfully', {
       type: 'success',
     });
+
+    if (isAddLedger) {
+      const findParty = parties.find((party) => party.id === +selectedPartyId);
+      if (inputData.type === 'EXPENSE') {
+        await window.electron.addLedger({
+          // @ts-ignore
+          accountId: +localStorage.getItem('currentAccountId'),
+          amount: inputData.amount,
+          date: inputData.date,
+          details: inputData.details,
+          partyId: +selectedPartyId,
+          transaction_type: 'YOU GAVE',
+        });
+
+        if (findParty) {
+          await window.electron.updateParty({
+            ...findParty,
+            balance: findParty?.balance - inputData.amount,
+          });
+        }
+      } else if (inputData.type === 'INCOME') {
+        await window.electron.addLedger({
+          // @ts-ignore
+          accountId: +localStorage.getItem('currentAccountId'),
+          amount: inputData.amount,
+          date: inputData.date,
+          details: inputData.details,
+          partyId: +selectedPartyId,
+          transaction_type: 'YOU RECEIVED',
+        });
+
+        if (findParty) {
+          await window.electron.updateParty({
+            ...findParty,
+            balance: findParty?.balance + inputData.amount,
+          });
+        }
+      }
+    }
 
     setInputData({
       amount: 0,
@@ -285,6 +335,54 @@ const AddTransaction = ({
               }}
             />
           </div>
+
+          {/* Add Ledger */}
+          <div className="flex items-center w-full mt-4">
+            <input
+              id="add-ledger"
+              type="checkbox"
+              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              checked={isAddLedger}
+              onChange={(e) => {
+                console.log(e.target.checked);
+                setIsAddLedger(e.target.checked);
+              }}
+            />
+            <label
+              htmlFor="add-ledger"
+              className="ml-2 text-sm font-medium text-gray-700"
+            >
+              Add Ledger
+            </label>
+          </div>
+
+          {/* Party */}
+
+          {isAddLedger && (
+            <div className="flex items-center w-full mt-4">
+              <label
+                htmlFor="party"
+                className="text-sm font-medium text-gray-700 w-1/6"
+              >
+                Party:
+              </label>
+              <select
+                id="party"
+                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
+                required
+                value={selectedPartyId}
+                onChange={(e) => {
+                  setSelectedPartyId(e.target.value);
+                }}
+              >
+                {parties.map((party) => (
+                  <option key={party.id} value={party.id}>
+                    {party.partyName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Submit Button */}
           <div className="w-full flex justify-center mt-4">

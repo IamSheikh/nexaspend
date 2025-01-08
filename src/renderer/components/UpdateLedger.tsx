@@ -27,6 +27,7 @@ const UpdateLedger = ({
   //   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [parties, setParties] = useState<IParty[]>([]);
   const [clonedLedger, setClonedLedger] = useState<ILedger>();
+  const [isInputDisabled, setIsInputDisabled] = useState(true);
   const originalAccount = selectedLedger.accountId;
 
   //   useEffect(() => {
@@ -60,131 +61,137 @@ const UpdateLedger = ({
   const handleUpdateDaybook = async (e: FormEvent) => {
     e.preventDefault();
 
-    await window.electron.updateLedger(selectedLedger as ILedger);
+    if (!isInputDisabled) {
+      await window.electron.updateLedger(selectedLedger as ILedger);
 
-    if (clonedLedger?.partyId === selectedLedger.partyId) {
-      const findParty = parties.find(
-        (party) => party.id === selectedLedger.partyId,
-      ) as IParty;
+      if (clonedLedger?.partyId === selectedLedger.partyId) {
+        const findParty = parties.find(
+          (party) => party.id === selectedLedger.partyId,
+        ) as IParty;
 
-      if (clonedLedger?.transaction_type === selectedLedger.transaction_type) {
-        if (selectedLedger.transaction_type === 'YOU GAVE') {
-          const newBalance =
-            // @ts-ignore
-            findParty.balance + clonedLedger?.amount - selectedLedger.amount;
-          await window.electron.updateParty({
-            ...findParty,
-            balance: newBalance,
-          });
-        } else {
-          const newBalance =
-            // @ts-ignore
-            findParty.balance - clonedLedger?.amount + selectedLedger.amount;
-          await window.electron.updateParty({
-            ...findParty,
-            balance: newBalance,
-          });
-        }
-      } else {
-        if (selectedLedger.transaction_type === 'YOU RECEIVED') {
-          if (selectedLedger.amount === clonedLedger?.amount) {
+        if (
+          clonedLedger?.transaction_type === selectedLedger.transaction_type
+        ) {
+          if (selectedLedger.transaction_type === 'YOU GAVE') {
             const newBalance =
               // @ts-ignore
-              findParty.balance + 2 * clonedLedger?.amount;
+              findParty.balance + clonedLedger?.amount - selectedLedger.amount;
             await window.electron.updateParty({
               ...findParty,
               balance: newBalance,
             });
-            console.log('hi');
           } else {
-            // @ts-ignore
-            const psycho = findParty.balance + clonedLedger?.amount;
-
-            // console.log(psycho + selectedLedger.amount);
-            // findParty.balance - clonedLedger.amount + selectedLedger.amount
-            // -1000 + 1000 = 0 + 2000 = 2000
-
+            const newBalance =
+              // @ts-ignore
+              findParty.balance - clonedLedger?.amount + selectedLedger.amount;
             await window.electron.updateParty({
               ...findParty,
-              balance: psycho + selectedLedger.amount,
+              balance: newBalance,
             });
           }
-        } else if (selectedLedger.transaction_type === 'YOU GAVE') {
-          // c'mon do something
-          if (selectedLedger.amount === clonedLedger?.amount) {
-            // @ts-ignore
-            const newBalance = findParty.balance - 2 * clonedLedger?.amount;
-            await window.electron.updateParty({
-              ...findParty,
-              balance: newBalance,
-            });
-          } else {
-            // @ts-ignore
-            // const newBalance = findParty.balance - 2 * selectedLedger?.amount;
-            const psycho = findParty.balance - clonedLedger?.amount;
-            await window.electron.updateParty({
-              ...findParty,
-              balance: psycho - selectedLedger.amount,
-            });
+        } else {
+          if (selectedLedger.transaction_type === 'YOU RECEIVED') {
+            if (selectedLedger.amount === clonedLedger?.amount) {
+              const newBalance =
+                // @ts-ignore
+                findParty.balance + 2 * clonedLedger?.amount;
+              await window.electron.updateParty({
+                ...findParty,
+                balance: newBalance,
+              });
+              console.log('hi');
+            } else {
+              // @ts-ignore
+              const psycho = findParty.balance + clonedLedger?.amount;
+
+              // console.log(psycho + selectedLedger.amount);
+              // findParty.balance - clonedLedger.amount + selectedLedger.amount
+              // -1000 + 1000 = 0 + 2000 = 2000
+
+              await window.electron.updateParty({
+                ...findParty,
+                balance: psycho + selectedLedger.amount,
+              });
+            }
+          } else if (selectedLedger.transaction_type === 'YOU GAVE') {
+            // c'mon do something
+            if (selectedLedger.amount === clonedLedger?.amount) {
+              // @ts-ignore
+              const newBalance = findParty.balance - 2 * clonedLedger?.amount;
+              await window.electron.updateParty({
+                ...findParty,
+                balance: newBalance,
+              });
+            } else {
+              // @ts-ignore
+              // const newBalance = findParty.balance - 2 * selectedLedger?.amount;
+              const psycho = findParty.balance - clonedLedger?.amount;
+              await window.electron.updateParty({
+                ...findParty,
+                balance: psycho - selectedLedger.amount,
+              });
+            }
           }
         }
-      }
-    } else {
-      const currentParty = parties.find(
-        // @ts-ignore
-        (party) => party.id === +clonedLedger?.partyId,
-      ) as IParty;
-      console.log(selectedLedger);
-      const newParty = parties.find(
-        (party) => party.id === +selectedLedger?.partyId,
-      ) as IParty;
-      // console.log(currentParty.balance + selectedLedger.amount);
-
-      if (
-        selectedLedger.transaction_type === 'YOU GAVE' &&
-        clonedLedger?.transaction_type !== 'YOU GAVE'
-      ) {
-        await window.electron.updateParty({
-          ...currentParty,
-          balance: currentParty.balance + selectedLedger.amount,
-        });
-
-        await window.electron.updateParty({
-          ...newParty,
-          balance: newParty.balance - selectedLedger.amount,
-        });
-      } else if (
-        selectedLedger.transaction_type === 'YOU RECEIVED' &&
-        clonedLedger?.transaction_type !== 'YOU RECEIVED'
-      ) {
-        const newBalanceOfPreviousParty =
-          currentParty.balance - selectedLedger.amount;
-        const newBalanceOfNewParty =
+      } else {
+        const currentParty = parties.find(
           // @ts-ignore
-          newParty.balance + selectedLedger.amount;
+          (party) => party.id === +clonedLedger?.partyId,
+        ) as IParty;
+        console.log(selectedLedger);
+        const newParty = parties.find(
+          (party) => party.id === +selectedLedger?.partyId,
+        ) as IParty;
+        // console.log(currentParty.balance + selectedLedger.amount);
 
-        // findParty.balance + 2 * clonedLedger?.amount;
+        if (
+          selectedLedger.transaction_type === 'YOU GAVE' &&
+          clonedLedger?.transaction_type !== 'YOU GAVE'
+        ) {
+          await window.electron.updateParty({
+            ...currentParty,
+            balance: currentParty.balance + selectedLedger.amount,
+          });
 
-        await window.electron.updateParty({
-          ...currentParty,
-          balance: newBalanceOfPreviousParty,
-        });
+          await window.electron.updateParty({
+            ...newParty,
+            balance: newParty.balance - selectedLedger.amount,
+          });
+        } else if (
+          selectedLedger.transaction_type === 'YOU RECEIVED' &&
+          clonedLedger?.transaction_type !== 'YOU RECEIVED'
+        ) {
+          const newBalanceOfPreviousParty =
+            currentParty.balance - selectedLedger.amount;
+          const newBalanceOfNewParty =
+            // @ts-ignore
+            newParty.balance + selectedLedger.amount;
 
-        await window.electron.updateParty({
-          ...newParty,
-          balance: newBalanceOfNewParty,
-        });
+          // findParty.balance + 2 * clonedLedger?.amount;
+
+          await window.electron.updateParty({
+            ...currentParty,
+            balance: newBalanceOfPreviousParty,
+          });
+
+          await window.electron.updateParty({
+            ...newParty,
+            balance: newBalanceOfNewParty,
+          });
+        }
       }
+
+      setRefreshState((prev: any) => !prev);
+
+      toast('Ledger Updated Successfully', {
+        type: 'success',
+      });
+
+      setSelectedLedger(undefined);
+      setIsUpdateLedger(false);
+    } else {
+      setIsInputDisabled((prev) => !prev);
     }
-
-    setRefreshState((prev: any) => !prev);
-
-    toast('Ledger Updated Successfully', {
-      type: 'success',
-    });
-
-    setSelectedLedger(undefined);
-    setIsUpdateLedger(false);
   };
 
   return (
@@ -207,6 +214,7 @@ const UpdateLedger = ({
               min={0}
               className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
               required
+              disabled={isInputDisabled}
               value={selectedLedger.amount}
               onChange={(e) => {
                 const clone = { ...selectedLedger };
@@ -229,6 +237,7 @@ const UpdateLedger = ({
               type="date"
               className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
               required
+              disabled={isInputDisabled}
               value={selectedLedger.date}
               onChange={(e) => {
                 const clone = { ...selectedLedger };
@@ -254,6 +263,7 @@ const UpdateLedger = ({
                   value="YOU GAVE"
                   className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
                   required
+                  disabled={isInputDisabled}
                   checked={selectedLedger.transaction_type === 'YOU GAVE'}
                   onChange={(e) => {
                     const clone = { ...selectedLedger };
@@ -276,6 +286,7 @@ const UpdateLedger = ({
                   name="type"
                   type="radio"
                   value="YOU RECEIVED"
+                  disabled={isInputDisabled}
                   className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
                   required
                   checked={selectedLedger.transaction_type === 'YOU RECEIVED'}
@@ -309,6 +320,7 @@ const UpdateLedger = ({
               className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
               required
               value={selectedLedger.partyId}
+              disabled={isInputDisabled}
               onChange={(e) => {
                 const clone = { ...selectedLedger };
                 clone.partyId = +e.target.value;
@@ -363,6 +375,7 @@ const UpdateLedger = ({
               type="text"
               className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
               required
+              disabled={isInputDisabled}
               value={selectedLedger.details}
               onChange={(e) => {
                 const clone = { ...selectedLedger };
@@ -388,7 +401,7 @@ const UpdateLedger = ({
               type="submit"
               className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              Edit
+              {isInputDisabled ? 'Edit' : 'Save'}
             </button>
           </div>
 

@@ -132,13 +132,13 @@ const MainTable = ({
               <th
                 className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
-                Income
+                Amount
               </th>
-              <th
+              {/* <th
                 className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
                 Expense
-              </th>
+              </th> */}
               {/* <th
                 className={`border border-gray-300 ${printingMode && 'hidden'} no-print`}
               >
@@ -185,13 +185,14 @@ const MainTable = ({
                 <td
                   className={`border border-gray-300 text-right px-2 ${printingMode && 'pb-2'}`}
                 >
-                  {da.type === 'INCOME' && numeral(da.amount).format('0,0')}
+                  {/* {da.type === 'INCOME' && numeral(da.amount).format('0,0')} */}
+                  {numeral(da.amount).format('0,0')}
                 </td>
-                <td
+                {/* <td
                   className={`border border-gray-300 text-right px-2 ${printingMode && 'pb-2'}`}
                 >
                   {da.type === 'EXPENSE' && numeral(da.amount).format('0,0')}
-                </td>
+                </td> */}
                 {/* <td
                   className={`border border-gray-300 items-center justify-center flex ${printingMode && 'hidden'} no-print`}
                 >

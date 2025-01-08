@@ -27,6 +27,8 @@ const ViewParties = ({
   setIsViewingLedgerShowing: any;
 }) => {
   const [parties, setParties] = useState<IParty[]>([]);
+  const [filteredParties, setFilteredParties] = useState<IParty[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -38,9 +40,30 @@ const ViewParties = ({
     })();
   }, [refreshState]);
 
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredParties(parties);
+    } else {
+      setFilteredParties(
+        parties.filter((party) =>
+          party.partyName.toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
+      );
+    }
+  }, [searchQuery, parties]);
+
   return (
     <div className="flex justify-center flex-col items-center self-center mt-4">
       <h1 className="text-3xl font-semibold mb-4">All Parties</h1>
+      <div className="w-3/4 mb-2">
+        <input
+          type="text"
+          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Search party..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
       <table className="table-auto border-collapse border border-gray-300 w-[95vw]">
         <thead>
           <tr className="bg-gray-200">
@@ -55,7 +78,7 @@ const ViewParties = ({
           </tr>
         </thead>
         <tbody>
-          {parties.map((da, index) => (
+          {filteredParties.map((da, index) => (
             <tr
               className="text-center"
               onClick={() => {

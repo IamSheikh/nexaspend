@@ -111,7 +111,6 @@ const UpdateLedger = ({
           }
         } else if (selectedLedger.transaction_type === 'YOU GAVE') {
           // c'mon do something
-          alert('tooo');
           if (selectedLedger.amount === clonedLedger?.amount) {
             // @ts-ignore
             const newBalance = findParty.balance - 2 * clonedLedger?.amount;

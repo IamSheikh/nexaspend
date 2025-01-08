@@ -458,6 +458,7 @@ const Home = ({
           setLedgerCurrentPage={setLedgerCurrentPage}
           setSelectedLedger={setSelectedLedger}
           setIsUpdateLedger={setIsUpdateLedger}
+          setIsLedgerShowing={setIsViewingLedgerShowing}
         />
       )}
 

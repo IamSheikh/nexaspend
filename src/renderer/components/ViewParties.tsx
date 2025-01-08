@@ -45,8 +45,10 @@ const ViewParties = ({
       setFilteredParties(parties);
     } else {
       setFilteredParties(
-        parties.filter((party) =>
-          party.partyName.toLowerCase().includes(searchQuery.toLowerCase()),
+        parties.filter(
+          (party) =>
+            party.partyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            party.mobileNumber.toLowerCase().includes(searchQuery),
         ),
       );
     }

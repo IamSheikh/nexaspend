@@ -149,6 +149,7 @@ const Home = ({
       // @ts-ignore
       +localStorage.getItem('currentAccountId'),
     );
+    console.log(ledgerDatae);
 
     setLedgerResults(ledgerDatae);
 
@@ -171,7 +172,7 @@ const Home = ({
   useEffect(() => {
     getData();
     console.log('die rn');
-  }, [refreshState, selectedParty]);
+  }, [refreshState, selectedParty, isUpdateLedger]);
 
   const totalPages = Math.ceil(results.length / itemsPerPage);
   const currentData = printingMode
@@ -459,6 +460,7 @@ const Home = ({
           setSelectedLedger={setSelectedLedger}
           setIsUpdateLedger={setIsUpdateLedger}
           setIsLedgerShowing={setIsViewingLedgerShowing}
+          isUpdateLedger={isUpdateLedger}
         />
       )}
 

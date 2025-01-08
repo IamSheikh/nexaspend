@@ -38,6 +38,7 @@ const MainLedgerTable = ({
   setSelectedLedger,
   setIsUpdateLedger,
   setIsLedgerShowing,
+  isUpdateLedger,
 }: {
   printingMode: any;
   activeTab: any;
@@ -62,6 +63,7 @@ const MainLedgerTable = ({
   setSelectedLedger: any;
   setIsUpdateLedger: any;
   setIsLedgerShowing: any;
+  isUpdateLedger: any;
 }) => {
   const startDateRef = useRef<any>();
   const endDateRef = useRef<any>();
@@ -83,7 +85,7 @@ const MainLedgerTable = ({
       setCurrenParty(cp);
       setAllParties(parties);
     })();
-  }, [currentAccountId, refreshState]);
+  }, [currentAccountId, refreshState, isUpdateLedger]);
 
   const handleSearch = async () => {
     const { firstDay, lastDay } = getFirstAndLastDayOfMonth();
@@ -136,167 +138,85 @@ const MainLedgerTable = ({
       <div
         className={`${!printingMode && 'flex justify-center self-center items-center flex-col mb-4'} ${activeTab !== 'Ledger' && ''}`}
       >
-        <div
-          className="flex flex-col justify-center items-center w-full"
-          ref={ledgerTableRef}
-        >
-          <h1 className="text-2xl font-semibold mt-4">
+        <div ref={ledgerTableRef} className="items-center flex flex-col">
+          <h1 className="text-2xl font-semibold mt-4 text-center">
             {selectedParty.partyName}:
           </h1>
-
-          <div className="flex justify-center items-center mt-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 w-full mt-4 px-8">
-              <div className="flex">
-                <span className="font-semibold text-gray-700">
-                  Mobile Number:
-                </span>
-                <span className="ml-2 text-gray-900">
-                  {selectedParty.mobileNumber}
-                </span>
-              </div>
-              <div className="flex">
-                <span className="font-semibold text-gray-700">Address:</span>
-                <span className="ml-2 text-gray-900">
-                  {selectedParty.address}
-                </span>
-              </div>
-              <div className="flex">
-                <span className="font-semibold text-gray-700">Email:</span>
-                <span className="ml-2 text-gray-900">
-                  {selectedParty.email}
-                </span>
-              </div>
-              <div className="flex">
-                <span className="font-semibold text-gray-700">Details:</span>
-                <span className="ml-2 text-gray-900">
-                  {selectedParty.details}
-                </span>
-              </div>
-              <div className="flex justify-center items-center self-center col-span-2">
-                <span className="font-semibold text-gray-700">Balance:</span>
-                <span className="ml-2 text-gray-900">
-                  {numeral(currentParty?.balance).format('0,0')}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className={`flex items-center ml-12 ${printingMode && 'hidden'} mt-5`}
-          >
-            <div className="flex">
-              {/* Start Date Picker */}
-              <div className="flex items-center">
-                <label
-                  htmlFor="startDate"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Start Date:
-                </label>
-                <input
-                  id="startDate"
-                  type="date"
-                  className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
-                  ref={startDateRef}
-                  onClick={() => {
-                    if (startDateRef.current) {
-                      startDateRef.current.showPicker();
-                    }
-                  }}
-                  value={ledgerSearchData.startDate}
-                  onChange={(e) => {
-                    const clone = { ...ledgerSearchData };
-                    clone.startDate = e.target.value;
-                    setLedgerSearchData(clone);
-                  }}
-                />
-              </div>
-
-              {/* End Date Picker */}
-              <div className="flex items-center ml-1">
-                <label
-                  htmlFor="endDate"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  End Date:
-                </label>
-                <input
-                  id="endDate"
-                  type="date"
-                  className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
-                  ref={endDateRef}
-                  onClick={() => {
-                    if (endDateRef.current) {
-                      endDateRef.current.showPicker();
-                    }
-                  }}
-                  value={ledgerSearchData.endDate}
-                  onChange={(e) => {
-                    const clone = { ...ledgerSearchData };
-                    clone.endDate = e.target.value;
-                    setLedgerSearchData(clone);
-                  }}
-                />
-              </div>
-
-              {/* Entry Type Dropdown */}
-              {/* <div className="flex items-center ml-1">
-              <label
-                htmlFor="entryType"
-                className="text-sm font-medium text-gray-700"
-              >
-                Transaction Type:
+          <div className="flex flex-col md:flex-row justify-between items-start w-full max-w-6xl bg-white shadow-sm p-4 rounded-lg">
+            {/* Date By Section */}
+            <div className="flex flex-col mb-4 md:mb-0 md:w-1/3">
+              <label className="font-semibold text-gray-700 mb-2">
+                Date By:
               </label>
-              <select
-                id="entryType"
-                className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
-                value={ledgerSearchData.transactionType}
-                onChange={(e) => {
-                  const clone = { ...ledgerSearchData };
-                  clone.transactionType = e.target.value;
-                  setLedgerSearchData(clone);
-                }}
-              >
-                <option value="ALL">All</option>
-                <option value="YOU GAVE">You Gave</option>
-                <option value="YOU RECEIVED">You Received</option>
-              </select>
-            </div> */}
+              <div className="flex items-center">
+                <input
+                  type="date"
+                  className="border border-gray-300 rounded-lg px-2 py-1"
+                  ref={startDateRef}
+                  value={ledgerSearchData.startDate}
+                  onChange={(e) =>
+                    setLedgerSearchData({
+                      ...ledgerSearchData,
+                      startDate: e.target.value,
+                    })
+                  }
+                />
+                <span className="mx-2">→</span>
+                <input
+                  type="date"
+                  className="border border-gray-300 rounded-lg px-2 py-1"
+                  ref={endDateRef}
+                  value={ledgerSearchData.endDate}
+                  onChange={(e) =>
+                    setLedgerSearchData({
+                      ...ledgerSearchData,
+                      endDate: e.target.value,
+                    })
+                  }
+                />
+              </div>
             </div>
 
-            {/* Search and Reset Button */}
-            <div className="ml-2 flex">
-              {/* <button
-              type="button"
-              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              onClick={handleSearch}
-            >
-              Search
-            </button> */}
-              <button
-                type="button"
-                className="bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
-                onClick={() => {
-                  setRefreshState((prev: any) => !prev);
-                  setLedgerSearchData({
-                    endDate: '',
-                    startDate: '',
-                    transactionType: 'ALL',
-                  });
-                  // setSearchData({
-                  //   startDate: '',
-                  //   endDate: '',
-                  //   categoryId: 'ALL',
-                  //   entryType: 'ALL',
-                  // });
-                  // setBackgroundColor('white');
-                  // setTextColor('black');
-                }}
-              >
-                X
-              </button>
+            {/* Party Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 md:w-2/3">
+              {/* Address */}
+              <div>
+                <span className="font-semibold text-gray-700">Address:</span>
+                <span className="ml-2">{selectedParty?.address || ''}</span>
+              </div>
+
+              {/* Phone Number */}
+              <div>
+                <span className="font-semibold text-gray-700">
+                  Phone Number:
+                </span>
+                <span className="ml-2">
+                  {selectedParty?.mobileNumber || ''}
+                </span>
+              </div>
+
+              {/* Details */}
+              <div>
+                <span className="font-semibold text-gray-700">Details:</span>
+                <span className="ml-2">{selectedParty?.details || ''}</span>
+              </div>
+
+              {/* Balance */}
+              <div>
+                <span className="font-semibold text-gray-700">Balance:</span>
+                <span className="ml-2">
+                  {numeral(selectedParty?.balance || 0).format('0,0')}
+                </span>
+              </div>
+
+              {/* Email */}
+              <div>
+                <span className="font-semibold text-gray-700">Email:</span>
+                <span className="ml-2">{selectedParty?.email || ''}</span>
+              </div>
             </div>
           </div>
+
           <table
             className={`border-collapse w-[95vw]  mt-5 `}
             id="table-container"

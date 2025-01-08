@@ -58,6 +58,10 @@ const UpdateLedger = ({
     setClonedLedger(selectedLedger);
   }, []);
 
+  useEffect(() => {
+    setRefreshState((prev: any) => !prev);
+  }, []);
+
   const handleUpdateDaybook = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -181,17 +185,19 @@ const UpdateLedger = ({
         }
       }
 
-      setRefreshState((prev: any) => !prev);
-
       toast('Ledger Updated Successfully', {
         type: 'success',
       });
 
       setSelectedLedger(undefined);
       setIsUpdateLedger(false);
+      setRefreshState((prev: any) => !prev);
+      setIsInputDisabled(false);
     } else {
       setIsInputDisabled((prev) => !prev);
     }
+
+    setRefreshState((prev: any) => !prev);
   };
 
   return (

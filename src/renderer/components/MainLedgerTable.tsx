@@ -99,6 +99,12 @@ const MainLedgerTable = ({
     setLedgerCurrentPage(1);
   };
 
+  useEffect(() => {
+    if (ledgerSearchData.startDate !== '' && ledgerSearchData.endDate !== '') {
+      handleSearch();
+    }
+  }, [ledgerSearchData.startDate, ledgerSearchData.endDate]);
+
   return (
     <div
       className={`${!printingMode && 'flex justify-center self-center items-center flex-col mb-4'} ${activeTab !== 'Ledger' && ''}`}
@@ -205,7 +211,7 @@ const MainLedgerTable = ({
             </div>
 
             {/* Entry Type Dropdown */}
-            <div className="flex items-center ml-1">
+            {/* <div className="flex items-center ml-1">
               <label
                 htmlFor="entryType"
                 className="text-sm font-medium text-gray-700"
@@ -226,23 +232,28 @@ const MainLedgerTable = ({
                 <option value="YOU GAVE">You Gave</option>
                 <option value="YOU RECEIVED">You Received</option>
               </select>
-            </div>
+            </div> */}
           </div>
 
           {/* Search and Reset Button */}
           <div className="ml-2 flex">
-            <button
+            {/* <button
               type="button"
               className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               onClick={handleSearch}
             >
               Search
-            </button>
+            </button> */}
             <button
               type="button"
               className="bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
               onClick={() => {
                 setRefreshState((prev: any) => !prev);
+                setLedgerSearchData({
+                  endDate: '',
+                  startDate: '',
+                  transactionType: 'ALL',
+                });
                 // setSearchData({
                 //   startDate: '',
                 //   endDate: '',

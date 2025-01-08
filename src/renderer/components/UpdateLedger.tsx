@@ -87,23 +87,47 @@ const UpdateLedger = ({
         }
       } else {
         if (selectedLedger.transaction_type === 'YOU RECEIVED') {
-          const newBalance =
+          if (selectedLedger.amount === clonedLedger?.amount) {
+            const newBalance =
+              // @ts-ignore
+              findParty.balance + 2 * clonedLedger?.amount;
+            await window.electron.updateParty({
+              ...findParty,
+              balance: newBalance,
+            });
+            console.log('hi');
+          } else {
             // @ts-ignore
-            findParty.balance + 2 * clonedLedger?.amount;
-          await window.electron.updateParty({
-            ...findParty,
-            balance: newBalance,
-          });
-        } else if (
-          selectedLedger.transaction_type === 'YOU GAVE' &&
-          clonedLedger?.transaction_type === 'YOU GAVE'
-        ) {
+            const psycho = findParty.balance + clonedLedger?.amount;
+
+            // console.log(psycho + selectedLedger.amount);
+            // findParty.balance - clonedLedger.amount + selectedLedger.amount
+            // -1000 + 1000 = 0 + 2000 = 2000
+
+            await window.electron.updateParty({
+              ...findParty,
+              balance: psycho + selectedLedger.amount,
+            });
+          }
+        } else if (selectedLedger.transaction_type === 'YOU GAVE') {
           // c'mon do something
-          const newBalance = findParty.balance - 2 * clonedLedger.amount;
-          await window.electron.updateParty({
-            ...findParty,
-            balance: newBalance,
-          });
+          alert('tooo');
+          if (selectedLedger.amount === clonedLedger?.amount) {
+            // @ts-ignore
+            const newBalance = findParty.balance - 2 * clonedLedger?.amount;
+            await window.electron.updateParty({
+              ...findParty,
+              balance: newBalance,
+            });
+          } else {
+            // @ts-ignore
+            // const newBalance = findParty.balance - 2 * selectedLedger?.amount;
+            const psycho = findParty.balance - clonedLedger?.amount;
+            await window.electron.updateParty({
+              ...findParty,
+              balance: psycho - selectedLedger.amount,
+            });
+          }
         }
       }
     } else {
@@ -117,7 +141,10 @@ const UpdateLedger = ({
       ) as IParty;
       // console.log(currentParty.balance + selectedLedger.amount);
 
-      if (selectedLedger.transaction_type === 'YOU GAVE') {
+      if (
+        selectedLedger.transaction_type === 'YOU GAVE' &&
+        clonedLedger?.transaction_type !== 'YOU GAVE'
+      ) {
         await window.electron.updateParty({
           ...currentParty,
           balance: currentParty.balance + selectedLedger.amount,
@@ -127,7 +154,10 @@ const UpdateLedger = ({
           ...newParty,
           balance: newParty.balance - selectedLedger.amount,
         });
-      } else {
+      } else if (
+        selectedLedger.transaction_type === 'YOU RECEIVED' &&
+        clonedLedger?.transaction_type !== 'YOU RECEIVED'
+      ) {
         const newBalanceOfPreviousParty =
           currentParty.balance - selectedLedger.amount;
         const newBalanceOfNewParty =
@@ -142,7 +172,7 @@ const UpdateLedger = ({
         });
 
         await window.electron.updateParty({
-          ...currentParty,
+          ...newParty,
           balance: newBalanceOfNewParty,
         });
       }

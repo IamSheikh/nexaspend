@@ -62,6 +62,7 @@ const ViewParties = ({
                 setIsViewingLedgerShowing((prev: any) => !prev);
                 setSelectedParty(da);
               }}
+              key={da.id}
             >
               <td className="border border-gray-300 px-2">{index + 1}</td>
               <td className="border border-gray-300 px-2 text-left">

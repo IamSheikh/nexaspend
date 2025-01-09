@@ -144,38 +144,40 @@ const MainLedgerTable = ({
           </h1>
           <div className="flex flex-col md:flex-row justify-between items-start w-full max-w-6xl bg-white shadow-sm p-4 rounded-lg">
             {/* Date By Section */}
-            <div className="flex flex-col mb-4 md:mb-0 md:w-1/3">
-              <label className="font-semibold text-gray-700 mb-2">
-                Date By:
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="date"
-                  className="border border-gray-300 rounded-lg px-2 py-1"
-                  ref={startDateRef}
-                  value={ledgerSearchData.startDate}
-                  onChange={(e) =>
-                    setLedgerSearchData({
-                      ...ledgerSearchData,
-                      startDate: e.target.value,
-                    })
-                  }
-                />
-                <span className="mx-2">→</span>
-                <input
-                  type="date"
-                  className="border border-gray-300 rounded-lg px-2 py-1"
-                  ref={endDateRef}
-                  value={ledgerSearchData.endDate}
-                  onChange={(e) =>
-                    setLedgerSearchData({
-                      ...ledgerSearchData,
-                      endDate: e.target.value,
-                    })
-                  }
-                />
+            {!printingMode && (
+              <div className="flex flex-col mb-4 md:mb-0 md:w-1/3">
+                <label className="font-semibold text-gray-700 mb-2">
+                  Date By:
+                </label>
+                <div className="flex items-center">
+                  <input
+                    type="date"
+                    className="border border-gray-300 rounded-lg px-2 py-1"
+                    ref={startDateRef}
+                    value={ledgerSearchData.startDate}
+                    onChange={(e) =>
+                      setLedgerSearchData({
+                        ...ledgerSearchData,
+                        startDate: e.target.value,
+                      })
+                    }
+                  />
+                  <span className="mx-2">→</span>
+                  <input
+                    type="date"
+                    className="border border-gray-300 rounded-lg px-2 py-1"
+                    ref={endDateRef}
+                    value={ledgerSearchData.endDate}
+                    onChange={(e) =>
+                      setLedgerSearchData({
+                        ...ledgerSearchData,
+                        endDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Party Details Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 md:w-2/3">

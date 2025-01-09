@@ -57,15 +57,30 @@ const ViewParties = ({
   return (
     <div className="flex justify-center flex-col items-center self-center mt-4">
       <h1 className="text-3xl font-semibold mb-4">All Parties</h1>
-      <div className="w-3/4 mb-2">
+      <div className="relative w-3/4 mb-2 flex">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+          />
+        </svg>
         <input
           type="text"
-          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Search party..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
+
       <table className="table-auto border-collapse border border-gray-300 w-[95vw]">
         <thead>
           <tr className="bg-gray-200">

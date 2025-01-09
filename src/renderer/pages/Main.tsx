@@ -14,7 +14,10 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
   const [loginModal, setLoginModal] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<number>();
+  const [selectedAccount, setSelectedAccount] = useState<number>(
+    // @ts-ignore
+    +localStorage.getItem('currentAccountId'),
+  );
   const [isShowingChooseAccount, setIsShowingChooseAccount] = useState(false);
   // const navigate = useNavigate();
 
@@ -40,11 +43,6 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
     }
   }, []);
 
-  // const handleClick = (accountId: number) => {
-  //   localStorage.setItem('currentAccountId', `${accountId}`);
-  //   navigate('/home');
-  //   setRefreshState((prev: any) => !prev);
-  // };
   const handleClick = () => {
     setLoginModal((prev) => !prev);
   };
@@ -63,11 +61,11 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
             accounts.map((account) => (
               <button
                 type="button"
-                key={account.id}
+                // key={account.id}
                 className="w-full px-4 py-3 flex items-center justify-between border rounded-lg hover:bg-gray-50 focus:ring focus:ring-indigo-200 focus:outline-none"
                 onClick={() => {
                   handleClick();
-                  setSelectedAccount(account.id);
+                  setSelectedAccount(account.id as number);
                 }}
               >
                 <div>
@@ -75,7 +73,6 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
                     {account.name}
                   </p>
                 </div>
-                {/* <span className="text-indigo-500 font-semibold">Log In</span> */}
               </button>
             ))
           )}
@@ -112,7 +109,8 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
         <LoginAccount
           // @ts-ignore
           // selectedAccount={+localStorage.getItem('currentAccountId')}
-          selectedAccount={+localStorage.getItem('currentAccountId')}
+          // selectedAccount={+localStorage.getItem('currentAccountId')}
+          selectedAccount={selectedAccount}
           setRefreshState={setRefreshState}
           setLoginModal={setLoginModal}
           setIsShowingChooseAccount={setIsShowingChooseAccount}
@@ -135,16 +133,13 @@ const Main = ({ setRefreshState }: { setRefreshState: any }) => {
                     key={account.id}
                     className="w-full px-4 py-3 flex items-center justify-between border rounded-lg hover:bg-gray-50 focus:ring focus:ring-indigo-200 focus:outline-none"
                     onClick={() => {
+                      setSelectedAccount(account.id as number);
                       handleClick();
-                      setSelectedAccount(account.id);
                     }}
                   >
-                    <div>
-                      <p className="text-lg font-medium text-gray-700">
-                        {account.name}
-                      </p>
-                    </div>
-                    {/* <span className="text-indigo-500 font-semibold">Log In</span> */}
+                    <p className="text-lg font-medium text-gray-700">
+                      {account.name}
+                    </p>
                   </button>
                 ))
               )}

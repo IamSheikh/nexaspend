@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -51,13 +52,9 @@ const SecondaryHeader = ({
   const [allCategories, setAllCategories] = useState<ICategory[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
-  const [todayExpenses, setTodayExpenses] = useState<IDaybook[]>([]);
-  const [previousMonthResults, setPreviousMonthResults] = useState<IDaybook[]>(
-    [],
-  );
-  const [currentMonthResults, setCurrentMonthResults] = useState<IDaybook[]>(
-    [],
-  );
+  const [, setTodayExpenses] = useState<IDaybook[]>([]);
+  const [, setPreviousMonthResults] = useState<IDaybook[]>([]);
+  const [, setCurrentMonthResults] = useState<IDaybook[]>([]);
   const startDateRef = useRef<any>(null);
   const endDateRef = useRef<any>(null);
 
@@ -131,11 +128,12 @@ const SecondaryHeader = ({
 
   return (
     <div
-      className={`px-2 flex z-[45] top-[5.9rem] sticky bg-white justify-between ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
+      className={`px-2 flex z-[45] top-[5.9rem] sticky bg-white justify-between items-center ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
     >
+      {/* Hamburger Menu */}
       <button
         onClick={toggleSidebar}
-        className="ml-4 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-600 text-2xl"
+        className="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-600 text-2xl"
         type="button"
       >
         ☰
@@ -143,7 +141,7 @@ const SecondaryHeader = ({
 
       {/* Date Range Picker & Filters */}
       <div
-        className={`flex items-center ml-12 ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
+        className={`flex-grow flex items-center justify-center ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
       >
         <div className="flex">
           {/* Start Date Picker */}
@@ -159,17 +157,11 @@ const SecondaryHeader = ({
               type="date"
               className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
               ref={startDateRef}
-              onClick={() => {
-                if (startDateRef.current) {
-                  startDateRef.current.showPicker();
-                }
-              }}
+              onClick={() => startDateRef.current?.showPicker()}
               value={searchData.startDate}
-              onChange={(e) => {
-                const clone = { ...searchData };
-                clone.startDate = e.target.value;
-                setSearchData(clone);
-              }}
+              onChange={(e) =>
+                setSearchData({ ...searchData, startDate: e.target.value })
+              }
             />
           </div>
 
@@ -186,17 +178,11 @@ const SecondaryHeader = ({
               type="date"
               className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
               ref={endDateRef}
-              onClick={() => {
-                if (endDateRef.current) {
-                  endDateRef.current.showPicker();
-                }
-              }}
+              onClick={() => endDateRef.current?.showPicker()}
               value={searchData.endDate}
-              onChange={(e) => {
-                const clone = { ...searchData };
-                clone.endDate = e.target.value;
-                setSearchData(clone);
-              }}
+              onChange={(e) =>
+                setSearchData({ ...searchData, endDate: e.target.value })
+              }
             />
           </div>
 
@@ -212,11 +198,9 @@ const SecondaryHeader = ({
               id="entryType"
               className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
               value={searchData.entryType}
-              onChange={(e) => {
-                const clone = { ...searchData };
-                clone.entryType = e.target.value;
-                setSearchData(clone);
-              }}
+              onChange={(e) =>
+                setSearchData({ ...searchData, entryType: e.target.value })
+              }
             >
               <option value="ALL">All</option>
               <option value="EXPENSE">Expense</option>
@@ -234,21 +218,14 @@ const SecondaryHeader = ({
             </label>
             <select
               id="category"
-              className={`border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2 ${searchData.categoryId !== 'ALL' && 'focus:ring-0'}`}
-              style={{ backgroundColor, color: textColor }}
+              className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ml-2"
               value={searchData.categoryId}
               onChange={(e) => {
-                const clone = { ...searchData };
-                clone.categoryId = e.target.value;
-                setSearchData(clone);
-                if (e.target.value === 'ALL') {
-                  setBackgroundColor('white');
-                  setTextColor('black');
-                } else {
-                  const newColor = getRandomColor();
-                  setBackgroundColor(newColor);
-                  setTextColor(calculateLuminance(newColor));
-                }
+                setSearchData({ ...searchData, categoryId: e.target.value });
+                const newColor =
+                  e.target.value === 'ALL' ? 'white' : getRandomColor();
+                setBackgroundColor(newColor);
+                setTextColor(calculateLuminance(newColor));
               }}
             >
               <option value="ALL">All</option>
@@ -300,144 +277,6 @@ const SecondaryHeader = ({
             X
           </button>
         </div>
-      </div>
-
-      {/* Transaction Summary Section */}
-      <div className="flex flex-col opacity-0">
-        {/* Previous Month */}
-        <div className="flex">
-          <h2 className="text-sm font-semibold text-red-500 w-[200px]">
-            {new Date(
-              new Date().setMonth(new Date().getMonth() - 1),
-            ).toLocaleString('default', { month: 'long' })}
-            ,{' '}
-            {new Date(
-              new Date().setMonth(new Date().getMonth() - 1),
-            ).toLocaleString('default', { month: 'long' }) === 'December'
-              ? new Date().getFullYear() - 1
-              : new Date().getFullYear()}
-            :
-          </h2>
-          <p className="ml-3 text-left w-[100px]">
-            {numeral(
-              previousMonthResults
-                .filter((da) => da.type === 'EXPENSE')
-                .reduce((total: number, item: any) => total + item.amount, 0),
-            ).format('0,0')}
-          </p>
-        </div>
-
-        <div className="border-t-2 border-gray-200" />
-
-        {/* Current Month */}
-        <div className="flex">
-          <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
-            {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
-            {new Date().getFullYear()}:
-          </h2>
-          <p className="ml-3 text-left w-[100px]">
-            {numeral(
-              currentMonthResults
-                .filter((da: any) => da.type === 'EXPENSE')
-                .reduce((total: number, item: any) => total + item.amount, 0),
-            ).format('0,0')}
-          </p>
-        </div>
-
-        <div className="border-t-2 border-gray-200" />
-
-        {/* Today */}
-        {searchData.startDate === '' &&
-        searchData.endDate === '' &&
-        searchData.categoryId === 'ALL' ? (
-          <div className="flex">
-            <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
-              Today:{' '}
-            </h2>
-            <p className="ml-3 text-left w-[100px]">
-              {numeral(
-                todayExpenses
-                  .filter((da: any) => da.date === formatDate(new Date()))
-                  .reduce((total: number, item: any) => total + item.amount, 0),
-              ).format('0,0')}
-            </p>
-          </div>
-        ) : (
-          ''
-        )}
-
-        {searchData.startDate === '' &&
-        searchData.endDate === '' &&
-        searchData.categoryId !== 'ALL' ? (
-          <div className="flex">
-            <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
-              {
-                allCategories?.find(
-                  (category) => category.id === +searchData.categoryId,
-                )?.name
-              }
-              :{' '}
-            </h2>
-            <p className="ml-3 text-left w-[100px]">
-              {numeral(
-                results
-                  .filter((da: any) => da.type === 'EXPENSE')
-                  .reduce((total: number, item: any) => total + item.amount, 0),
-              ).format('0,0')}
-            </p>
-          </div>
-        ) : (
-          ''
-        )}
-
-        {/* Custom Date Range */}
-        {searchData.startDate !== '' &&
-          searchData.endDate !== '' &&
-          searchData.categoryId === 'ALL' && (
-            <div className="flex">
-              <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
-                {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
-                {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
-              </h2>
-              <p className="ml-5 text-left w-[100px]">
-                {numeral(
-                  results
-                    .filter((da: any) => da.type === 'EXPENSE')
-                    .reduce(
-                      (total: number, item: any) => total + item.amount,
-                      0,
-                    ),
-                ).format('0,0')}
-              </p>
-            </div>
-          )}
-        {searchData.startDate !== '' &&
-          searchData.endDate !== '' &&
-          searchData.categoryId !== 'ALL' && (
-            <div className="flex">
-              <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
-                {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
-                {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
-                <br />
-                {
-                  // @ts-ignore
-                  allCategories?.find(
-                    (category) => category.id === +searchData.categoryId,
-                  ).name
-                }
-              </h2>
-              <p className="ml-5 text-left w-[100px]">
-                {numeral(
-                  results
-                    .filter((da: any) => da.type === 'EXPENSE')
-                    .reduce(
-                      (total: number, item: any) => total + item.amount,
-                      0,
-                    ),
-                ).format('0,0')}
-              </p>
-            </div>
-          )}
       </div>
     </div>
   );

@@ -35,7 +35,20 @@ const EditPartyModal = ({
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-transform duration-500 ease-in-out">
       <div className="bg-white p-6 rounded-lg shadow-lg w-5/12 transform transition-transform duration-500 ease-in-out">
-        <h2 className="text-xl font-semibold mb-4">Update Category</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Update Party</h2>
+
+          <button
+            className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 mr-3"
+            type="button"
+            onClick={() => {
+              setIsEditPartyModalOpen(false);
+              setSelectedParty(undefined);
+            }}
+          >
+            X
+          </button>
+        </div>
 
         <form onSubmit={handleUpdateCategory}>
           {/* Name */}

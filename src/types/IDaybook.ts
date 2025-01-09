@@ -6,6 +6,7 @@ interface IDaybook {
   categoryId: number;
   details: string;
   type: 'EXPENSE' | 'INCOME';
+  transactionAccountId: number;
   accountId: number;
 }
 

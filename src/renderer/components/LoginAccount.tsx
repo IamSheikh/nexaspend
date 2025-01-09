@@ -7,7 +7,8 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IAccount } from '../../types';
+import { IAccount, IDaybook, ITransactionAccount } from '../../types';
+import { getFirstAndLastDayOfMonth } from '../utils';
 
 const LoginAccount = ({
   selectedAccount,
@@ -62,7 +63,7 @@ const LoginAccount = ({
     }
   };
 
-  const handleLogin = (e: FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     const fullPin = pin.join('');
     if (fullPin !== account?.pin) {
@@ -72,6 +73,64 @@ const LoginAccount = ({
       setPin(['', '', '', '']);
       localStorage.removeItem('currentAccountId');
       localStorage.setItem('currentAccountId', `${account.id}`);
+      const { lastDay } = getFirstAndLastDayOfMonth();
+      const currentTransactions = (await window.electron.getDaybookByFilters(
+        ['1500-1-1', lastDay],
+        'ALL',
+        'ALL',
+        account.id as number,
+      )) as IDaybook[];
+      const allTransactionAccounts =
+        await window.electron.getAllTransactionAccounts(account.id as number);
+
+      if (allTransactionAccounts.length === 0) {
+        await window.electron.addTransactionAccount({
+          accountName: 'Cash',
+          accountId: account.id as number,
+          balance: 0,
+        });
+      }
+
+      if (currentTransactions[0].transactionAccountId === null) {
+        const everyTransactionThatDoesNotHave = currentTransactions.filter(
+          (trans) => trans.transactionAccountId === null,
+        );
+
+        const cashAccount = (
+          (await window.electron.getTransactionAccountByName(
+            'Cash',
+            account.id as number,
+          )) as ITransactionAccount[]
+        )[0];
+
+        const allExpenses = everyTransactionThatDoesNotHave.filter(
+          (transaction) => transaction.type === 'EXPENSE',
+        );
+        const allIncome = everyTransactionThatDoesNotHave.filter(
+          (transaction) => transaction.type === 'INCOME',
+        );
+
+        const totalExpenses = allExpenses.reduce(
+          (total: any, item: any) => total + item.amount,
+          0,
+        );
+        const totalIncome = allIncome.reduce(
+          (total: any, item: any) => total + item.amount,
+          0,
+        );
+
+        await window.electron.updateTransactionAccount({
+          ...cashAccount,
+          balance: totalIncome - totalExpenses,
+        });
+
+        everyTransactionThatDoesNotHave.map(async (transaction) => {
+          await window.electron.updateDaybook({
+            ...transaction,
+            transactionAccountId: cashAccount.id as number,
+          });
+        });
+      }
       navigate('/home');
       setRefreshState((prev: any) => !prev);
       setLoginModal(false);

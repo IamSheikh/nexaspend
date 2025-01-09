@@ -42,7 +42,7 @@ import {
   getCategoriesByFilters,
   updateCategory,
 } from './services/Category.service';
-import { IAccount, IParty, ILedger } from '../types';
+import { IAccount, IParty, ILedger, ITransactionAccount } from '../types';
 import {
   addAccount,
   getAllAccounts,
@@ -61,6 +61,14 @@ import {
   deleteLedger,
   getLedgerByFilters,
 } from './services/Ledger.service';
+import {
+  addTransactionAccount,
+  getAllTransactionAccounts,
+  updateTransactionAccount,
+  deleteTransactionAccount,
+  getTransactionAccountById,
+  getTransactionAccountByName,
+} from './services/TransactionAccount.service';
 
 class AppUpdater {
   constructor() {
@@ -86,6 +94,7 @@ ipcMain.on('ipc-example', async (event, arg) => {
 addColumnIfNotExists('Daybook', 'accountId');
 addColumnIfNotExists('Category', 'accountId');
 addColumnIfNotExists('Account', 'pin');
+addColumnIfNotExists('Daybook', 'transactionAccountId');
 
 // Merry Christmas
 
@@ -209,6 +218,46 @@ ipcMain.handle('updateLedger', (_, ledger: ILedger) => {
 ipcMain.handle('deleteLedger', (_, id: number) => {
   deleteLedger(id);
 });
+
+// TransactionAccount
+
+ipcMain.handle(
+  'addTransactionAccount',
+  (_, transactionAccount: ITransactionAccount) => {
+    addTransactionAccount(transactionAccount);
+  },
+);
+
+ipcMain.handle('getAllTransactionAccounts', (_, accountId: number) => {
+  return getAllTransactionAccounts(accountId);
+});
+
+ipcMain.handle(
+  'getTransactionAccountById',
+  (_, id: number, accountId: number) => {
+    return getTransactionAccountById(id, accountId);
+  },
+);
+
+ipcMain.handle(
+  'getTransactionAccountByName',
+  (_, accountName: string, accountId: number) => {
+    return getTransactionAccountByName(accountName, accountId);
+  },
+);
+
+ipcMain.handle(
+  'updateTransactionAccount',
+  (_, transactionAccount: ITransactionAccount) => {
+    updateTransactionAccount(transactionAccount);
+  },
+);
+
+ipcMain.handle('deleteTransactionAccount', (_, id: number) => {
+  deleteTransactionAccount(id);
+});
+
+// Preview
 
 const printOptions = {
   silent: false,

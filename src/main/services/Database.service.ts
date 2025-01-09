@@ -59,12 +59,25 @@ const loadModels = () => {
     )
     .toString();
 
+  const transactionAccountModel = fs
+    .readFileSync(
+      !isDebug
+        ? path.join(
+            process.resourcesPath,
+            'models',
+            'TransactionAccount.model.sql',
+          )
+        : './src/main/models/TransactionAccount.model.sql',
+    )
+    .toString();
+
   db.serialize(() => {
     db.run(daybookModel);
     db.run(categoryModel);
     db.run(accountModel);
     db.run(partyModel);
     db.run(ledgerModel);
+    db.run(transactionAccountModel);
   });
 };
 
@@ -196,6 +209,38 @@ function updatePinOfAccount() {
   });
 }
 
+function updateTransactionAccountIdOfDaybook(
+  accountId: number,
+  transactionAccountId: number,
+) {
+  const db = connect();
+  const tableName = 'Daybook'; // Table name
+  const columnName = 'transactionAccountId'; // Column to check
+
+  columnExists(tableName, columnName, (err: any, exists: any) => {
+    if (err) {
+      console.error('Error checking column:', err);
+      return;
+    }
+
+    if (exists) {
+      // If the column exists, update the rows where accountId is NULL
+      db.run(
+        `UPDATE ${tableName} SET transactionAccountId = ${transactionAccountId} WHERE transactionAccountId IS NULL AND accountId = ${accountId}`,
+        (er: any) => {
+          if (er) {
+            console.error('Error updating accountId:', err);
+          } else {
+            console.log('Successfully updated accountId where it was NULL.');
+          }
+        },
+      );
+    } else {
+      console.log(`Column ${columnName} does not exist in ${tableName}.`);
+    }
+  });
+}
+
 export {
   connect,
   loadModels,
@@ -203,4 +248,5 @@ export {
   updateAccountIdOfDaybook,
   updateAccountIdOfCategory,
   updatePinOfAccount,
+  updateTransactionAccountIdOfDaybook,
 };

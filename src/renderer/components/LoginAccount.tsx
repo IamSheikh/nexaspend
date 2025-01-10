@@ -7,7 +7,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IAccount, IDaybook, ITransactionAccount } from '../../types';
+import { IAccount, IDaybook, ILedger, ITransactionAccount } from '../../types';
 import { getFirstAndLastDayOfMonth } from '../utils';
 
 const LoginAccount = ({
@@ -82,6 +82,12 @@ const LoginAccount = ({
       )) as IDaybook[];
       const allTransactionAccounts =
         await window.electron.getAllTransactionAccounts(account.id as number);
+      const currentLedger = (await window.electron.getLedgerByFilters(
+        ['1500-1-1', lastDay],
+        'ALL',
+        'ALL',
+        account.id as number,
+      )) as ILedger[];
 
       if (allTransactionAccounts.length === 0) {
         await window.electron.addTransactionAccount({
@@ -91,18 +97,20 @@ const LoginAccount = ({
         });
       }
 
-      if (currentTransactions[0].transactionAccountId === null) {
-        const everyTransactionThatDoesNotHave = currentTransactions.filter(
-          (trans) => trans.transactionAccountId === null,
-        );
+      const everyTransactionThatDoesNotHave = currentTransactions.filter(
+        (trans) => trans.transactionAccountId === null,
+      );
+      const everyLedgerThatDoesNotHave = currentLedger.filter(
+        (led) => led.transactionAccountId === null,
+      );
+      const cashAccount = (
+        (await window.electron.getTransactionAccountByName(
+          'Cash',
+          account.id as number,
+        )) as ITransactionAccount[]
+      )[0];
 
-        const cashAccount = (
-          (await window.electron.getTransactionAccountByName(
-            'Cash',
-            account.id as number,
-          )) as ITransactionAccount[]
-        )[0];
-
+      if (everyTransactionThatDoesNotHave.length !== 0) {
         const allExpenses = everyTransactionThatDoesNotHave.filter(
           (transaction) => transaction.type === 'EXPENSE',
         );
@@ -131,6 +139,37 @@ const LoginAccount = ({
           });
         });
       }
+
+      if (everyLedgerThatDoesNotHave.length !== 0) {
+        const allYouGave = everyLedgerThatDoesNotHave.filter(
+          (ledger) => ledger.transaction_type === 'YOU GAVE',
+        );
+        console.log(allYouGave);
+        const allYouReceived = everyLedgerThatDoesNotHave.filter(
+          (ledger) => ledger.transaction_type === 'YOU RECEIVED',
+        );
+        const totalAllYouGave = allYouGave.reduce(
+          (total: any, item: any) => total + item.amount,
+          0,
+        );
+        const totalAllYouReceived = allYouReceived.reduce(
+          (total: any, item: any) => total + item.amount,
+          0,
+        );
+        const total = totalAllYouReceived - totalAllYouGave;
+        await window.electron.updateTransactionAccount({
+          ...cashAccount,
+          balance: cashAccount.balance + total,
+        });
+
+        everyLedgerThatDoesNotHave.map(async (ledger) => {
+          await window.electron.updateLedger({
+            ...ledger,
+            transactionAccountId: cashAccount.id as number,
+          });
+        });
+      }
+
       navigate('/home');
       setRefreshState((prev: any) => !prev);
       setLoginModal(false);

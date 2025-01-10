@@ -95,6 +95,7 @@ addColumnIfNotExists('Daybook', 'accountId');
 addColumnIfNotExists('Category', 'accountId');
 addColumnIfNotExists('Account', 'pin');
 addColumnIfNotExists('Daybook', 'transactionAccountId');
+addColumnIfNotExists('Ledger', 'transactionAccountId');
 
 // Merry Christmas
 

@@ -7,7 +7,7 @@ import { connect } from './Database.service';
 
 const addLedger = (ledger: ILedger) => {
   const db = connect();
-  const query = `INSERT INTO Ledger (partyId, details, amount, transaction_type, date, accountId) VALUES (?, ?, ?, ?, ?, ?)`;
+  const query = `INSERT INTO Ledger (partyId, details, amount, transaction_type, date, transactionAccountId, accountId) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
   db.run(
     query,
@@ -17,6 +17,7 @@ const addLedger = (ledger: ILedger) => {
       ledger.amount,
       ledger.transaction_type,
       ledger.date,
+      ledger.transactionAccountId,
       ledger.accountId,
     ],
     (err: any) => {
@@ -123,7 +124,7 @@ const getLedgerByFilters = async (
 
 const updateLedger = async (ledger: ILedger) => {
   const db = connect();
-  const query = `UPDATE Ledger SET partyId = ?, details = ?, amount = ?, transaction_type = ?, date = ?, accountId = ? WHERE id = ?`;
+  const query = `UPDATE Ledger SET partyId = ?, details = ?, amount = ?, transaction_type = ?, date = ?, accountId = ?, transactionAccountId = ? WHERE id = ?`;
   db.run(
     query,
     [
@@ -133,6 +134,7 @@ const updateLedger = async (ledger: ILedger) => {
       ledger.transaction_type,
       ledger.date,
       ledger.accountId,
+      ledger.transactionAccountId,
       ledger.id,
     ],
     (err: any) => {

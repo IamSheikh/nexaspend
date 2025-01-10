@@ -134,6 +134,7 @@ const AddTransaction = ({
           details: inputData.details,
           partyId: +selectedPartyId,
           transaction_type: 'YOU GAVE',
+          transactionAccountId: account[0].id,
         });
 
         if (findParty) {
@@ -151,6 +152,7 @@ const AddTransaction = ({
           details: inputData.details,
           partyId: +selectedPartyId,
           transaction_type: 'YOU RECEIVED',
+          transactionAccountId: account[0].id,
         });
 
         if (findParty) {
@@ -343,6 +345,29 @@ const AddTransaction = ({
             </select>
           </div>
 
+          {/* Details */}
+          <div className="flex items-center w-full mt-4">
+            <label
+              htmlFor="details"
+              className="text-sm font-medium text-gray-700 w-1/6"
+            >
+              Details:
+            </label>
+            <input
+              id="details"
+              type="text"
+              placeholder="Details"
+              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
+              required
+              value={inputData.details}
+              onChange={(e) => {
+                const clone = { ...inputData };
+                clone.details = e.target.value;
+                setInputData(clone);
+              }}
+            />
+          </div>
+
           {/* Account */}
 
           <div className="flex items-center w-full mt-4">
@@ -369,29 +394,6 @@ const AddTransaction = ({
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* Details */}
-          <div className="flex items-center w-full mt-4">
-            <label
-              htmlFor="details"
-              className="text-sm font-medium text-gray-700 w-1/6"
-            >
-              Details:
-            </label>
-            <input
-              id="details"
-              type="text"
-              placeholder="Details"
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
-              required
-              value={inputData.details}
-              onChange={(e) => {
-                const clone = { ...inputData };
-                clone.details = e.target.value;
-                setInputData(clone);
-              }}
-            />
           </div>
 
           {/* Add Ledger */}

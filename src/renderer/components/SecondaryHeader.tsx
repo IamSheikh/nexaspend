@@ -128,7 +128,7 @@ const SecondaryHeader = ({
 
   return (
     <div
-      className={`px-2 flex z-[45] top-[5.9rem] sticky bg-white justify-between items-center ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
+      className={`px-2 py-2 flex z-[45] top-[5.9rem] sticky bg-white justify-between items-center ${activeTab !== 'Transaction' && 'hidden'} ${printingMode && 'hidden'}`}
     >
       {/* Hamburger Menu */}
       <button

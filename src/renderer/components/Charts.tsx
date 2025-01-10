@@ -14,7 +14,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import numeral from 'numeral';
 // import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { ICategory, IDaybook } from '../../types';
+import { ICategory, IDaybook, ITransactionAccount } from '../../types';
 import colors from '../utils/100000_colors';
 import hover_colors from '../utils/100000_hover_colors';
 import {
@@ -83,7 +83,8 @@ const Charts = ({
   const [todayIncome, setTodayIncome] = useState<IDaybook[]>([]);
 
   const [allCategory, setAllCategory] = useState<ICategory[]>([]);
-  const [thisMonthIncome, setThisMonthIncome] = useState(0);
+  const [, setThisMonthIncome] = useState(0);
+  const [accounts, setAccounts] = useState<ITransactionAccount[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -470,6 +471,12 @@ const Charts = ({
         +localStorage.getItem('currentAccountId'),
       );
       setTodayExpenses(todayExpense);
+
+      const allAccounts = await window.electron.getAllTransactionAccounts(
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      );
+      setAccounts(allAccounts);
     })();
   }, [refreshState]);
 
@@ -1019,16 +1026,18 @@ const Charts = ({
         </div>
 
         <div className="flex flex-col items-center self-center w-full">
-          <h1 className="text-2xl font-semibold text-center">Balance</h1>
+          <h1 className="text-2xl font-semibold text-center">
+            Accounts Balance
+          </h1>
 
           <div className="flex self-center w-full justify-center">
             <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
               {/* {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
               {new Date().getFullYear()}: */}
-              This Month:
+              Cash Account:
             </h2>
             <p className="ml-3 text-left w-[100px]">
-              {thisMonthIncome === 0 ? (
+              {/* {thisMonthIncome === 0 ? (
                 0
               ) : Math.sign(thisMonthIncome) === 1 ? (
                 <span>{numeral(thisMonthIncome).format('0,0')}</span>
@@ -1036,9 +1045,44 @@ const Charts = ({
                 <span className="text-red-500">
                   {numeral(Math.abs(thisMonthIncome)).format('0,0')}
                 </span>
-              )}
+              )} */}
+              {numeral(
+                accounts.find((account) => account.accountName === 'Cash')
+                  ?.balance,
+              ).format('0,0')}
             </p>
           </div>
+
+          {accounts.filter((account) => account.accountName !== 'Cash')
+            .length === 0 ? (
+            <div>
+              <h2>You {`don't`} have any other accounts, Racoon 🦝!</h2>
+            </div>
+          ) : (
+            <div className="flex self-center w-full justify-center">
+              <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+                {/* {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
+              {new Date().getFullYear()}: */}
+                Other Accounts:
+              </h2>
+              <p className="ml-3 text-left w-[100px]">
+                {/* {thisMonthIncome === 0 ? (
+                0
+              ) : Math.sign(thisMonthIncome) === 1 ? (
+                <span>{numeral(thisMonthIncome).format('0,0')}</span>
+              ) : (
+                <span className="text-red-500">
+                  {numeral(Math.abs(thisMonthIncome)).format('0,0')}
+                </span>
+              )} */}
+                {numeral(
+                  accounts
+                    .filter((account) => account.accountName !== 'Cash')
+                    .reduce((total: any, item: any) => total + item.balance),
+                ).format('0,0')}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

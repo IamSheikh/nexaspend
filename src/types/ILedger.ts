@@ -6,6 +6,7 @@ interface ILedger {
   amount: number;
   transaction_type: 'YOU GAVE' | 'YOU RECEIVED';
   date: string;
+  transactionAccountId: number;
   accountId: number;
 }
 

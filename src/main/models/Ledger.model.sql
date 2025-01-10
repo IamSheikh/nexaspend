@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS Ledger (
     amount INTEGER,
     transaction_type TEXT,
     date DATE,
+    transactionAccountId INTEGER,
     accountId INTEGER
 )

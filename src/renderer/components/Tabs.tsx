@@ -25,7 +25,7 @@ const Tabs = ({
           key={tab}
           onClick={() => {
             setActiveTab(tab);
-            if (tab === 'Transaction') {
+            if (tab === 'Transaction' || tab === 'Account') {
               setIsViewingLedgerShowing(false);
             }
           }}

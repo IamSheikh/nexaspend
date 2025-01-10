@@ -10,7 +10,7 @@
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import { toast } from 'react-toastify';
 import { formatDate } from '../utils';
-import { ILedger, IParty } from '../../types';
+import { ILedger, IParty, ITransactionAccount } from '../../types';
 
 const AddLedger = ({
   setRefreshState,
@@ -38,8 +38,12 @@ const AddLedger = ({
     transaction_type: 'YOU GAVE',
     // @ts-ignore
     accountId: +localStorage?.getItem('currentAccountId') as unknown as number,
+    transactionAccountId: 0,
   });
   const [parties, setParties] = useState<IParty[]>([]);
+  const [transactionAccounts, setTransactionAccounts] = useState<
+    ITransactionAccount[]
+  >([]);
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   const getData = async () => {
@@ -49,9 +53,18 @@ const AddLedger = ({
     )) as IParty[];
     setParties(allParties);
 
+    const allAccounts = (await window.electron.getAllTransactionAccounts(
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
+    )) as ITransactionAccount[];
+
+    setTransactionAccounts(allAccounts);
+
     setInputData({
       ...inputData,
       partyId: allParties[0].id as number,
+      transactionAccountId:
+        allAccounts.find((account) => account.accountName === 'Cash')?.id || 0,
     });
   };
 
@@ -77,15 +90,29 @@ const AddLedger = ({
       (party) => party.id === inputData.partyId,
     ) as IParty;
 
+    const findAccount = transactionAccounts.find(
+      (account) => account.id === inputData.transactionAccountId,
+    ) as ITransactionAccount;
+
     if (inputData.transaction_type === 'YOU GAVE') {
       await window.electron.updateParty({
         ...findParty,
         balance: findParty?.balance - inputData.amount,
       });
+
+      await window.electron.updateTransactionAccount({
+        ...findAccount,
+        balance: findAccount.balance - inputData.amount,
+      });
     } else if (inputData.transaction_type === 'YOU RECEIVED') {
       await window.electron.updateParty({
         ...findParty,
         balance: findParty?.balance + inputData.amount,
+      });
+
+      await window.electron.updateTransactionAccount({
+        ...findAccount,
+        balance: findAccount.balance + inputData.amount,
       });
     }
 
@@ -97,6 +124,7 @@ const AddLedger = ({
       transaction_type: 'YOU GAVE',
       // @ts-ignore
       accountId: +localStorage.getItem('currentAccountId'),
+      transactionAccountId: null as unknown as number,
     });
     setIsAddLedgerModalOpen(false);
     setRefreshState((prev: any) => !prev);
@@ -234,7 +262,7 @@ const AddLedger = ({
             </div>
           </div>
 
-          {/* Category */}
+          {/* Party */}
           <div className="flex items-center w-full mt-4">
             <label
               htmlFor="party"
@@ -282,6 +310,34 @@ const AddLedger = ({
                 setInputData(clone);
               }}
             />
+          </div>
+
+          {/* Account */}
+
+          <div className="flex items-center w-full mt-4">
+            <label
+              htmlFor="account"
+              className="text-sm font-medium text-gray-700 w-1/6"
+            >
+              Account:
+            </label>
+            <select
+              id="account"
+              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
+              required
+              value={inputData.transactionAccountId}
+              onChange={(e) => {
+                const clone = { ...inputData };
+                clone.transactionAccountId = +e.target.value;
+                setInputData(clone);
+              }}
+            >
+              {transactionAccounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.accountName}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Submit Button */}

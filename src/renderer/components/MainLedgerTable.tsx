@@ -11,7 +11,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import numeral from 'numeral';
-import { IParty } from '../../types';
+import { IParty, ITransactionAccount } from '../../types';
 import { getFirstAndLastDayOfMonth } from '../utils';
 
 const MainLedgerTable = ({
@@ -74,6 +74,9 @@ const MainLedgerTable = ({
     endDate: '',
     transactionType: '',
   });
+  const [transactionAccounts, setTransactionAccounts] = useState<
+    ITransactionAccount[]
+  >([]);
 
   useEffect(() => {
     (async () => {
@@ -84,6 +87,14 @@ const MainLedgerTable = ({
       const cp = parties.find((party) => party.id === selectedParty.id);
       setCurrenParty(cp);
       setAllParties(parties);
+
+      const allTransactionAccounts =
+        await window.electron.getAllTransactionAccounts(
+          // @ts-ignore
+          +localStorage.getItem('currentAccountId'),
+        );
+
+      setTransactionAccounts(allTransactionAccounts);
     })();
   }, [currentAccountId, refreshState, isUpdateLedger]);
 
@@ -241,6 +252,11 @@ const MainLedgerTable = ({
                 <th
                   className={`border border-gray-300 ${printingMode && 'text-center'}`}
                 >
+                  Account
+                </th>
+                <th
+                  className={`border border-gray-300 ${printingMode && 'text-center'}`}
+                >
                   Details
                 </th>
                 <th
@@ -282,6 +298,15 @@ const MainLedgerTable = ({
                     {da.transaction_type === 'YOU GAVE'
                       ? 'You Gave'
                       : 'You Received'}
+                  </td>
+                  <td
+                    className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
+                  >
+                    {
+                      transactionAccounts.find(
+                        (ta) => ta.id === da.transactionAccountId,
+                      )?.accountName
+                    }
                   </td>
                   <td
                     className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}

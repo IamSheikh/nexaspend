@@ -19,7 +19,7 @@ const Tabs = ({
     <div
       className={`flex justify-around border-b top-[60px] sticky z-40 bg-white  border-gray-300 ${activeTab === '' && 'hidden'} ${printingMode && 'hidden'}`}
     >
-      {['Transaction', 'Ledger'].map((tab) => (
+      {['Transaction', 'Ledger', 'Account'].map((tab) => (
         <button
           type="button"
           key={tab}

@@ -29,7 +29,7 @@ const getAllTransactionAccounts = async (accountId: number) => {
   const db = connect();
   const dbAll = promisify(db.all).bind(db);
   try {
-    const query = `SELECT * FROM TransactionAccount WHERE accountId = '${accountId}'`;
+    const query = `SELECT * FROM TransactionAccount WHERE accountId = ${accountId}`;
     const row = dbAll(query);
     return row;
   } catch (err) {

@@ -11,7 +11,7 @@ import { useState, useEffect, useRef, FormEvent } from 'react';
 import { toast } from 'react-toastify';
 import IDaybook from '../../types/IDaybook';
 import { formatDate } from '../utils';
-import { ICategory, IParty } from '../../types';
+import { ICategory, IParty, ITransactionAccount } from '../../types';
 
 const AddTransaction = ({
   setRefreshState,
@@ -37,11 +37,13 @@ const AddTransaction = ({
     date: formatDate(formattedDate),
     details: '',
     type: 'EXPENSE',
+    transactionAccountId: 1,
     // @ts-ignore
     accountId: +localStorage?.getItem('currentAccountId') as unknown as number,
   });
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
+  const [accounts, setAccounts] = useState<ITransactionAccount[]>([]);
   const [parties, setParties] = useState<IParty[]>([]);
   const [selectedPartyId, setSelectedPartyId] = useState('');
   const [isAddLedger, setIsAddLedger] = useState(false);
@@ -64,6 +66,18 @@ const AddTransaction = ({
       // @ts-ignore
       +localStorage.getItem('currentAccountId'),
     )) as IParty[];
+    const allTransactionAccounts =
+      await window.electron.getAllTransactionAccounts(
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      );
+    setAccounts(allTransactionAccounts);
+    const cashTransactionAccount =
+      await window.electron.getTransactionAccountByName(
+        'Cash',
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      );
 
     setParties(allParties);
 
@@ -72,6 +86,7 @@ const AddTransaction = ({
     setInputData({
       ...inputData,
       categoryId: filteredExpenseCategories[0].id as number,
+      transactionAccountId: cashTransactionAccount[0].id,
     });
     setSelectedPartyId(`${allParties[0].id}`);
   };
@@ -92,6 +107,20 @@ const AddTransaction = ({
     await window.electron.addDaybook(inputData);
     toast('Transaction added successfully', {
       type: 'success',
+    });
+
+    const account = await window.electron.getTransactionAccountById(
+      inputData.transactionAccountId,
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
+    );
+
+    await window.electron.updateTransactionAccount({
+      ...account[0],
+      balance:
+        inputData.type === 'EXPENSE'
+          ? account[0].balance - inputData.amount
+          : account[0].balance + inputData.amount,
     });
 
     if (isAddLedger) {
@@ -141,6 +170,7 @@ const AddTransaction = ({
       details: '',
       // @ts-ignore
       accountId: +localStorage.getItem('currentAccountId'),
+      transactionAccountId: 1,
     });
     setIsAddTransactionModalOpen(false);
     setRefreshState((prev: any) => !prev);
@@ -310,6 +340,34 @@ const AddTransaction = ({
                       {cate.name}
                     </option>
                   ))}
+            </select>
+          </div>
+
+          {/* Account */}
+
+          <div className="flex items-center w-full mt-4">
+            <label
+              htmlFor="account"
+              className="text-sm font-medium text-gray-700 w-1/6"
+            >
+              Account:
+            </label>
+            <select
+              id="account"
+              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
+              required
+              value={inputData.transactionAccountId}
+              onChange={(e) => {
+                const clone = { ...inputData };
+                clone.transactionAccountId = +e.target.value;
+                setInputData(clone);
+              }}
+            >
+              {accounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.accountName}
+                </option>
+              ))}
             </select>
           </div>
 

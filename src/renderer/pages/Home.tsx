@@ -16,7 +16,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bounce, ToastContainer } from 'react-toastify';
 import { useReactToPrint } from 'react-to-print';
-import { IDaybook, ICategory, IParty, ILedger } from '../../types';
+import {
+  IDaybook,
+  ICategory,
+  IParty,
+  ILedger,
+  ITransactionAccount,
+} from '../../types';
 import '../styles/dist/dist.css';
 import { formatDate, getFirstAndLastDayOfMonth } from '../utils';
 import AddCategoryModal from '../components/AddCategoryModal';
@@ -41,6 +47,10 @@ import EditPartyModal from '../components/EditPartyModal';
 import AddLedger from '../components/AddLedger';
 import MainLedgerTable from '../components/MainLedgerTable';
 import UpdateLedger from '../components/UpdateLedger';
+import AddTransactionAccountModal from '../components/AddTransactionAccountModal';
+import ViewTransactionAccounts from '../components/ViewTransactionAccounts';
+import EditTransactionAccountModal from '../components/EditTransactionAccountModal';
+import DeleteTransactionAccountModal from '../components/DeleteTransactionAccountModal';
 
 const Home = ({
   refreshState,
@@ -100,6 +110,20 @@ const Home = ({
   const [isLedgerTableFooterShowing] = useState(true);
   const [isUpdateLedger, setIsUpdateLedger] = useState(false);
   const [selectedLedger, setSelectedLedger] = useState<ILedger>();
+  const [
+    isAddTransactionAccountModalOpen,
+    setIsAddTransactionAccountModalOpen,
+  ] = useState(false);
+  const [selectedTransactionAccount, setSelectedTransactionAccount] =
+    useState<ITransactionAccount>();
+  const [
+    isDeleteTransactionAccountModalOpen,
+    setIsDeleteTransactionAccountModalOpen,
+  ] = useState(false);
+  const [
+    isEditTransactionAccountModalOpen,
+    setIsEditTransactionAccountModalOpen,
+  ] = useState(false);
 
   const itemsPerPage = 20;
 
@@ -511,6 +535,17 @@ const Home = ({
         />
       )}
 
+      {isDeleteTransactionAccountModalOpen && (
+        <DeleteTransactionAccountModal
+          selectedTransactionAccount={selectedTransactionAccount}
+          setSelectedTransactionAccount={setSelectedTransactionAccount}
+          setIsDeleteTransactionAccountModalOpen={
+            setIsDeleteTransactionAccountModalOpen
+          }
+          setRefreshState={setRefreshState}
+        />
+      )}
+
       {isEditCategoryModalOpen && (
         <EditCategoryModal
           selectedCategory={selectedCategory}
@@ -526,6 +561,17 @@ const Home = ({
           setIsEditPartyModalOpen={setIsEditPartyModalOpen}
           setRefreshState={setRefreshState}
           setSelectedParty={setSelectedParty}
+        />
+      )}
+
+      {isEditTransactionAccountModalOpen && (
+        <EditTransactionAccountModal
+          selectedTransactionAccount={selectedTransactionAccount}
+          setIsEditTransactionAccountModal={
+            setIsEditTransactionAccountModalOpen
+          }
+          setRefreshState={setRefreshState}
+          setSelectedTransactionAccount={setSelectedTransactionAccount}
         />
       )}
 
@@ -568,6 +614,28 @@ const Home = ({
           setIsShowingChooseAccount={setAccountsModalOpen}
         />
       )}
+
+      {isAddTransactionAccountModalOpen && (
+        <AddTransactionAccountModal
+          setIsModalOpen={setIsAddTransactionAccountModalOpen}
+          setRefreshState={setRefreshState}
+        />
+      )}
+
+      {activeTab === 'Account' && (
+        <ViewTransactionAccounts
+          refreshState={refreshState}
+          setIsDeleteTransactionAccountModalOpen={
+            setIsDeleteTransactionAccountModalOpen
+          }
+          setIsEditTransactionAccountModalOpen={
+            setIsEditTransactionAccountModalOpen
+          }
+          setRefreshState={setRefreshState}
+          setSelectedTransactionAccount={setSelectedTransactionAccount}
+        />
+      )}
+
       {/* {!loginModal &&
         !isViewCategoryShowing &&
         !isDeleteCategoryModalOpen &&
@@ -586,6 +654,8 @@ const Home = ({
             setIsAddTransactionModalOpen(true);
           } else if (activeTab === 'Ledger') {
             setIsAddLedgerModalOpen(true);
+          } else if (activeTab === 'Account') {
+            setIsAddTransactionAccountModalOpen(true);
           }
         }}
         onMouseEnter={() => setIsHovered(true)} // Hover starts

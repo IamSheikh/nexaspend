@@ -80,6 +80,7 @@ const LoginAccount = ({
         'ALL',
         account.id as number,
       )) as IDaybook[];
+      // console.log(currentTransactions);
       const allTransactionAccounts =
         await window.electron.getAllTransactionAccounts(account.id as number);
       const currentLedger = (await window.electron.getLedgerByFilters(
@@ -170,15 +171,17 @@ const LoginAccount = ({
         });
       }
 
-      const allExpenses = currentTransactions.filter(
-        (transaction) =>
-          transaction.type === 'EXPENSE' &&
-          transaction.transactionAccountId === cashAccount.id,
+      const allExpenses = currentTransactions.filter((transaction) =>
+        transaction.type === 'EXPENSE' &&
+        typeof transaction.transactionAccountId === 'string'
+          ? transaction.transactionAccountId === `${cashAccount.id}`
+          : transaction.transactionAccountId === cashAccount.id,
       );
-      const allIncome = currentTransactions.filter(
-        (transaction) =>
-          transaction.type === 'INCOME' &&
-          transaction.transactionAccountId === cashAccount.id,
+      const allIncome = currentTransactions.filter((transaction) =>
+        transaction.type === 'INCOME' &&
+        typeof transaction.transactionAccountId === 'string'
+          ? transaction.transactionAccountId === `${cashAccount.id}`
+          : transaction.transactionAccountId === cashAccount.id,
       );
 
       const totalExpenses = allExpenses.reduce(
@@ -191,15 +194,17 @@ const LoginAccount = ({
         0,
       );
 
-      const allYouGave = currentLedger.filter(
-        (ledger) =>
-          ledger.transaction_type === 'YOU GAVE' &&
-          ledger.transactionAccountId === cashAccount.id,
+      const allYouGave = currentLedger.filter((ledger) =>
+        ledger.transaction_type === 'YOU GAVE' &&
+        typeof ledger.transactionAccountId === 'string'
+          ? ledger.transactionAccountId === `${cashAccount.id}`
+          : ledger.transactionAccountId === cashAccount.id,
       );
-      const allYouReceived = currentLedger.filter(
-        (ledger) =>
-          ledger.transaction_type === 'YOU RECEIVED' &&
-          ledger.transactionAccountId === cashAccount.id,
+      const allYouReceived = currentLedger.filter((ledger) =>
+        ledger.transaction_type === 'YOU RECEIVED' &&
+        typeof ledger.transactionAccountId === 'string'
+          ? ledger.transactionAccountId === `${cashAccount.id}`
+          : ledger.transactionAccountId === cashAccount.id,
       );
 
       const totalAllYouGave = allYouGave.reduce(
@@ -215,12 +220,10 @@ const LoginAccount = ({
       const totalFromLedger = totalAllYouReceived - totalAllYouGave;
       const total = totalFromDaybook + totalFromLedger;
 
-      if (cashAccount.balance !== total) {
-        await window.electron.updateTransactionAccount({
-          ...cashAccount,
-          balance: total,
-        });
-      }
+      await window.electron.updateTransactionAccount({
+        ...cashAccount,
+        balance: total,
+      });
 
       navigate('/home');
       setRefreshState((prev: any) => !prev);

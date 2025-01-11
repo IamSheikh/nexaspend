@@ -33,6 +33,9 @@ const UpdateDaybook = ({
   const [accounts, setAccounts] = useState<IAccount[]>([]);
   const [isInputDisabled, setIsInputDisabled] = useState(true);
   const [clonedDaybook, setClonedDaybook] = useState<IDaybook>();
+  const [transactionAccounts, setTransactionAccounts] = useState<
+    ITransactionAccount[]
+  >([]);
   const originalAccount = selectedDaybook.accountId;
 
   useEffect(() => {
@@ -40,6 +43,13 @@ const UpdateDaybook = ({
       const allAccounts =
         (await window.electron.getAllAccounts()) as IAccount[];
       setAccounts(allAccounts);
+
+      const allTransactionAccounts =
+        (await window.electron.getAllTransactionAccounts(
+          // @ts-ignore
+          +localStorage.getItem('currentAccountId'),
+        )) as ITransactionAccount[];
+      setTransactionAccounts(allTransactionAccounts);
     })();
   }, []);
 
@@ -281,6 +291,33 @@ const UpdateDaybook = ({
               {accounts.map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center space-x-2 mb-4">
+            <label
+              htmlFor="transactionAccount"
+              className="text-sm font-medium text-gray-700 w-1/3"
+            >
+              Transaction Account:
+            </label>
+            <select
+              id="category"
+              className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
+              required
+              disabled={isInputDisabled}
+              value={selectedDaybook.transactionAccountId}
+              onChange={(e) => {
+                const clone = { ...selectedDaybook };
+                clone.transactionAccountId = +e.target.value;
+                setSelectedDaybook(clone);
+              }}
+            >
+              {transactionAccounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.accountName}
                 </option>
               ))}
             </select>

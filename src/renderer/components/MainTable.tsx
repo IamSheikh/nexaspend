@@ -197,7 +197,7 @@ const MainTable = ({
                 >
                   {
                     transactionAccounts.find(
-                      (account) => account.id === da.transactionAccountId,
+                      (account) => account.id === +da.transactionAccountId,
                     )?.accountName
                   }
                 </td>

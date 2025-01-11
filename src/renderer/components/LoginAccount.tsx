@@ -170,6 +170,58 @@ const LoginAccount = ({
         });
       }
 
+      const allExpenses = currentTransactions.filter(
+        (transaction) =>
+          transaction.type === 'EXPENSE' &&
+          transaction.transactionAccountId === cashAccount.id,
+      );
+      const allIncome = currentTransactions.filter(
+        (transaction) =>
+          transaction.type === 'INCOME' &&
+          transaction.transactionAccountId === cashAccount.id,
+      );
+
+      const totalExpenses = allExpenses.reduce(
+        (total: any, item: any) => total + item.amount,
+        0,
+      );
+
+      const totalIncome = allIncome.reduce(
+        (total: any, item: any) => total + item.amount,
+        0,
+      );
+
+      const allYouGave = currentLedger.filter(
+        (ledger) =>
+          ledger.transaction_type === 'YOU GAVE' &&
+          ledger.transactionAccountId === cashAccount.id,
+      );
+      const allYouReceived = currentLedger.filter(
+        (ledger) =>
+          ledger.transaction_type === 'YOU RECEIVED' &&
+          ledger.transactionAccountId === cashAccount.id,
+      );
+
+      const totalAllYouGave = allYouGave.reduce(
+        (total, item) => total + item.amount,
+        0,
+      );
+      const totalAllYouReceived = allYouReceived.reduce(
+        (total, item) => total + item.amount,
+        0,
+      );
+
+      const totalFromDaybook = totalIncome - totalExpenses;
+      const totalFromLedger = totalAllYouReceived - totalAllYouGave;
+      const total = totalFromDaybook + totalFromLedger;
+
+      if (cashAccount.balance !== total) {
+        await window.electron.updateTransactionAccount({
+          ...cashAccount,
+          balance: total,
+        });
+      }
+
       navigate('/home');
       setRefreshState((prev: any) => !prev);
       setLoginModal(false);

@@ -9,7 +9,7 @@
 
 import { useState, useEffect } from 'react';
 import numeral from 'numeral';
-import { ICategory } from '../../types';
+import { ICategory, ITransactionAccount } from '../../types';
 
 const MainTable = ({
   printingMode,
@@ -51,6 +51,9 @@ const MainTable = ({
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
   const [allCategories, setAllCategories] = useState<ICategory[]>([]);
+  const [transactionAccounts, setTransactionAccounts] = useState<
+    ITransactionAccount[]
+  >([]);
 
   useEffect(() => {
     (async () => {
@@ -68,6 +71,13 @@ const MainTable = ({
       setAllCategories(categories);
       setExpenseCategories(filteredExpenseCategories);
       setIncomeCategories(filteredIncomeCategories);
+
+      const allTransactionAccounts =
+        await window.electron.getAllTransactionAccounts(
+          // @ts-ignore
+          +localStorage.getItem('currentAccountId'),
+        );
+      setTransactionAccounts(allTransactionAccounts);
     })();
   }, [currentAccountId, refreshState]);
 
@@ -125,6 +135,11 @@ const MainTable = ({
                 Category
               </th>
               <th
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
+              >
+                Account
+              </th>
+              <th
                 className={`border border-gray-300 ${printingMode && 'px-2 pb-2 mb-2 text-center'}`}
               >
                 Details
@@ -176,6 +191,15 @@ const MainTable = ({
                         ?.name
                     : incomeCategories.find((c) => c.id === da.categoryId)
                         ?.name}
+                </td>
+                <td
+                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
+                >
+                  {
+                    transactionAccounts.find(
+                      (account) => account.id === da.transactionAccountId,
+                    )?.accountName
+                  }
                 </td>
                 <td
                   className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}

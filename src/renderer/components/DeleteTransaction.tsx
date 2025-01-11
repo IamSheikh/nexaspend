@@ -7,6 +7,7 @@
 /* eslint-disable no-undef */
 
 import { toast } from 'react-toastify';
+import { ITransactionAccount } from '../../types';
 
 const DeleteTransaction = ({
   selectedDaybook,
@@ -44,6 +45,31 @@ const DeleteTransaction = ({
               await window.electron.deleteDaybook(
                 selectedDaybook?.id as number,
               );
+
+              const currentAccount = (
+                (await window.electron.getTransactionAccountById(
+                  selectedDaybook.transactionAccountId,
+                  // @ts-ignore
+                  +localStorage.getItem('currentAccountId'),
+                )) as ITransactionAccount[]
+              )[0];
+
+              if (selectedDaybook.type === 'EXPENSE') {
+                const newBalance =
+                  currentAccount.balance + selectedDaybook.amount;
+                await window.electron.updateTransactionAccount({
+                  ...currentAccount,
+                  balance: newBalance,
+                });
+              } else if (selectedDaybook.type === 'INCOME') {
+                const newBalance =
+                  currentAccount.balance - selectedDaybook.amount;
+                await window.electron.updateTransactionAccount({
+                  ...currentAccount,
+                  balance: newBalance,
+                });
+              }
+
               toast('Transaction Successfully deleted', {
                 type: 'error',
               });

@@ -10,7 +10,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { toast } from 'react-toastify';
-import { ILedger, IParty } from '../../types';
+import { ILedger, IParty, ITransactionAccount } from '../../types';
 
 const UpdateLedger = ({
   selectedLedger,
@@ -181,6 +181,36 @@ const UpdateLedger = ({
           await window.electron.updateParty({
             ...newParty,
             balance: newBalanceOfNewParty,
+          });
+        }
+      }
+
+      const currentAccount = (
+        (await window.electron.getTransactionAccountById(
+          selectedLedger.transactionAccountId,
+          // @ts-ignore
+          +localStorage.getItem('currentAccountId'),
+        )) as ITransactionAccount[]
+      )[0];
+
+      if (clonedLedger) {
+        if (selectedLedger.transaction_type === 'YOU GAVE') {
+          const newBalance =
+            currentAccount.balance +
+            clonedLedger?.amount -
+            selectedLedger.amount;
+          await window.electron.updateTransactionAccount({
+            ...currentAccount,
+            balance: newBalance,
+          });
+        } else if (selectedLedger.transaction_type === 'YOU RECEIVED') {
+          const newBalance =
+            currentAccount.balance -
+            clonedLedger?.amount +
+            selectedLedger.amount;
+          await window.electron.updateTransactionAccount({
+            ...currentAccount,
+            balance: newBalance,
           });
         }
       }

@@ -8,7 +8,12 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import { toast } from 'react-toastify';
-import { IAccount, ICategory, IDaybook } from '../../types';
+import {
+  IAccount,
+  ICategory,
+  IDaybook,
+  ITransactionAccount,
+} from '../../types';
 
 const UpdateDaybook = ({
   selectedDaybook,
@@ -27,6 +32,7 @@ const UpdateDaybook = ({
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [accounts, setAccounts] = useState<IAccount[]>([]);
   const [isInputDisabled, setIsInputDisabled] = useState(true);
+  const [clonedDaybook, setClonedDaybook] = useState<IDaybook>();
   const originalAccount = selectedDaybook.accountId;
 
   useEffect(() => {
@@ -35,6 +41,10 @@ const UpdateDaybook = ({
         (await window.electron.getAllAccounts()) as IAccount[];
       setAccounts(allAccounts);
     })();
+  }, []);
+
+  useEffect(() => {
+    setClonedDaybook(selectedDaybook);
   }, []);
 
   useEffect(() => {
@@ -69,11 +79,92 @@ const UpdateDaybook = ({
     if (isInputDisabled) {
       setIsInputDisabled((prev) => !prev);
     } else {
-      console.log(selectedDaybook);
       await window.electron.updateDaybook(selectedDaybook as IDaybook);
+
+      if (
+        clonedDaybook?.transactionAccountId !==
+        selectedDaybook.transactionAccountId
+      ) {
+        if (clonedDaybook) {
+          const previousAccount = (
+            (await window.electron.getTransactionAccountById(
+              clonedDaybook.transactionAccountId,
+              // @ts-ignore
+              +localStorage.getItem('currentAccountId'),
+            )) as ITransactionAccount[]
+          )[0];
+          const newAccount = (
+            (await window.electron.getTransactionAccountById(
+              selectedDaybook.transactionAccountId,
+              // @ts-ignore
+              +localStorage.getItem('currentAccountId'),
+            )) as ITransactionAccount[]
+          )[0];
+
+          if (selectedDaybook.type === 'EXPENSE') {
+            const newBalanceOfPreviousAccount =
+              clonedDaybook.amount + previousAccount.balance;
+            const newBalanceOfNewAccount =
+              newAccount.balance - selectedDaybook.amount;
+
+            await window.electron.updateTransactionAccount({
+              ...previousAccount,
+              balance: newBalanceOfPreviousAccount,
+            });
+
+            await window.electron.updateTransactionAccount({
+              ...newAccount,
+              balance: newBalanceOfNewAccount,
+            });
+          } else if (selectedDaybook.type === 'INCOME') {
+            const newBalanceOfPreviousAccount =
+              previousAccount.balance - clonedDaybook.amount;
+            const newBalanceOfNewAccount =
+              newAccount.balance + selectedDaybook.amount;
+
+            await window.electron.updateTransactionAccount({
+              ...previousAccount,
+              balance: newBalanceOfPreviousAccount,
+            });
+
+            await window.electron.updateTransactionAccount({
+              ...newAccount,
+              balance: newBalanceOfNewAccount,
+            });
+          }
+        }
+      } else {
+        const account = (
+          (await window.electron.getTransactionAccountById(
+            selectedDaybook.transactionAccountId,
+            // @ts-ignore
+            +localStorage.getItem('currentAccountId'),
+          )) as ITransactionAccount[]
+        )[0];
+        if (clonedDaybook) {
+          if (selectedDaybook.type === 'EXPENSE') {
+            const newBalance =
+              clonedDaybook.amount + account.balance - selectedDaybook.amount;
+            await window.electron.updateTransactionAccount({
+              ...account,
+              balance: newBalance,
+            });
+          } else if (selectedDaybook.type === 'INCOME') {
+            const newBalance =
+              account.balance - clonedDaybook.amount + selectedDaybook.amount;
+
+            await window.electron.updateTransactionAccount({
+              ...account,
+              balance: newBalance,
+            });
+          }
+        }
+      }
+
       toast('Transaction Updated Successfully', {
         type: 'success',
       });
+
       setRefreshState((prev: any) => !prev);
       setSelectedDaybook(undefined);
       setIsUpdateDaybook(false);

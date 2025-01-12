@@ -1052,10 +1052,24 @@ const Charts = ({
                   {numeral(Math.abs(thisMonthIncome)).format('0,0')}
                 </span>
               )} */}
-              {numeral(
+              {Math.sign(
                 accounts.find((account) => account.accountName === 'Cash')
-                  ?.balance,
-              ).format('0,0')}
+                  ?.balance as number,
+              ) !== -1 ? (
+                numeral(
+                  accounts.find((account) => account.accountName === 'Cash')
+                    ?.balance,
+                ).format('0,0')
+              ) : (
+                <span className="text-red-500">
+                  {numeral(
+                    Math.abs(
+                      accounts.find((account) => account.accountName === 'Cash')
+                        ?.balance as number,
+                    ),
+                  ).format('0,0')}
+                </span>
+              )}
             </p>
           </div>
 
@@ -1081,11 +1095,33 @@ const Charts = ({
                   {numeral(Math.abs(thisMonthIncome)).format('0,0')}
                 </span>
               )} */}
-                {numeral(
+                {Math.sign(
                   accounts
                     .filter((account) => account.accountName !== 'Cash')
-                    .reduce((total: any, item: any) => total + item.balance),
-                ).format('0,0')}
+                    .reduce(
+                      (total: any, item: any) => total + item.balance,
+                      0,
+                    ) as number,
+                ) !== -1 ? (
+                  numeral(
+                    accounts
+                      .filter((account) => account.accountName !== 'Cash')
+                      .reduce((total: any, item: any) => total + item.balance),
+                  ).format('0,0')
+                ) : (
+                  <span className="text-red-500">
+                    {numeral(
+                      Math.abs(
+                        accounts
+                          .filter((account) => account.accountName !== 'Cash')
+                          .reduce(
+                            (total: any, item: any) => total + item.balance,
+                            0,
+                          ) as number,
+                      ),
+                    ).format('0,0')}
+                  </span>
+                )}
               </p>
             </div>
           )}

@@ -122,7 +122,13 @@ const ViewParties = ({
                 {da.details}
               </td>
               <td className="border border-gray-300 px-2 text-right">
-                {numeral(da.balance).format('0,0')}
+                {Math.sign(da.balance) !== -1 ? (
+                  numeral(da.balance).format('0,0')
+                ) : (
+                  <span className="text-red-500">
+                    {numeral(Math.abs(da.balance)).format('0,0')}
+                  </span>
+                )}
               </td>
               <td className="border border-gray-300 px-2 items-center justify-center flex">
                 <button

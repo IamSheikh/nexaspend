@@ -171,59 +171,59 @@ const LoginAccount = ({
         });
       }
 
-      const allExpenses = currentTransactions.filter((transaction) =>
-        transaction.type === 'EXPENSE' &&
-        typeof transaction.transactionAccountId === 'string'
-          ? transaction.transactionAccountId === `${cashAccount.id}`
-          : transaction.transactionAccountId === cashAccount.id,
-      );
-      const allIncome = currentTransactions.filter((transaction) =>
-        transaction.type === 'INCOME' &&
-        typeof transaction.transactionAccountId === 'string'
-          ? transaction.transactionAccountId === `${cashAccount.id}`
-          : transaction.transactionAccountId === cashAccount.id,
-      );
+      // const allExpenses = currentTransactions.filter((transaction) =>
+      //   transaction.type === 'EXPENSE' &&
+      //   typeof transaction.transactionAccountId === 'string'
+      //     ? transaction.transactionAccountId === `${cashAccount.id}`
+      //     : transaction.transactionAccountId === cashAccount.id,
+      // );
+      // const allIncome = currentTransactions.filter((transaction) =>
+      //   transaction.type === 'INCOME' &&
+      //   typeof transaction.transactionAccountId === 'string'
+      //     ? transaction.transactionAccountId === `${cashAccount.id}`
+      //     : transaction.transactionAccountId === cashAccount.id,
+      // );
 
-      const totalExpenses = allExpenses.reduce(
-        (total: any, item: any) => total + item.amount,
-        0,
-      );
+      // const totalExpenses = allExpenses.reduce(
+      //   (total: any, item: any) => total + item.amount,
+      //   0,
+      // );
 
-      const totalIncome = allIncome.reduce(
-        (total: any, item: any) => total + item.amount,
-        0,
-      );
+      // const totalIncome = allIncome.reduce(
+      //   (total: any, item: any) => total + item.amount,
+      //   0,
+      // );
 
-      const allYouGave = currentLedger.filter((ledger) =>
-        ledger.transaction_type === 'YOU GAVE' &&
-        typeof ledger.transactionAccountId === 'string'
-          ? ledger.transactionAccountId === `${cashAccount.id}`
-          : ledger.transactionAccountId === cashAccount.id,
-      );
-      const allYouReceived = currentLedger.filter((ledger) =>
-        ledger.transaction_type === 'YOU RECEIVED' &&
-        typeof ledger.transactionAccountId === 'string'
-          ? ledger.transactionAccountId === `${cashAccount.id}`
-          : ledger.transactionAccountId === cashAccount.id,
-      );
+      // const allYouGave = currentLedger.filter((ledger) =>
+      //   ledger.transaction_type === 'YOU GAVE' &&
+      //   typeof ledger.transactionAccountId === 'string'
+      //     ? ledger.transactionAccountId === `${cashAccount.id}`
+      //     : ledger.transactionAccountId === cashAccount.id,
+      // );
+      // const allYouReceived = currentLedger.filter((ledger) =>
+      //   ledger.transaction_type === 'YOU RECEIVED' &&
+      //   typeof ledger.transactionAccountId === 'string'
+      //     ? ledger.transactionAccountId === `${cashAccount.id}`
+      //     : ledger.transactionAccountId === cashAccount.id,
+      // );
 
-      const totalAllYouGave = allYouGave.reduce(
-        (total, item) => total + item.amount,
-        0,
-      );
-      const totalAllYouReceived = allYouReceived.reduce(
-        (total, item) => total + item.amount,
-        0,
-      );
+      // const totalAllYouGave = allYouGave.reduce(
+      //   (total, item) => total + item.amount,
+      //   0,
+      // );
+      // const totalAllYouReceived = allYouReceived.reduce(
+      //   (total, item) => total + item.amount,
+      //   0,
+      // );
 
-      const totalFromDaybook = totalIncome - totalExpenses;
-      const totalFromLedger = totalAllYouReceived - totalAllYouGave;
-      const total = totalFromDaybook + totalFromLedger;
+      // const totalFromDaybook = totalIncome - totalExpenses;
+      // const totalFromLedger = totalAllYouReceived - totalAllYouGave;
+      // const total = totalFromDaybook + totalFromLedger;
 
-      await window.electron.updateTransactionAccount({
-        ...cashAccount,
-        balance: total,
-      });
+      // await window.electron.updateTransactionAccount({
+      //   ...cashAccount,
+      //   balance: total,
+      // });
 
       navigate('/home');
       setRefreshState((prev: any) => !prev);

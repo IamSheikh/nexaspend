@@ -218,7 +218,17 @@ const MainLedgerTable = ({
               <div>
                 <span className="font-semibold text-gray-700">Balance:</span>
                 <span className="ml-2">
-                  {numeral(selectedParty?.balance || 0).format('0,0')}
+                  {currentParty?.balance === 0 ? (
+                    0
+                  ) : Math.sign(currentParty?.balance as number) !== -1 ? (
+                    numeral(currentParty?.balance).format('0,0')
+                  ) : (
+                    <span className="text-red-500">
+                      {numeral(
+                        Math.abs(currentParty?.balance as number),
+                      ).format('0,0')}
+                    </span>
+                  )}
                 </span>
               </div>
 

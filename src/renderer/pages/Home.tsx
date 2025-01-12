@@ -656,7 +656,8 @@ const Home = ({
       {/* // <div className="fire-wrapper"> */}
       {/* // <div className="fire-overlay"></div> */}
       <button
-        className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 px-2 py-2 text-white shadow-lg rounded-md z-[50000] transition-all duration-300 ease-in-out"
+        // className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 px-2 py-2 text-white shadow-lg rounded-md z-[50000] transition-all duration-300 ease-in-out"
+        className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 ${activeTab === 'Transaction' ? 'bg-green-500 hover:bg-green-600' : activeTab === 'Ledger' ? 'bg-purple-500 hover:bg-purple-600' : 'bg-red-500 hover:bg-red-600'} py-2 text-white shadow-lg rounded-md z-[50000] transition-all duration-300 ease-in-out`}
         type="button"
         onClick={() => {
           if (activeTab === 'Transaction') {
@@ -675,7 +676,13 @@ const Home = ({
             isHovered ? 'w-auto px-4' : 'w-12 px-2'
           }`}
         >
-          {isHovered ? 'Add Entry' : '+'}
+          {isHovered
+            ? activeTab === 'Transaction'
+              ? 'Add Entry'
+              : activeTab === 'Ledger'
+                ? 'Add Ledger'
+                : 'Add Account'
+            : '+'}
         </span>
       </button>
       {/* // </div> */}

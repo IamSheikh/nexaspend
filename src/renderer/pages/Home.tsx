@@ -76,6 +76,8 @@ const Home = ({
   const [isUpdateDaybook, setIsUpdateDaybook] = useState(false);
   const [selectedDaybook, setSelectedDaybook] = useState<IDaybook>();
   const [selectedCategory, setSelectedCategory] = useState<ICategory>();
+  const [currentDate1, setCurrentDate1] = useState(new Date());
+  const [currentDate2, setCurrentDate2] = useState(new Date());
   const [activeTab, setActiveTab] = useState('Transaction');
   const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] =
     useState(false);
@@ -334,6 +336,8 @@ const Home = ({
         setIsAddPartyModalOpen={setIsAddPartyModalShowing}
         setIsViewingLedgerShowing={setIsViewingLedgerShowing}
         setIsTableFooterShowing={setIsTableFooterShowing}
+        setCurrentDate1={setCurrentDate1}
+        setCurrentDate2={setCurrentDate2}
       />
 
       <div ref={sideBarRef}>
@@ -408,6 +412,7 @@ const Home = ({
         textColor={textColor}
         toggleSidebar={toggleSidebar}
         refreshState={refreshState}
+        setIsTableFooterShowing={setIsTableFooterShowing}
       />
 
       {isAddTransactionModalOpen && (
@@ -439,6 +444,10 @@ const Home = ({
           searchData={searchData}
           setIsTableFooterShowing={setIsTableFooterShowing}
           results={results}
+          currentDate1={currentDate1}
+          currentDate2={currentDate2}
+          setCurrentDate1={setCurrentDate1}
+          setCurrentDate2={setCurrentDate2}
         />
       )}
 

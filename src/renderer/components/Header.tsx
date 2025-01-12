@@ -35,6 +35,8 @@ const Header = ({
   setIsAddPartyModalOpen,
   setIsViewingLedgerShowing,
   setIsTableFooterShowing,
+  setCurrentDate1,
+  setCurrentDate2,
 }: {
   printingMode: any;
   setActiveTab: any;
@@ -53,6 +55,8 @@ const Header = ({
   setIsAddPartyModalOpen: any;
   setIsViewingLedgerShowing: any;
   setIsTableFooterShowing: any;
+  setCurrentDate1: any;
+  setCurrentDate2: any;
 }) => {
   const [currentAccount, setCurrentAccount] = useState<IAccount>();
   const [accounts, setAccounts] = useState<IAccount[]>([]);
@@ -146,6 +150,8 @@ const Header = ({
               categoryId: 'ALL',
               entryType: 'ALL',
             });
+            setCurrentDate1(new Date());
+            setCurrentDate2(new Date());
             setBackgroundColor('white');
             setTextColor('black');
           }}

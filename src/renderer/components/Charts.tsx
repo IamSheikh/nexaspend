@@ -38,6 +38,10 @@ const Charts = ({
   setTextColor,
   setIsTableFooterShowing,
   results,
+  currentDate1,
+  currentDate2,
+  setCurrentDate1,
+  setCurrentDate2,
 }: {
   searchData: any;
   currentAccountId: number;
@@ -48,6 +52,10 @@ const Charts = ({
   setTextColor: any;
   setIsTableFooterShowing: any;
   results: any;
+  currentDate1: any;
+  currentDate2: any;
+  setCurrentDate1: any;
+  setCurrentDate2: any;
 }) => {
   const [expenseChartData, setExpenseChartData] = useState<any>(null);
   const [incomeChartData, setIncomeChartData] = useState<any>(null);
@@ -64,8 +72,6 @@ const Charts = ({
   const [helpMePlz, setHelpMePlz] = useState<any>();
   const [handleExpenseClick, setHandleExpenseClick] = useState<any>();
   const [handleIncomeClick, setHandleIncomeClick] = useState<any>();
-  const [currentDate1, setCurrentDate1] = useState(new Date());
-  const [currentDate2, setCurrentDate2] = useState(new Date());
   const [
     doesExpenseMonthHaveTransactions,
     setDoesExpenseMonthHaveTransactions,
@@ -510,28 +516,28 @@ const Charts = ({
 
   const handleNextMonth = () => {
     setCurrentDate1(
-      (prevDate) =>
+      (prevDate: any) =>
         new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 1),
     );
   };
 
   const handlePreviousMonth = () => {
     setCurrentDate1(
-      (prevDate) =>
+      (prevDate: any) =>
         new Date(prevDate.getFullYear(), prevDate.getMonth() - 1, 1),
     );
   };
 
   const handleIncomeNextMonth = () => {
     setCurrentDate2(
-      (prevDate) =>
+      (prevDate: any) =>
         new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 1),
     );
   };
 
   const handleIncomePreviousMonth = () => {
     setCurrentDate2(
-      (prevDate) =>
+      (prevDate: any) =>
         new Date(prevDate.getFullYear(), prevDate.getMonth() - 1, 1),
     );
   };
@@ -574,7 +580,7 @@ const Charts = ({
 
   const handleIncomeMoreDetails = async () => {
     const { firstDay, lastDay } = getFirstAndLastDayOfMonthFromDate(
-      currentDate1.toString(),
+      currentDate2.toString(),
     );
     const allTransactions = (await window.electron.getDaybookByFilters(
       [firstDay, lastDay],

@@ -33,6 +33,7 @@ const SecondaryHeader = ({
   setResults,
   setCurrentPage,
   refreshState,
+  setIsTableFooterShowing,
 }: {
   activeTab: any;
   printingMode: any;
@@ -48,6 +49,7 @@ const SecondaryHeader = ({
   setResults: any;
   setCurrentPage: any;
   refreshState: any;
+  setIsTableFooterShowing: any;
 }) => {
   const [allCategories, setAllCategories] = useState<ICategory[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
@@ -121,6 +123,8 @@ const SecondaryHeader = ({
       // @ts-ignore
       +localStorage.getItem('currentAccountId'),
     );
+
+    setIsTableFooterShowing(true);
 
     setResults(filteredResults);
     setCurrentPage(1);
@@ -264,6 +268,7 @@ const SecondaryHeader = ({
             className="bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
             onClick={() => {
               setRefreshState((prev: any) => !prev);
+              setIsTableFooterShowing(false);
               setSearchData({
                 startDate: '',
                 endDate: '',

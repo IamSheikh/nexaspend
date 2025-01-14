@@ -7,7 +7,7 @@ import IDaybook from '../../types/IDaybook';
 
 const addDaybook = async (daybook: IDaybook) => {
   const db = connect();
-  const query = `INSERT INTO Daybook (date, amount, categoryId, details, type, accountId) VALUES (?, ?, ?, ?, ?, ?)`;
+  const query = `INSERT INTO Daybook (date, amount, categoryId, details, type, accountId, transactionAccountId) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
   db.run(
     query,
@@ -18,6 +18,7 @@ const addDaybook = async (daybook: IDaybook) => {
       daybook.details,
       daybook.type,
       daybook.accountId,
+      daybook.transactionAccountId,
     ],
     (err: any) => {
       if (err) {
@@ -117,7 +118,7 @@ const getDaybookByFilters = async (
 
 const updateDaybook = async (daybook: IDaybook) => {
   const db = connect();
-  const query = `UPDATE Daybook SET date = ?, amount = ?, categoryId = ?, details = ?, type = ?, accountId = ? WHERE id = ?`;
+  const query = `UPDATE Daybook SET date = ?, amount = ?, categoryId = ?, details = ?, type = ?, accountId = ?, transactionAccountId = ? WHERE id = ?`;
 
   db.run(
     query,
@@ -128,6 +129,7 @@ const updateDaybook = async (daybook: IDaybook) => {
       daybook.details,
       daybook.type,
       daybook.accountId,
+      daybook.transactionAccountId,
       daybook.id, // Make sure to include the ID for the WHERE clause
     ],
     (err: any) => {

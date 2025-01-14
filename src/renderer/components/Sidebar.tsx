@@ -97,6 +97,12 @@ const Sidebar = ({
         ).format('0,0')}
       </h2>
       <div className="flex flex-col px-4 py-2">
+        <h2 className="text-center">
+          {searchData.startDate === '' && searchData.endDate === ''
+            ? `${new Date().toLocaleDateString('default', { month: 'long' })}, 
+            ${new Date().getFullYear()}`
+            : `${searchData.startDate} to ${searchData.endDate}`}
+        </h2>
         <table className="min-w-full divide-y divide-gray-700">
           <thead>
             <tr>

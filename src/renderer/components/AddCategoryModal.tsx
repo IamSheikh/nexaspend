@@ -144,7 +144,7 @@ const AddCategoryModal = ({
               onClick={() => {
                 setIsViewingCategoryShowing(true);
                 setIsModalOpen(false);
-                setActiveTab('');
+                setActiveTab('homicide');
               }}
             >
               View Categories

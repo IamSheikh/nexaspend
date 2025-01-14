@@ -1,3 +1,6 @@
+/* eslint-disable no-return-assign */
+/* eslint-disable no-param-reassign */
+/* eslint-disable prefer-template */
 /* eslint global-require: off, no-console: off, promise/always-return: off */
 
 /**
@@ -39,12 +42,33 @@ import {
   getCategoriesByFilters,
   updateCategory,
 } from './services/Category.service';
-import { IAccount } from '../types';
+import { IAccount, IParty, ILedger, ITransactionAccount } from '../types';
 import {
   addAccount,
   getAllAccounts,
   updateAccount,
 } from './services/Account.service';
+import {
+  addParty,
+  deleteParty,
+  getAllParties,
+  updateParty,
+} from './services/Party.service';
+import {
+  addLedger,
+  getAllLedgers,
+  updateLedger,
+  deleteLedger,
+  getLedgerByFilters,
+} from './services/Ledger.service';
+import {
+  addTransactionAccount,
+  getAllTransactionAccounts,
+  updateTransactionAccount,
+  deleteTransactionAccount,
+  getTransactionAccountById,
+  getTransactionAccountByName,
+} from './services/TransactionAccount.service';
 
 class AppUpdater {
   constructor() {
@@ -70,8 +94,11 @@ ipcMain.on('ipc-example', async (event, arg) => {
 addColumnIfNotExists('Daybook', 'accountId');
 addColumnIfNotExists('Category', 'accountId');
 addColumnIfNotExists('Account', 'pin');
+addColumnIfNotExists('Daybook', 'transactionAccountId');
+addColumnIfNotExists('Ledger', 'transactionAccountId');
 
 // Merry Christmas
+
 updateAccountIdOfDaybook();
 updateAccountIdOfCategory();
 updatePinOfAccount();
@@ -142,6 +169,136 @@ ipcMain.handle('getAllAccounts', () => {
 
 ipcMain.handle('updateAccount', (_, account: IAccount) => {
   updateAccount(account);
+});
+
+// Party
+
+ipcMain.handle('addParty', (_, party: IParty) => {
+  addParty(party);
+});
+
+ipcMain.handle('getAllParties', (_, accountId: number) => {
+  return getAllParties(accountId);
+});
+
+ipcMain.handle('updateParty', (_, party: IParty) => {
+  updateParty(party);
+});
+
+ipcMain.handle('deleteParty', (_, id: number) => {
+  deleteParty(id);
+});
+
+// Ledger
+
+ipcMain.handle('addLedger', (_, ledger: ILedger) => {
+  addLedger(ledger);
+});
+
+ipcMain.handle('getAllLedgers', (_, accountId: number) => {
+  return getAllLedgers(accountId);
+});
+
+ipcMain.handle(
+  'getLedgerByFilters',
+  (
+    _,
+    dateRange: Array<string> | null,
+    transactionType: string,
+    partyId: number | string,
+    accountId: number,
+  ) => {
+    return getLedgerByFilters(dateRange, transactionType, partyId, accountId);
+  },
+);
+
+ipcMain.handle('updateLedger', (_, ledger: ILedger) => {
+  updateLedger(ledger);
+});
+
+ipcMain.handle('deleteLedger', (_, id: number) => {
+  deleteLedger(id);
+});
+
+// TransactionAccount
+
+ipcMain.handle(
+  'addTransactionAccount',
+  (_, transactionAccount: ITransactionAccount) => {
+    addTransactionAccount(transactionAccount);
+  },
+);
+
+ipcMain.handle('getAllTransactionAccounts', (_, accountId: number) => {
+  return getAllTransactionAccounts(accountId);
+});
+
+ipcMain.handle(
+  'getTransactionAccountById',
+  (_, id: number, accountId: number) => {
+    return getTransactionAccountById(id, accountId);
+  },
+);
+
+ipcMain.handle(
+  'getTransactionAccountByName',
+  (_, accountName: string, accountId: number) => {
+    return getTransactionAccountByName(accountName, accountId);
+  },
+);
+
+ipcMain.handle(
+  'updateTransactionAccount',
+  (_, transactionAccount: ITransactionAccount) => {
+    updateTransactionAccount(transactionAccount);
+  },
+);
+
+ipcMain.handle('deleteTransactionAccount', (_, id: number) => {
+  deleteTransactionAccount(id);
+});
+
+// Preview
+
+const printOptions = {
+  silent: false,
+  size: 'A4',
+  landscape: false,
+};
+
+ipcMain.handle('preview', async (_: any, url: any) => {
+  let win = new BrowserWindow({
+    title: 'Print Preview',
+    show: false,
+    autoHideMenuBar: true,
+  });
+
+  win.webContents.once('did-finish-load', () => {
+    win.webContents
+      .printToPDF(printOptions)
+      .then((data: any) => {
+        const buf = Buffer.from(data);
+        data = buf.toString('base64');
+        // @ts-ignore
+        const ur = 'data:application/pdf;base64,' + data;
+
+        // @ts-ignore
+        win.webContents.on('ready-to-show', () => {
+          win.once('page-title-updated', (e) => e.preventDefault());
+          win.show();
+        });
+
+        // @ts-ignore
+        win.webContents.on('closed', () => (win = null));
+        win.loadURL(ur);
+      })
+      .catch((error) => {
+        throw error;
+      });
+  });
+
+  await win.loadURL(url);
+  return 'shown preview window';
 });
 
 /*

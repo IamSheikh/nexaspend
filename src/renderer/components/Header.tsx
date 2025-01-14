@@ -31,6 +31,12 @@ const Header = ({
   refreshState,
   setCurrentAccountId,
   setLoginModal,
+  activeTab,
+  setIsAddPartyModalOpen,
+  setIsViewingLedgerShowing,
+  setIsTableFooterShowing,
+  setCurrentDate1,
+  setCurrentDate2,
 }: {
   printingMode: any;
   setActiveTab: any;
@@ -45,6 +51,12 @@ const Header = ({
   refreshState: any;
   setCurrentAccountId: any;
   setLoginModal: any;
+  activeTab: any;
+  setIsAddPartyModalOpen: any;
+  setIsViewingLedgerShowing: any;
+  setIsTableFooterShowing: any;
+  setCurrentDate1: any;
+  setCurrentDate2: any;
 }) => {
   const [currentAccount, setCurrentAccount] = useState<IAccount>();
   const [accounts, setAccounts] = useState<IAccount[]>([]);
@@ -88,8 +100,6 @@ const Header = ({
   }, [refreshState]);
 
   const handleClick = (accountId: number) => {
-    // const newAccount = accounts.find((account) => account.id === accountId);
-    // setCurrentAccount(newAccount);
     setCurrentAccountId(accountId);
     setLoginModal((prev: any) => !prev);
   };
@@ -102,7 +112,7 @@ const Header = ({
         buttonRef.current &&
         !buttonRef.current.contains(event.target as Node)
       ) {
-        setIsDropdownOpen(false); // Close dropdown
+        setIsDropdownOpen(false);
       }
     };
 
@@ -131,6 +141,8 @@ const Header = ({
           onClick={() => {
             setActiveTab('Transaction');
             setIsViewingCategoryShowing(false);
+            setIsViewingLedgerShowing(false);
+            setIsTableFooterShowing(false);
             setRefreshState((prev: any) => !prev);
             setSearchData({
               startDate: '',
@@ -138,6 +150,8 @@ const Header = ({
               categoryId: 'ALL',
               entryType: 'ALL',
             });
+            setCurrentDate1(new Date());
+            setCurrentDate2(new Date());
             setBackgroundColor('white');
             setTextColor('black');
           }}
@@ -276,13 +290,26 @@ const Header = ({
               </div>
             )}
           </div>
-          <button
-            className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Category
-          </button>
+          {activeTab === 'Transaction' || activeTab === 'homicide' ? (
+            <button
+              className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Category
+            </button>
+          ) : (
+            ''
+          )}
+          {activeTab === 'Ledger' && (
+            <button
+              className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              type="button"
+              onClick={() => setIsAddPartyModalOpen(true)}
+            >
+              Party
+            </button>
+          )}
         </div>
       </div>
 

@@ -7,7 +7,8 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IAccount } from '../../types';
+import { IAccount, IDaybook, ILedger, ITransactionAccount } from '../../types';
+import { getFirstAndLastDayOfMonth } from '../utils';
 
 const LoginAccount = ({
   selectedAccount,
@@ -62,7 +63,7 @@ const LoginAccount = ({
     }
   };
 
-  const handleLogin = (e: FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     const fullPin = pin.join('');
     if (fullPin !== account?.pin) {
@@ -72,6 +73,158 @@ const LoginAccount = ({
       setPin(['', '', '', '']);
       localStorage.removeItem('currentAccountId');
       localStorage.setItem('currentAccountId', `${account.id}`);
+      const { lastDay } = getFirstAndLastDayOfMonth();
+      const currentTransactions = (await window.electron.getDaybookByFilters(
+        ['1500-1-1', lastDay],
+        'ALL',
+        'ALL',
+        account.id as number,
+      )) as IDaybook[];
+      // console.log(currentTransactions);
+      const allTransactionAccounts =
+        await window.electron.getAllTransactionAccounts(account.id as number);
+      const currentLedger = (await window.electron.getLedgerByFilters(
+        ['1500-1-1', lastDay],
+        'ALL',
+        'ALL',
+        account.id as number,
+      )) as ILedger[];
+
+      if (allTransactionAccounts.length === 0) {
+        await window.electron.addTransactionAccount({
+          accountName: 'Cash',
+          accountId: account.id as number,
+          balance: 0,
+        });
+      }
+
+      const everyTransactionThatDoesNotHave = currentTransactions.filter(
+        (trans) => trans.transactionAccountId === null,
+      );
+      const everyLedgerThatDoesNotHave = currentLedger.filter(
+        (led) => led.transactionAccountId === null,
+      );
+      const cashAccount = (
+        (await window.electron.getTransactionAccountByName(
+          'Cash',
+          account.id as number,
+        )) as ITransactionAccount[]
+      )[0];
+
+      if (everyTransactionThatDoesNotHave.length !== 0) {
+        const allExpenses = everyTransactionThatDoesNotHave.filter(
+          (transaction) => transaction.type === 'EXPENSE',
+        );
+        const allIncome = everyTransactionThatDoesNotHave.filter(
+          (transaction) => transaction.type === 'INCOME',
+        );
+
+        const totalExpenses = allExpenses.reduce(
+          (total: any, item: any) => total + item.amount,
+          0,
+        );
+        const totalIncome = allIncome.reduce(
+          (total: any, item: any) => total + item.amount,
+          0,
+        );
+
+        await window.electron.updateTransactionAccount({
+          ...cashAccount,
+          balance: totalIncome - totalExpenses,
+        });
+
+        everyTransactionThatDoesNotHave.map(async (transaction) => {
+          await window.electron.updateDaybook({
+            ...transaction,
+            transactionAccountId: cashAccount.id as number,
+          });
+        });
+      }
+
+      if (everyLedgerThatDoesNotHave.length !== 0) {
+        const allYouGave = everyLedgerThatDoesNotHave.filter(
+          (ledger) => ledger.transaction_type === 'YOU GAVE',
+        );
+        console.log(allYouGave);
+        const allYouReceived = everyLedgerThatDoesNotHave.filter(
+          (ledger) => ledger.transaction_type === 'YOU RECEIVED',
+        );
+        const totalAllYouGave = allYouGave.reduce(
+          (total: any, item: any) => total + item.amount,
+          0,
+        );
+        const totalAllYouReceived = allYouReceived.reduce(
+          (total: any, item: any) => total + item.amount,
+          0,
+        );
+        const total = totalAllYouReceived - totalAllYouGave;
+        await window.electron.updateTransactionAccount({
+          ...cashAccount,
+          balance: cashAccount.balance + total,
+        });
+
+        everyLedgerThatDoesNotHave.map(async (ledger) => {
+          await window.electron.updateLedger({
+            ...ledger,
+            transactionAccountId: cashAccount.id as number,
+          });
+        });
+      }
+
+      // const allExpenses = currentTransactions.filter((transaction) =>
+      //   transaction.type === 'EXPENSE' &&
+      //   typeof transaction.transactionAccountId === 'string'
+      //     ? transaction.transactionAccountId === `${cashAccount.id}`
+      //     : transaction.transactionAccountId === cashAccount.id,
+      // );
+      // const allIncome = currentTransactions.filter((transaction) =>
+      //   transaction.type === 'INCOME' &&
+      //   typeof transaction.transactionAccountId === 'string'
+      //     ? transaction.transactionAccountId === `${cashAccount.id}`
+      //     : transaction.transactionAccountId === cashAccount.id,
+      // );
+
+      // const totalExpenses = allExpenses.reduce(
+      //   (total: any, item: any) => total + item.amount,
+      //   0,
+      // );
+
+      // const totalIncome = allIncome.reduce(
+      //   (total: any, item: any) => total + item.amount,
+      //   0,
+      // );
+
+      // const allYouGave = currentLedger.filter((ledger) =>
+      //   ledger.transaction_type === 'YOU GAVE' &&
+      //   typeof ledger.transactionAccountId === 'string'
+      //     ? ledger.transactionAccountId === `${cashAccount.id}`
+      //     : ledger.transactionAccountId === cashAccount.id,
+      // );
+      // const allYouReceived = currentLedger.filter((ledger) =>
+      //   ledger.transaction_type === 'YOU RECEIVED' &&
+      //   typeof ledger.transactionAccountId === 'string'
+      //     ? ledger.transactionAccountId === `${cashAccount.id}`
+      //     : ledger.transactionAccountId === cashAccount.id,
+      // );
+
+      // const totalAllYouGave = allYouGave.reduce(
+      //   (total, item) => total + item.amount,
+      //   0,
+      // );
+      // const totalAllYouReceived = allYouReceived.reduce(
+      //   (total, item) => total + item.amount,
+      //   0,
+      // );
+
+      // const totalFromDaybook = totalIncome - totalExpenses;
+      // const totalFromLedger = totalAllYouReceived - totalAllYouGave;
+      // const total = totalFromDaybook + totalFromLedger;
+
+      // await window.electron.updateTransactionAccount({
+      //   ...cashAccount,
+      //   balance: total,
+      // });
+
       navigate('/home');
       setRefreshState((prev: any) => !prev);
       setLoginModal(false);

@@ -43,10 +43,41 @@ const loadModels = () => {
     )
     .toString();
 
+  const partyModel = fs
+    .readFileSync(
+      !isDebug
+        ? path.join(process.resourcesPath, 'models', 'Party.model.sql')
+        : './src/main/models/Party.model.sql',
+    )
+    .toString();
+
+  const ledgerModel = fs
+    .readFileSync(
+      !isDebug
+        ? path.join(process.resourcesPath, 'models', 'Ledger.model.sql')
+        : './src/main/models/Ledger.model.sql',
+    )
+    .toString();
+
+  const transactionAccountModel = fs
+    .readFileSync(
+      !isDebug
+        ? path.join(
+            process.resourcesPath,
+            'models',
+            'TransactionAccount.model.sql',
+          )
+        : './src/main/models/TransactionAccount.model.sql',
+    )
+    .toString();
+
   db.serialize(() => {
     db.run(daybookModel);
     db.run(categoryModel);
     db.run(accountModel);
+    db.run(partyModel);
+    db.run(ledgerModel);
+    db.run(transactionAccountModel);
   });
 };
 
@@ -77,6 +108,34 @@ function addColumnIfNotExists(tableName: string, newColumn: string) {
     if (!exists) {
       db.run(
         `ALTER TABLE ${tableName} ADD COLUMN ${newColumn} TEXT`,
+        (er: any) => {
+          if (er) {
+            console.error('Error adding column:', err);
+          } else {
+            console.log(`Column ${newColumn} added to ${tableName}`);
+          }
+        },
+      );
+    } else {
+      console.log(`Column ${newColumn} already exists in ${tableName}`);
+    }
+  });
+}
+
+function addOptionalColumnIfNotExists(tableName: string, newColumn: string) {
+  const db = connect();
+  // const tableName = 'Daybook';
+  // const newColumn = 'accountId';
+
+  columnExists(tableName, newColumn, (err: any, exists: any) => {
+    if (err) {
+      console.error('Error checking column:', err);
+      return;
+    }
+
+    if (!exists) {
+      db.run(
+        `ALTER TABLE ${tableName} ADD COLUMN ${newColumn} TEXT DEFAULT NULL`,
         (er: any) => {
           if (er) {
             console.error('Error adding column:', err);
@@ -178,11 +237,97 @@ function updatePinOfAccount() {
   });
 }
 
+function updateTransactionAccountIdOfDaybook(
+  accountId: number,
+  transactionAccountId: number,
+) {
+  const db = connect();
+  const tableName = 'Daybook'; // Table name
+  const columnName = 'transactionAccountId'; // Column to check
+
+  columnExists(tableName, columnName, (err: any, exists: any) => {
+    if (err) {
+      console.error('Error checking column:', err);
+      return;
+    }
+
+    if (exists) {
+      // If the column exists, update the rows where accountId is NULL
+      db.run(
+        `UPDATE ${tableName} SET transactionAccountId = ${transactionAccountId} WHERE transactionAccountId IS NULL AND accountId = ${accountId}`,
+        (er: any) => {
+          if (er) {
+            console.error('Error updating accountId:', err);
+          } else {
+            console.log('Successfully updated accountId where it was NULL.');
+          }
+        },
+      );
+    } else {
+      console.log(`Column ${columnName} does not exist in ${tableName}.`);
+    }
+  });
+}
+
+const deleteColumn = async (tableName: string, columnName: string) => {
+  const db = connect();
+
+  try {
+    // Get current table structure
+    const columns: any = await new Promise((resolve, reject) => {
+      db.all(`PRAGMA table_info(${tableName})`, (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      });
+    });
+
+    // Filter out the column to be deleted
+    const filteredColumns = columns
+      .map((col: any) => col.name)
+      .filter((col: any) => col !== columnName);
+
+    if (filteredColumns.length === columns.length) {
+      throw new Error(
+        `Column "${columnName}" does not exist in table "${tableName}".`,
+      );
+    }
+
+    const columnsList = filteredColumns.join(', ');
+
+    // Generate SQL statements
+    const createTableSQL = `
+            CREATE TABLE ${tableName}_new AS 
+            SELECT ${columnsList} FROM ${tableName};
+        `;
+
+    const dropOldTableSQL = `DROP TABLE ${tableName};`;
+    const renameTableSQL = `ALTER TABLE ${tableName}_new RENAME TO ${tableName};`;
+
+    // Execute SQL statements
+    db.serialize(() => {
+      db.run(createTableSQL);
+      db.run(dropOldTableSQL);
+      db.run(renameTableSQL);
+    });
+
+    console.log(
+      `Column "${columnName}" deleted successfully from table "${tableName}".`,
+    );
+  } catch (error) {
+    console.error('Error');
+  } finally {
+    db.close();
+  }
+};
+
 export {
   connect,
   loadModels,
   addColumnIfNotExists,
+  addOptionalColumnIfNotExists,
   updateAccountIdOfDaybook,
   updateAccountIdOfCategory,
   updatePinOfAccount,
+  updateTransactionAccountIdOfDaybook,
+  deleteColumn,
 };

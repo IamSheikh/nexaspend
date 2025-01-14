@@ -9,7 +9,7 @@
 
 import { useState, useEffect } from 'react';
 import numeral from 'numeral';
-import { ICategory } from '../../types';
+import { ICategory, ITransactionAccount } from '../../types';
 
 const MainTable = ({
   printingMode,
@@ -28,6 +28,7 @@ const MainTable = ({
   printTable,
   currentAccountId,
   refreshState,
+  isTableFooterShowing,
 }: {
   printingMode: any;
   activeTab: any;
@@ -45,10 +46,14 @@ const MainTable = ({
   searchData: any;
   currentAccountId: any;
   refreshState: any;
+  isTableFooterShowing: any;
 }) => {
   const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
   const [allCategories, setAllCategories] = useState<ICategory[]>([]);
+  const [transactionAccounts, setTransactionAccounts] = useState<
+    ITransactionAccount[]
+  >([]);
 
   useEffect(() => {
     (async () => {
@@ -66,6 +71,13 @@ const MainTable = ({
       setAllCategories(categories);
       setExpenseCategories(filteredExpenseCategories);
       setIncomeCategories(filteredIncomeCategories);
+
+      const allTransactionAccounts =
+        await window.electron.getAllTransactionAccounts(
+          // @ts-ignore
+          +localStorage.getItem('currentAccountId'),
+        );
+      setTransactionAccounts(allTransactionAccounts);
     })();
   }, [currentAccountId, refreshState]);
 
@@ -108,19 +120,24 @@ const MainTable = ({
           >
             <tr className="bg-gray-200">
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center px-2 pb-2'}`}
               >
                 Date
               </th>
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
                 Type
               </th>
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
                 Category
+              </th>
+              <th
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
+              >
+                Account
               </th>
               <th
                 className={`border border-gray-300 ${printingMode && 'px-2 pb-2 mb-2 text-center'}`}
@@ -128,15 +145,15 @@ const MainTable = ({
                 Details
               </th>
               <th
-                className={`border border-gray-300 ${printingMode && 'pb-2 text-center'}`}
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
-                Income
+                Amount
               </th>
-              <th
-                className={`border border-gray-300 ${printingMode && 'px-2 pb-2 mb-2 text-center'}`}
+              {/* <th
+                className={`border border-gray-300 ${printingMode && 'text-center'}`}
               >
                 Expense
-              </th>
+              </th> */}
               {/* <th
                 className={`border border-gray-300 ${printingMode && 'hidden'} no-print`}
               >
@@ -156,7 +173,7 @@ const MainTable = ({
                 }}
               >
                 <td
-                  className={`border border-gray-300 ${printingMode && 'pb-2'}`}
+                  className={`border border-gray-300 px-2  ${printingMode && 'pb-2 w-28'}`}
                 >
                   {da.date}
                 </td>
@@ -178,18 +195,28 @@ const MainTable = ({
                 <td
                   className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
                 >
+                  {
+                    transactionAccounts.find(
+                      (account) => account.id === +da.transactionAccountId,
+                    )?.accountName
+                  }
+                </td>
+                <td
+                  className={`border border-gray-300 text-left px-2 ${printingMode && 'pb-2'}`}
+                >
                   {da.details}
                 </td>
                 <td
                   className={`border border-gray-300 text-right px-2 ${printingMode && 'pb-2'}`}
                 >
-                  {da.type === 'INCOME' && numeral(da.amount).format('0,0')}
+                  {/* {da.type === 'INCOME' && numeral(da.amount).format('0,0')} */}
+                  {numeral(da.amount).format('0,0')}
                 </td>
-                <td
+                {/* <td
                   className={`border border-gray-300 text-right px-2 ${printingMode && 'pb-2'}`}
                 >
                   {da.type === 'EXPENSE' && numeral(da.amount).format('0,0')}
-                </td>
+                </td> */}
                 {/* <td
                   className={`border border-gray-300 items-center justify-center flex ${printingMode && 'hidden'} no-print`}
                 >
@@ -229,67 +256,69 @@ const MainTable = ({
         </table>
       </div>
 
-      <div className="flex w-[95vw] justify-between">
-        <div className="flex justify-start self-start items-start mt-4 ml-2">
-          <button
-            className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
-            type="button"
-            onClick={() => {
-              printTable();
-            }}
-          >
-            Print
-          </button>
-          <button
-            className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
-            type="button"
-            onClick={handleDownloadPDF}
-          >
-            Download
-          </button>
-        </div>
+      {isTableFooterShowing && (
+        <div className="flex w-[95vw] justify-between">
+          <div className="flex justify-start self-start items-start mt-4 ml-2">
+            <button
+              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
+              type="button"
+              onClick={() => {
+                printTable();
+              }}
+            >
+              Print
+            </button>
+            <button
+              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 mr-3"
+              type="button"
+              onClick={handleDownloadPDF}
+            >
+              Download
+            </button>
+          </div>
 
-        <div className="flex justify-end self-end items-end mt-4 ml-2 mr-5">
-          <button
-            onClick={() => handlePageChange(1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            type="button"
-          >
-            {'<<'}
-          </button>
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            type="button"
-          >
-            {'<'}
-          </button>
-          <button
-            className="px-3 py-1 mx-1 rounded bg-blue-500 text-white"
-            type="button"
-          >
-            {currentPage} of {totalPages === 0 ? '1' : totalPages}
-          </button>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            type="button"
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-          >
-            {'>'}
-          </button>
-          <button
-            onClick={() => handlePageChange(totalPages)}
-            type="button"
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-          >
-            {'>>'}
-          </button>
+          <div className="flex justify-end self-end items-end mt-4 ml-2 mr-5">
+            <button
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              type="button"
+            >
+              {'<<'}
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              type="button"
+            >
+              {'<'}
+            </button>
+            <button
+              className="px-3 py-1 mx-1 rounded bg-blue-500 text-white"
+              type="button"
+            >
+              {currentPage} of {totalPages === 0 ? '1' : totalPages}
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              type="button"
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              {'>'}
+            </button>
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              type="button"
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 mx-1 bg-gray-200 rounded hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              {'>>'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

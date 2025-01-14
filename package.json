@@ -59,7 +59,8 @@
       {
         "files": [
           ".prettierrc",
-          ".eslintrc"
+          ".eslintrc",
+          "src/renderer/styles/dist/dist.css"
         ],
         "options": {
           "parser": "json"

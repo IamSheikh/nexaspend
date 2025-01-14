@@ -8,27 +8,34 @@ const Tabs = ({
   printingMode,
   activeTab,
   setActiveTab,
+  setIsViewingLedgerShowing,
 }: {
   printingMode: any;
   activeTab: any;
   setActiveTab: any;
+  setIsViewingLedgerShowing: any;
 }) => {
   return (
     <div
-      className={`flex justify-around border-b top-[50px] sticky z-40 bg-white  border-gray-300 ${activeTab === '' && 'hidden'} ${printingMode && 'hidden'}`}
+      className={`flex justify-around border-b top-[60px] sticky z-40 bg-white  border-gray-300 ${activeTab === '' && 'hidden'} ${printingMode && 'hidden'}`}
     >
-      {['Transaction', 'Add Transaction'].map((tab) => (
+      {['Transaction', 'Ledger', 'Account'].map((tab) => (
         <button
           type="button"
           key={tab}
-          onClick={() => setActiveTab(tab)}
+          onClick={() => {
+            setActiveTab(tab);
+            if (tab === 'Transaction' || tab === 'Account') {
+              setIsViewingLedgerShowing(false);
+            }
+          }}
           className={`pb-2 text-gray-600  ${
             activeTab === tab
               ? 'border-b-2 border-black text-black'
               : 'hover:text-black'
           }`}
         >
-          {tab}
+          {tab === 'Transaction' ? 'Daybook' : tab}
         </button>
       ))}
     </div>

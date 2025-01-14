@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable camelcase */
@@ -13,10 +14,15 @@ import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import numeral from 'numeral';
 // import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { ICategory, IDaybook } from '../../types';
+import { ICategory, IDaybook, ITransactionAccount } from '../../types';
 import colors from '../utils/100000_colors';
 import hover_colors from '../utils/100000_hover_colors';
-import { getFirstAndLastDayOfMonth } from '../utils';
+import {
+  formatDate,
+  formatDateWithDDMMYYYY,
+  getFirstAndLastDayOfLastMonth,
+  getFirstAndLastDayOfMonth,
+} from '../utils';
 import { calculateLuminance, getRandomColor } from '../utils/colors';
 import getFirstAndLastDayOfMonthFromDate from '../utils/getFirstAndLastDayOfMonthFromDate';
 
@@ -30,6 +36,12 @@ const Charts = ({
   setResults,
   setBackgroundColor,
   setTextColor,
+  setIsTableFooterShowing,
+  results,
+  currentDate1,
+  currentDate2,
+  setCurrentDate1,
+  setCurrentDate2,
 }: {
   searchData: any;
   currentAccountId: number;
@@ -38,6 +50,12 @@ const Charts = ({
   setResults: any;
   setBackgroundColor: any;
   setTextColor: any;
+  setIsTableFooterShowing: any;
+  results: any;
+  currentDate1: any;
+  currentDate2: any;
+  setCurrentDate1: any;
+  setCurrentDate2: any;
 }) => {
   const [expenseChartData, setExpenseChartData] = useState<any>(null);
   const [incomeChartData, setIncomeChartData] = useState<any>(null);
@@ -54,14 +72,25 @@ const Charts = ({
   const [helpMePlz, setHelpMePlz] = useState<any>();
   const [handleExpenseClick, setHandleExpenseClick] = useState<any>();
   const [handleIncomeClick, setHandleIncomeClick] = useState<any>();
-  const [currentDate1, setCurrentDate1] = useState(new Date());
-  const [currentDate2, setCurrentDate2] = useState(new Date());
   const [
     doesExpenseMonthHaveTransactions,
     setDoesExpenseMonthHaveTransactions,
   ] = useState(true);
   const [doesIncomeMonthHaveTransactions, setDoesIncomeMonthHaveTransactions] =
     useState(true);
+  const [previousMonthResults, setPreviousMonthResults] = useState<IDaybook[]>(
+    [],
+  );
+  const [currentMonthResults, setCurrentMonthResults] = useState<IDaybook[]>(
+    [],
+  );
+  const [todayExpenses, setTodayExpenses] = useState<IDaybook[]>([]);
+
+  const [todayIncome, setTodayIncome] = useState<IDaybook[]>([]);
+
+  const [allCategory, setAllCategory] = useState<ICategory[]>([]);
+  const [, setThisMonthIncome] = useState(0);
+  const [accounts, setAccounts] = useState<ITransactionAccount[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -147,10 +176,12 @@ const Charts = ({
       let selectedCategoryId: number = 0;
 
       setHelpMe(() => (tooltipItem: any) => {
-        // Get category name and percentage
         const categoryName = tooltipItem.label;
-        const percentage = parseInt(tooltipItem.raw, 10).toFixed(2);
-        // Find the total amount for the category
+        const rawPercentage = parseFloat(tooltipItem.raw); // Get raw percentage as a float
+        const percentage =
+          rawPercentage < 0.01
+            ? rawPercentage.toFixed(6)
+            : rawPercentage.toFixed(2); // Use 6 decimal places for small percentages
         const categoryId = expenseCategories.find(
           (category) => category.name === categoryName,
         )?.id;
@@ -159,7 +190,6 @@ const Charts = ({
           selectedCategoryId = categoryId;
         }
 
-        // Return tooltip content with category total
         return `${percentage}% (${numeral(totalAmount).format('0,0')})`;
       });
 
@@ -173,13 +203,9 @@ const Charts = ({
         );
 
         if (activePoints.length > 0) {
-          // const firstPoint = activePoints[0];
-          // const categoryId = expenseCategories.find(
-          //   (category) => category.id === firstPoint.index,
-          // );
           const randomColor = getRandomColor();
           const isThereDates =
-            searchData.startDate !== '' && searchData.endDate;
+            searchData.startDate !== '' && searchData.endDate !== '';
           const filteredResults = await window.electron.getDaybookByFilters(
             isThereDates
               ? [searchData.startDate, searchData.endDate]
@@ -214,7 +240,7 @@ const Charts = ({
     };
 
     fetchData();
-  }, [refreshState, currentDate1]);
+  }, [refreshState, currentDate1, searchData]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -297,16 +323,16 @@ const Charts = ({
       });
 
       setHelpMePlz(() => (tooltipItem: any) => {
-        // Get category name and percentage
         const categoryName = tooltipItem.label;
-        const percentage = parseInt(tooltipItem.raw, 10).toFixed(2);
-        // Find the total amount for the category
+        const rawPercentage = parseFloat(tooltipItem.raw);
+        const percentage =
+          rawPercentage < 0.01
+            ? rawPercentage.toFixed(6)
+            : rawPercentage.toFixed(2);
         const categoryId = expenseCategories.find(
           (category) => category.name === categoryName,
         )?.id;
         const totalAmount = categoryId ? aggregatedData[categoryId] : 0;
-
-        // Return tooltip content with category total
         return `${percentage}% (${numeral(totalAmount).format('0,0')})`;
       });
 
@@ -361,7 +387,7 @@ const Charts = ({
     };
 
     fetchData();
-  }, [refreshState, currentDate2]);
+  }, [refreshState, currentDate2, searchData]);
 
   useEffect(() => {
     (async () => {
@@ -411,6 +437,74 @@ const Charts = ({
     })();
   }, [refreshState, currentDate2]);
 
+  useEffect(() => {
+    (async () => {
+      const categories = (await window.electron.getAllCategories(
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      )) as ICategory[];
+      setAllCategory(categories);
+      // setExpenseCategories(filteredExpenseCategories);
+      // setIncomeCategories(filteredIncomeCategories);
+
+      const { firstDay: previousMonthFirstDay, lastDay: previousMonthLastDay } =
+        getFirstAndLastDayOfLastMonth();
+      const previous = await window.electron.getDaybookByFilters(
+        [previousMonthFirstDay, previousMonthLastDay],
+        'ALL',
+        'ALL',
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      );
+      setPreviousMonthResults(previous);
+
+      const { firstDay: monthFirstDay, lastDay: monthLastDay } =
+        getFirstAndLastDayOfMonth();
+      const current = await window.electron.getDaybookByFilters(
+        [monthFirstDay, monthLastDay],
+        'ALL',
+        'ALL',
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      );
+      setCurrentMonthResults(current);
+
+      const todayExpense = await window.electron.getDaybookByFilters(
+        [formatDate(new Date()), formatDate(new Date())],
+        'EXPENSE',
+        'ALL',
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      );
+      setTodayExpenses(todayExpense);
+
+      const allAccounts = await window.electron.getAllTransactionAccounts(
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      );
+      setAccounts(allAccounts);
+    })();
+  }, [refreshState]);
+
+  useEffect(() => {
+    (async () => {
+      const categories = (await window.electron.getAllCategories(
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      )) as ICategory[];
+      setAllCategory(categories);
+
+      const income = await window.electron.getDaybookByFilters(
+        [formatDate(new Date()), formatDate(new Date())],
+        'INCOME',
+        'ALL',
+        // @ts-ignore
+        +localStorage.getItem('currentAccountId'),
+      );
+      setTodayIncome(income);
+    })();
+  }, [refreshState]);
+
   if (!expenseChartData) {
     // return (
     //   <div className="flex justify-center items-center space-x-4 p-4 bg-gray-100">
@@ -422,41 +516,108 @@ const Charts = ({
 
   const handleNextMonth = () => {
     setCurrentDate1(
-      (prevDate) =>
+      (prevDate: any) =>
         new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 1),
     );
   };
 
   const handlePreviousMonth = () => {
     setCurrentDate1(
-      (prevDate) =>
+      (prevDate: any) =>
         new Date(prevDate.getFullYear(), prevDate.getMonth() - 1, 1),
     );
   };
 
   const handleIncomeNextMonth = () => {
     setCurrentDate2(
-      (prevDate) =>
+      (prevDate: any) =>
         new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 1),
     );
   };
 
   const handleIncomePreviousMonth = () => {
     setCurrentDate2(
-      (prevDate) =>
+      (prevDate: any) =>
         new Date(prevDate.getFullYear(), prevDate.getMonth() - 1, 1),
     );
   };
 
+  function getRandomDarkColor() {
+    // Generate random RGB values with a bias towards darker shades
+    const r = Math.floor(Math.random() * 100);
+    const g = Math.floor(Math.random() * 100);
+    const b = Math.floor(Math.random() * 100);
+
+    // Convert RGB to hex
+    const color = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+
+    return color;
+  }
+
+  const handleMoreDetails = async () => {
+    const { firstDay, lastDay } = getFirstAndLastDayOfMonthFromDate(
+      currentDate1.toString(),
+    );
+    const allTransactions = (await window.electron.getDaybookByFilters(
+      [firstDay, lastDay],
+      'ALL',
+      'ALL',
+      currentAccountId,
+    )) as IDaybook[];
+    const allExpenses = allTransactions.filter(
+      (transaction) => transaction.type === 'EXPENSE',
+    );
+
+    setResults(allExpenses);
+    setSearchData({
+      ...searchData,
+      startDate: firstDay,
+      endDate: lastDay,
+      entryType: 'EXPENSE',
+    });
+    setIsTableFooterShowing(true);
+  };
+
+  const handleIncomeMoreDetails = async () => {
+    const { firstDay, lastDay } = getFirstAndLastDayOfMonthFromDate(
+      currentDate2.toString(),
+    );
+    const allTransactions = (await window.electron.getDaybookByFilters(
+      [firstDay, lastDay],
+      'ALL',
+      'ALL',
+      currentAccountId,
+    )) as IDaybook[];
+    const allIncome = allTransactions.filter(
+      (transaction) => transaction.type === 'INCOME',
+    );
+
+    setResults(allIncome);
+    setSearchData({
+      ...searchData,
+      startDate: firstDay,
+      endDate: lastDay,
+      entryType: 'INCOME',
+    });
+
+    setIsTableFooterShowing(true);
+  };
+
+  useEffect(() => {
+    setThisMonthIncome(
+      currentMonthResults
+        .filter((da: any) => da.type === 'INCOME')
+        .reduce((total: number, item: any) => total + item.amount, 0) -
+        currentMonthResults
+          .filter((da: any) => da.type === 'EXPENSE')
+          .reduce((total: number, item: any) => total + item.amount, 0),
+    );
+  }, [currentMonthResults]);
+
   return (
     <div className="flex justify-center items-center space-x-2 p-4 bg-gray-100">
       {/* <div className="w-72 min-h-72 bg-white rounded-lg shadow-md flex-col flex items-center justify-center p-4"> */}
-      <div className="w-80 min-h-72 h-96 bg-white rounded-lg shadow-md flex flex-col items-center justify-center p-4">
-        {/* Display a message if no expense data is available */}
-        {!expenseChartData && (
-          <h1 className="text-xl font-medium text-gray-700">No Expense</h1>
-        )}
-
+      <div className="w-80 min-h-96 h-[26rem] bg-white rounded-lg shadow-md flex flex-col items-center justify-center p-4">
         {/* Month Navigator */}
         <div className="relative flex justify-between items-center w-full py-2 px-4 rounded-md mt-1">
           <button
@@ -522,41 +683,452 @@ const Charts = ({
               }}
             />
           ) : (
-            <div className="flex justify-center items-center h-full">
-              <h1 className="text-2xl font-medium">No Expense</h1>
-            </div>
+            <Doughnut
+              data={{
+                labels: [],
+                datasets: [
+                  {
+                    data: [1, 1, 1, 1], // Placeholder values for empty chart
+                    backgroundColor: [
+                      '#E0E0E0',
+                      '#C0C0C0',
+                      '#B0B0B0',
+                      '#A0A0A0',
+                    ],
+                    hoverBackgroundColor: [
+                      '#E0E0E0',
+                      '#C0C0C0',
+                      '#B0B0B0',
+                      '#A0A0A0',
+                    ],
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    enabled: true,
+                    callbacks: {
+                      label: helpMe, // Custom tooltip formatting function
+                    },
+                  },
+                },
+                onClick: handleExpenseClick, // Click event handler for the chart
+              }}
+            />
           )}
         </div>
 
         {/* Total Expenses */}
         {doesExpenseMonthHaveTransactions && (
-          <h1 className="mt-4 text-gray-800 text-center">
-            Total Expenses:{' '}
-            <span className="font-semibold text-gray-900">
-              {numeral(totalExpense).format('0,0')}
-            </span>
-          </h1>
+          <>
+            <h1 className="mt-4 text-gray-800 text-center">
+              Total Expenses:{' '}
+              <span className="font-semibold text-gray-900">
+                {numeral(totalExpense).format('0,0')}
+              </span>
+            </h1>
+            <button
+              type="button"
+              style={{
+                color: getRandomDarkColor(),
+              }}
+              className="font-medium"
+              onClick={handleMoreDetails}
+            >
+              More Details
+            </button>
+          </>
         )}
       </div>
+      <div className="w-80 min-h-96 h-[26rem] bg-white rounded-lg shadow-md flex flex-col p-4 items-center">
+        <div className="flex flex-col items-center self-center w-full">
+          <h1 className="text-2xl font-semibold text-center">Expense</h1>
+          {/* Previous Month */}
+          <div className="flex self-center w-full justify-center mt-2">
+            <h2 className="text-sm font-semibold text-red-500 w-[200px]">
+              {new Date(
+                new Date().setMonth(new Date().getMonth() - 1),
+              ).toLocaleString('default', { month: 'long' })}
+              ,{' '}
+              {new Date(
+                new Date().setMonth(new Date().getMonth() - 1),
+              ).toLocaleString('default', { month: 'long' }) === 'December'
+                ? new Date().getFullYear() - 1
+                : new Date().getFullYear()}
+              :
+            </h2>
+            <p className="ml-3 text-left w-[100px]">
+              {numeral(
+                previousMonthResults
+                  .filter((da) => da.type === 'EXPENSE')
+                  .reduce((total: number, item: any) => total + item.amount, 0),
+              ).format('0,0')}
+            </p>
+          </div>
 
-      <div className="w-80 min-h-72 h-96 bg-white rounded-lg shadow-md flex items-center flex-col justify-center p-4">
-        {/* <div className="mt-1">
-          {!incomeChartData ? (
-            <h1 className="text-xl font-medium">No Income</h1>
+          <div className="border-t-2 border-gray-200 w-full" />
+
+          {/* Current Month */}
+          <div className="flex self-center w-full justify-center">
+            <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+              {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
+              {new Date().getFullYear()}:
+            </h2>
+            <p className="ml-3 text-left w-[100px]">
+              {numeral(
+                currentMonthResults
+                  .filter((da: any) => da.type === 'EXPENSE')
+                  .reduce((total: number, item: any) => total + item.amount, 0),
+              ).format('0,0')}
+            </p>
+          </div>
+
+          <div className="border-t-2 border-gray-200 w-full" />
+
+          {/* Today */}
+          {searchData.startDate === '' &&
+          searchData.endDate === '' &&
+          searchData.categoryId === 'ALL' ? (
+            <div className="flex self-center w-full">
+              <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+                Today:{' '}
+              </h2>
+              <p className="ml-3 text-left w-[100px]">
+                {numeral(
+                  todayExpenses
+                    .filter((da: any) => da.date === formatDate(new Date()))
+                    .reduce(
+                      (total: number, item: any) => total + item.amount,
+                      0,
+                    ),
+                ).format('0,0')}
+              </p>
+            </div>
           ) : (
+            ''
+          )}
+
+          {searchData.startDate === '' &&
+          searchData.endDate === '' &&
+          searchData.categoryId !== 'ALL' ? (
+            <div className="flex self-center w-full">
+              <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+                {
+                  allCategory?.find(
+                    (category) => category.id === +searchData.categoryId,
+                  )?.name
+                }
+                :{' '}
+              </h2>
+              <p className="ml-3 text-left w-[100px]">
+                {numeral(
+                  results
+                    .filter((da: any) => da.type === 'EXPENSE')
+                    .reduce(
+                      (total: number, item: any) => total + item.amount,
+                      0,
+                    ),
+                ).format('0,0')}
+              </p>
+            </div>
+          ) : (
+            ''
+          )}
+
+          {/* Custom Date Range */}
+          {searchData.startDate !== '' &&
+            searchData.endDate !== '' &&
+            searchData.categoryId === 'ALL' && (
+              <div className="flex self-center w-full">
+                <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
+                  {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
+                  {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
+                </h2>
+                <p className="ml-5 text-left w-[100px]">
+                  {numeral(
+                    results
+                      .filter((da: any) => da.type === 'EXPENSE')
+                      .reduce(
+                        (total: number, item: any) => total + item.amount,
+                        0,
+                      ),
+                  ).format('0,0')}
+                </p>
+              </div>
+            )}
+          {searchData.startDate !== '' &&
+            searchData.endDate !== '' &&
+            searchData.categoryId !== 'ALL' && (
+              <div className="flex self-center w-full">
+                <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
+                  {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
+                  {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
+                  <br />
+                  {
+                    // @ts-ignore
+                    allCategory?.find(
+                      (category) => category.id === +searchData.categoryId,
+                    ).name
+                  }
+                </h2>
+                <p className="ml-5 text-left w-[100px]">
+                  {numeral(
+                    results
+                      .filter((da: any) => da.type === 'EXPENSE')
+                      .reduce(
+                        (total: number, item: any) => total + item.amount,
+                        0,
+                      ),
+                  ).format('0,0')}
+                </p>
+              </div>
+            )}
+        </div>
+        <div className="flex flex-col items-center self-center w-full">
+          <h1 className="text-2xl font-semibold text-center">Income</h1>
+          {/* Previous Month */}
+          <div className="flex self-center w-full justify-center mt-2">
+            <h2 className="text-sm font-semibold text-red-500 w-[200px]">
+              {new Date(
+                new Date().setMonth(new Date().getMonth() - 1),
+              ).toLocaleString('default', { month: 'long' })}
+              ,{' '}
+              {new Date(
+                new Date().setMonth(new Date().getMonth() - 1),
+              ).toLocaleString('default', { month: 'long' }) === 'December'
+                ? new Date().getFullYear() - 1
+                : new Date().getFullYear()}
+              :
+            </h2>
+            <p className="ml-3 text-left w-[100px]">
+              {numeral(
+                previousMonthResults
+                  .filter((da) => da.type === 'INCOME')
+                  .reduce((total: number, item: any) => total + item.amount, 0),
+              ).format('0,0')}
+            </p>
+          </div>
+
+          <div className="border-t-2 border-gray-200 w-full" />
+
+          {/* Current Month */}
+          <div className="flex self-center w-full justify-center">
+            <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+              {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
+              {new Date().getFullYear()}:
+            </h2>
+            <p className="ml-3 text-left w-[100px]">
+              {numeral(
+                currentMonthResults
+                  .filter((da: any) => da.type === 'INCOME')
+                  .reduce((total: number, item: any) => total + item.amount, 0),
+              ).format('0,0')}
+            </p>
+          </div>
+
+          <div className="border-t-2 border-gray-200 w-full" />
+
+          {/* Today */}
+          {searchData.startDate === '' &&
+          searchData.endDate === '' &&
+          searchData.categoryId === 'ALL' ? (
+            <div className="flex self-center w-full">
+              <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+                Today:{' '}
+              </h2>
+              <p className="ml-3 text-left w-[100px]">
+                {numeral(
+                  todayIncome
+                    .filter((da: any) => da.date === formatDate(new Date()))
+                    .reduce(
+                      (total: number, item: any) => total + item.amount,
+                      0,
+                    ),
+                ).format('0,0')}
+              </p>
+            </div>
+          ) : (
+            ''
+          )}
+
+          {searchData.startDate === '' &&
+          searchData.endDate === '' &&
+          searchData.categoryId !== 'ALL' ? (
+            <div className="flex self-center w-full">
+              <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+                {
+                  allCategory?.find(
+                    (category) => category.id === +searchData.categoryId,
+                  )?.name
+                }
+                :{' '}
+              </h2>
+              <p className="ml-3 text-left w-[100px]">
+                {numeral(
+                  results
+                    .filter((da: any) => da.type === 'INCOME')
+                    .reduce(
+                      (total: number, item: any) => total + item.amount,
+                      0,
+                    ),
+                ).format('0,0')}
+              </p>
+            </div>
+          ) : (
+            ''
+          )}
+
+          {/* Custom Date Range */}
+          {searchData.startDate !== '' &&
+            searchData.endDate !== '' &&
+            searchData.categoryId === 'ALL' && (
+              <div className="flex self-center w-full">
+                <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
+                  {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
+                  {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
+                </h2>
+                <p className="ml-5 text-left w-[100px]">
+                  {numeral(
+                    results
+                      .filter((da: any) => da.type === 'INCOME')
+                      .reduce(
+                        (total: number, item: any) => total + item.amount,
+                        0,
+                      ),
+                  ).format('0,0')}
+                </p>
+              </div>
+            )}
+          {searchData.startDate !== '' &&
+            searchData.endDate !== '' &&
+            searchData.categoryId !== 'ALL' && (
+              <div className="flex self-center w-full">
+                <h2 className="text-sm font-semibold text-blue-800 w-[190px]">
+                  {formatDateWithDDMMYYYY(new Date(searchData.startDate))} to{' '}
+                  {formatDateWithDDMMYYYY(new Date(searchData.endDate))}:
+                  <br />
+                  {
+                    // @ts-ignore
+                    allCategory?.find(
+                      (category) => category.id === +searchData.categoryId,
+                    ).name
+                  }
+                </h2>
+                <p className="ml-5 text-left w-[100px]">
+                  {numeral(
+                    results
+                      .filter((da: any) => da.type === 'INCOME')
+                      .reduce(
+                        (total: number, item: any) => total + item.amount,
+                        0,
+                      ),
+                  ).format('0,0')}
+                </p>
+              </div>
+            )}
+        </div>
+
+        <div className="flex flex-col items-center self-center w-full">
+          <h1 className="text-2xl font-semibold text-center">
+            Accounts Balance
+          </h1>
+
+          <div className="flex self-center w-full justify-center">
+            <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+              {/* {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
+              {new Date().getFullYear()}: */}
+              Cash Account:
+            </h2>
+            <p className="ml-3 text-left w-[100px]">
+              {/* {thisMonthIncome === 0 ? (
+                0
+              ) : Math.sign(thisMonthIncome) === 1 ? (
+                <span>{numeral(thisMonthIncome).format('0,0')}</span>
+              ) : (
+                <span className="text-red-500">
+                  {numeral(Math.abs(thisMonthIncome)).format('0,0')}
+                </span>
+              )} */}
+              {Math.sign(
+                accounts.find((account) => account.accountName === 'Cash')
+                  ?.balance as number,
+              ) !== -1 ? (
+                numeral(
+                  accounts.find((account) => account.accountName === 'Cash')
+                    ?.balance,
+                ).format('0,0')
+              ) : (
+                <span className="text-red-500">
+                  {numeral(
+                    Math.abs(
+                      accounts.find((account) => account.accountName === 'Cash')
+                        ?.balance as number,
+                    ),
+                  ).format('0,0')}
+                </span>
+              )}
+            </p>
+          </div>
+
+          {accounts.filter((account) => account.accountName !== 'Cash')
+            .length === 0 ? (
             <div>
-              {new Date().toLocaleDateString('default', {
-                month: 'short',
-              })}
-              , {new Date().getFullYear()}
+              <h2>You {`don't`} have any other accounts, Racoon 🦝!</h2>
+            </div>
+          ) : (
+            <div className="flex self-center w-full justify-center">
+              <h2 className="text-sm font-semibold text-blue-800 w-[200px]">
+                {/* {new Date().toLocaleDateString('default', { month: 'long' })},{' '}
+              {new Date().getFullYear()}: */}
+                Other Accounts:
+              </h2>
+              <p className="ml-3 text-left w-[100px]">
+                {/* {thisMonthIncome === 0 ? (
+                0
+              ) : Math.sign(thisMonthIncome) === 1 ? (
+                <span>{numeral(thisMonthIncome).format('0,0')}</span>
+              ) : (
+                <span className="text-red-500">
+                  {numeral(Math.abs(thisMonthIncome)).format('0,0')}
+                </span>
+              )} */}
+                {Math.sign(
+                  accounts
+                    .filter((account) => account.accountName !== 'Cash')
+                    .reduce(
+                      (total: any, item: any) => total + item.balance,
+                      0,
+                    ) as number,
+                ) !== -1 ? (
+                  numeral(
+                    accounts
+                      .filter((account) => account.accountName !== 'Cash')
+                      .reduce((total: any, item: any) => total + item.balance),
+                  ).format('0,0')
+                ) : (
+                  <span className="text-red-500">
+                    {numeral(
+                      Math.abs(
+                        accounts
+                          .filter((account) => account.accountName !== 'Cash')
+                          .reduce(
+                            (total: any, item: any) => total + item.balance,
+                            0,
+                          ) as number,
+                      ),
+                    ).format('0,0')}
+                  </span>
+                )}
+              </p>
             </div>
           )}
-        </div> */}
-        {!incomeChartData && (
-          <h1 className="text-xl font-medium text-gray-700">No Expense</h1>
-        )}
+        </div>
+      </div>
 
-        {/* Month Navigator */}
+      <div className="w-80 min-h-96 h-[26rem] bg-white rounded-lg shadow-md flex items-center flex-col justify-center p-4">
         <div className="relative flex justify-between items-center w-full py-2 px-4 rounded-md mt-1">
           <button
             className="text-sm text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded transition"
@@ -626,18 +1198,65 @@ const Charts = ({
             }}
           />
         ) : (
-          <div className="flex justify-center items-center h-full">
-            <h1>No Income</h1>
-          </div>
+          <Doughnut
+            data={{
+              labels: [],
+              datasets: [
+                {
+                  data: [1, 1, 1, 1], // Single value of 0 to display empty chart
+                  backgroundColor: ['#E0E0E0', '#C0C0C0', '#B0B0B0', '#A0A0A0'],
+
+                  hoverBackgroundColor: [
+                    '#E0E0E0',
+                    '#C0C0C0',
+                    '#B0B0B0',
+                    '#A0A0A0',
+                  ],
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              plugins: {
+                tooltip: {
+                  enabled: (context) => {
+                    // If value is 1, return false to hide the tooltip
+                    const value = context?.tooltip?.dataPoints?.[0]?.raw;
+                    return value !== 1;
+                  },
+                  callbacks: {
+                    label: helpMePlz,
+                  },
+                },
+                legend: {
+                  display: false,
+                },
+              },
+
+              onClick: handleIncomeClick,
+            }}
+          />
         )}
 
         {doesIncomeMonthHaveTransactions && (
-          <h1 className="mt-5">
-            Total Income:{' '}
-            <span className="font-semibold">
-              {numeral(totalIncome).format('0,0')}
-            </span>
-          </h1>
+          <>
+            <h1 className="mt-5">
+              Total Income:{' '}
+              <span className="font-semibold">
+                {numeral(totalIncome).format('0,0')}
+              </span>
+            </h1>
+            <button
+              type="button"
+              style={{
+                color: getRandomDarkColor(),
+              }}
+              className="font-medium"
+              onClick={handleIncomeMoreDetails}
+            >
+              More Details
+            </button>
+          </>
         )}
       </div>
     </div>

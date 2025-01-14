@@ -4,6 +4,7 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import IDaybook from '../types/IDaybook';
 import ICategory from '../types/ICategory';
 import IAccount from '../types/IAccount';
+import { ILedger, IParty, ITransactionAccount } from '../types';
 
 export type Channels = 'ipc-example';
 
@@ -68,6 +69,54 @@ const electronHandler = {
   getAllAccounts: () => ipcRenderer.invoke('getAllAccounts'),
   updateAccount: (account: IAccount) =>
     ipcRenderer.invoke('updateAccount', account),
+
+  // Party
+
+  addParty: (party: IParty) => ipcRenderer.invoke('addParty', party),
+  getAllParties: (accountId: number) =>
+    ipcRenderer.invoke('getAllParties', accountId),
+  updateParty: (party: IParty) => ipcRenderer.invoke('updateParty', party),
+  deleteParty: (id: number) => ipcRenderer.invoke('deleteParty', id),
+
+  // Ledger
+
+  addLedger: (ledger: ILedger) => ipcRenderer.invoke('addLedger', ledger),
+  getAllLedgers: (accountId: number) =>
+    ipcRenderer.invoke('getAllLedgers', accountId),
+  getLedgerByFilters: (
+    dateRange: Array<string> | null,
+    transactionType: string,
+    partyId: number | string,
+    accountId: number,
+  ) =>
+    ipcRenderer.invoke(
+      'getLedgerByFilters',
+      dateRange,
+      transactionType,
+      partyId,
+      accountId,
+    ),
+  updateLedger: (ledger: ILedger) => ipcRenderer.invoke('updateLedger', ledger),
+  deleteLedger: (id: number) => ipcRenderer.invoke('deleteLedger', id),
+
+  // Transaction Account
+
+  addTransactionAccount: (transactionAccount: ITransactionAccount) =>
+    ipcRenderer.invoke('addTransactionAccount', transactionAccount),
+  getAllTransactionAccounts: (accountId: number) =>
+    ipcRenderer.invoke('getAllTransactionAccounts', accountId),
+  getTransactionAccountById: (id: number, accountId: number) =>
+    ipcRenderer.invoke('getTransactionAccountById', id, accountId),
+  getTransactionAccountByName: (accountName: string, accountId: number) =>
+    ipcRenderer.invoke('getTransactionAccountByName', accountName, accountId),
+  updateTransactionAccount: (transactionAccount: ITransactionAccount) =>
+    ipcRenderer.invoke('updateTransactionAccount', transactionAccount),
+  deleteTransactionAccount: (id: number) =>
+    ipcRenderer.invoke('deleteTransactionAccount', id),
+
+  // Preview
+
+  preview: (url: any) => ipcRenderer.invoke('preview', url),
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);

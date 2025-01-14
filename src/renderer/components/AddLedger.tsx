@@ -1,7 +1,7 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable no-unsafe-optional-chaining */
-/* eslint-disable prettier/prettier */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable react/function-component-definition */
@@ -9,20 +9,19 @@
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import { toast } from 'react-toastify';
-import IDaybook from '../../types/IDaybook';
 import { formatDate } from '../utils';
-import { ICategory, IParty, ITransactionAccount } from '../../types';
+import { ILedger, IParty, ITransactionAccount } from '../../types';
 
-const AddTransaction = ({
+const AddLedger = ({
   setRefreshState,
   refreshState,
-  isAddTransactionModalOpen,
-  setIsAddTransactionModalOpen,
+  isAddLedgerModalOpen,
+  setIsAddLedgerModalOpen,
 }: {
   setRefreshState: any;
   refreshState: any;
-  isAddTransactionModalOpen: any;
-  setIsAddTransactionModalOpen: any;
+  isAddLedgerModalOpen: any;
+  setIsAddLedgerModalOpen: any;
 }) => {
   const date = new Date();
   const formattedDate = new Date(
@@ -31,64 +30,42 @@ const AddTransaction = ({
     date.getDate(),
   );
 
-  const [inputData, setInputData] = useState<IDaybook>({
-    amount: 0,
-    categoryId: 0,
+  const [inputData, setInputData] = useState<ILedger>({
     date: formatDate(formattedDate),
+    amount: 0,
     details: '',
-    type: 'EXPENSE',
-    transactionAccountId: 1,
+    partyId: 0,
+    transaction_type: 'YOU GAVE',
     // @ts-ignore
     accountId: +localStorage?.getItem('currentAccountId') as unknown as number,
+    transactionAccountId: 0,
   });
-  const [expenseCategories, setExpenseCategories] = useState<ICategory[]>([]);
-  const [incomeCategories, setIncomeCategories] = useState<ICategory[]>([]);
-  const [accounts, setAccounts] = useState<ITransactionAccount[]>([]);
   const [parties, setParties] = useState<IParty[]>([]);
-  const [selectedPartyId, setSelectedPartyId] = useState('');
-  const [isAddLedger, setIsAddLedger] = useState(false);
+  const [transactionAccounts, setTransactionAccounts] = useState<
+    ITransactionAccount[]
+  >([]);
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   const getData = async () => {
-    const allCategories = (await window.electron.getAllCategories(
-      // @ts-ignore
-      +localStorage.getItem('currentAccountId'),
-    )) as ICategory[];
-
-    const filteredExpenseCategories = allCategories.filter(
-      (category) => category.type === 'EXPENSE',
-    );
-    const filteredIncomeCategories = allCategories.filter(
-      (category) => category.type === 'INCOME',
-    );
-
     const allParties = (await window.electron.getAllParties(
       // @ts-ignore
       +localStorage.getItem('currentAccountId'),
     )) as IParty[];
-    const allTransactionAccounts =
-      await window.electron.getAllTransactionAccounts(
-        // @ts-ignore
-        +localStorage.getItem('currentAccountId'),
-      );
-    setAccounts(allTransactionAccounts);
-    const cashTransactionAccount =
-      await window.electron.getTransactionAccountByName(
-        'Cash',
-        // @ts-ignore
-        +localStorage.getItem('currentAccountId'),
-      );
-
     setParties(allParties);
 
-    setExpenseCategories(filteredExpenseCategories);
-    setIncomeCategories(filteredIncomeCategories);
+    const allAccounts = (await window.electron.getAllTransactionAccounts(
+      // @ts-ignore
+      +localStorage.getItem('currentAccountId'),
+    )) as ITransactionAccount[];
+
+    setTransactionAccounts(allAccounts);
+
     setInputData({
       ...inputData,
-      categoryId: filteredExpenseCategories[0].id as number,
-      transactionAccountId: cashTransactionAccount[0].id,
+      partyId: allParties[0].id as number,
+      transactionAccountId:
+        allAccounts.find((account) => account.accountName === 'Cash')?.id || 0,
     });
-    setSelectedPartyId(`${allParties[0].id}`);
   };
 
   useEffect(() => {
@@ -104,102 +81,73 @@ const AddTransaction = ({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    await window.electron.addDaybook(inputData);
-    toast('Transaction added successfully', {
+    await window.electron.addLedger(inputData);
+    toast('Ledger added successfully', {
       type: 'success',
     });
 
-    const account = await window.electron.getTransactionAccountById(
-      inputData.transactionAccountId,
-      // @ts-ignore
-      +localStorage.getItem('currentAccountId'),
-    );
+    const findParty = parties.find(
+      (party) => party.id === inputData.partyId,
+    ) as IParty;
 
-    await window.electron.updateTransactionAccount({
-      ...account[0],
-      balance:
-        inputData.type === 'EXPENSE'
-          ? account[0].balance - inputData.amount
-          : account[0].balance + inputData.amount,
-    });
+    const findAccount = transactionAccounts.find(
+      (account) => account.id === inputData.transactionAccountId,
+    ) as ITransactionAccount;
 
-    if (isAddLedger) {
-      const findParty = parties.find((party) => party.id === +selectedPartyId);
-      if (inputData.type === 'EXPENSE') {
-        await window.electron.addLedger({
-          // @ts-ignore
-          accountId: +localStorage.getItem('currentAccountId'),
-          amount: inputData.amount,
-          date: inputData.date,
-          details: inputData.details,
-          partyId: +selectedPartyId,
-          transaction_type: 'YOU GAVE',
-          transactionAccountId: account[0].id,
-        });
+    if (inputData.transaction_type === 'YOU GAVE') {
+      await window.electron.updateParty({
+        ...findParty,
+        balance: findParty?.balance - inputData.amount,
+      });
 
-        if (findParty) {
-          await window.electron.updateParty({
-            ...findParty,
-            balance: findParty?.balance - inputData.amount,
-          });
-        }
-      } else if (inputData.type === 'INCOME') {
-        await window.electron.addLedger({
-          // @ts-ignore
-          accountId: +localStorage.getItem('currentAccountId'),
-          amount: inputData.amount,
-          date: inputData.date,
-          details: inputData.details,
-          partyId: +selectedPartyId,
-          transaction_type: 'YOU RECEIVED',
-          transactionAccountId: account[0].id,
-        });
+      await window.electron.updateTransactionAccount({
+        ...findAccount,
+        balance: findAccount.balance - inputData.amount,
+      });
+    } else if (inputData.transaction_type === 'YOU RECEIVED') {
+      await window.electron.updateParty({
+        ...findParty,
+        balance: findParty?.balance + inputData.amount,
+      });
 
-        if (findParty) {
-          await window.electron.updateParty({
-            ...findParty,
-            balance: findParty?.balance + inputData.amount,
-          });
-        }
-      }
+      await window.electron.updateTransactionAccount({
+        ...findAccount,
+        balance: findAccount.balance + inputData.amount,
+      });
     }
 
     setInputData({
-      amount: 0,
       date: formatDate(formattedDate),
-      type: 'EXPENSE',
-      categoryId: 1,
+      amount: 0,
       details: '',
+      partyId: 0,
+      transaction_type: 'YOU GAVE',
       // @ts-ignore
       accountId: +localStorage.getItem('currentAccountId'),
-      transactionAccountId: 1,
+      transactionAccountId: null as unknown as number,
     });
-    setIsAddTransactionModalOpen(false);
+    setIsAddLedgerModalOpen(false);
     setRefreshState((prev: any) => !prev);
   };
 
   return (
     <div
       className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${
-        isAddTransactionModalOpen
-          ? 'opacity-100 visible'
-          : 'opacity-0 invisible'
+        isAddLedgerModalOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
       }`}
-      onClick={() => setIsAddTransactionModalOpen(false)}
+      onClick={() => setIsAddLedgerModalOpen(false)}
     >
       <div
         className="bg-white rounded-lg shadow-lg w-11/12 max-w-lg p-6 relative"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-2">
-          <h2 className="text-xl font-semibold text-gray-800">
-            Add Transaction
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-800">Add Ledger</h2>
           <button
             type="button"
             className="bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-2"
             onClick={() => {
-              setIsAddTransactionModalOpen(false);
+              setIsAddLedgerModalOpen(false);
             }}
           >
             X
@@ -257,7 +205,7 @@ const AddTransaction = ({
           {/* Type */}
           <div className="mt-4 w-full flex">
             <label
-              htmlFor="type"
+              htmlFor="transactionType"
               className="text-sm font-medium text-gray-700 w-1/6"
             >
               Type:
@@ -265,17 +213,18 @@ const AddTransaction = ({
             <div className="flex items-center space-x-4 w-5/6">
               <div className="flex items-center">
                 <input
-                  id="expense"
+                  id="youGave"
                   name="type"
                   type="radio"
-                  value="EXPENSE"
+                  value="YOU GAVE"
                   className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
                   required
-                  checked={inputData.type === 'EXPENSE'}
+                  checked={inputData.transaction_type === 'YOU GAVE'}
                   onChange={(e) => {
                     const clone = { ...inputData };
-                    clone.type = e.target.value as 'INCOME' | 'EXPENSE';
-                    clone.categoryId = expenseCategories[0].id as number;
+                    clone.transaction_type = e.target.value as
+                      | 'YOU GAVE'
+                      | 'YOU RECEIVED';
                     setInputData(clone);
                   }}
                 />
@@ -283,65 +232,60 @@ const AddTransaction = ({
                   htmlFor="expense"
                   className="ml-2 text-sm font-medium text-gray-700"
                 >
-                  Expense
+                  You GAVE
                 </label>
               </div>
               <div className="flex items-center">
                 <input
-                  id="income"
+                  id="youReceived"
                   name="type"
                   type="radio"
-                  value="INCOME"
+                  value="YOU RECEIVED"
                   className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
                   required
-                  checked={inputData.type === 'INCOME'}
+                  checked={inputData.transaction_type === 'YOU RECEIVED'}
                   onChange={(e) => {
                     const clone = { ...inputData };
-                    clone.type = e.target.value as 'INCOME' | 'EXPENSE';
-                    clone.categoryId = incomeCategories[0].id as number;
+                    clone.transaction_type = e.target.value as
+                      | 'YOU GAVE'
+                      | 'YOU RECEIVED';
                     setInputData(clone);
                   }}
                 />
                 <label
-                  htmlFor="income"
+                  htmlFor="youReceived"
                   className="ml-2 text-sm font-medium text-gray-700"
                 >
-                  Income
+                  You Received
                 </label>
               </div>
             </div>
           </div>
 
-          {/* Category */}
+          {/* Party */}
           <div className="flex items-center w-full mt-4">
             <label
-              htmlFor="category"
+              htmlFor="party"
               className="text-sm font-medium text-gray-700 w-1/6"
             >
-              Category:
+              Party:
             </label>
             <select
               id="category"
               className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
               required
-              value={inputData.categoryId}
+              value={inputData.partyId}
               onChange={(e) => {
                 const clone = { ...inputData };
-                clone.categoryId = +e.target.value;
+                clone.partyId = +e.target.value;
                 setInputData(clone);
               }}
             >
-              {inputData.type === 'EXPENSE'
-                ? expenseCategories.map((cate) => (
-                    <option key={cate.id} value={cate.id}>
-                      {cate.name}
-                    </option>
-                  ))
-                : incomeCategories.map((cate) => (
-                    <option key={cate.id} value={cate.id}>
-                      {cate.name}
-                    </option>
-                  ))}
+              {parties.map((party) => (
+                <option key={party.id} value={party.id}>
+                  {party.partyName}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -388,61 +332,13 @@ const AddTransaction = ({
                 setInputData(clone);
               }}
             >
-              {accounts.map((account) => (
+              {transactionAccounts.map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.accountName}
                 </option>
               ))}
             </select>
           </div>
-
-          {/* Add Ledger */}
-          <div className="flex items-center w-full mt-4">
-            <input
-              id="add-ledger"
-              type="checkbox"
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              checked={isAddLedger}
-              onChange={(e) => {
-                console.log(e.target.checked);
-                setIsAddLedger(e.target.checked);
-              }}
-            />
-            <label
-              htmlFor="add-ledger"
-              className="ml-2 text-sm font-medium text-gray-700"
-            >
-              Add Ledger
-            </label>
-          </div>
-
-          {/* Party */}
-
-          {isAddLedger && (
-            <div className="flex items-center w-full mt-4">
-              <label
-                htmlFor="party"
-                className="text-sm font-medium text-gray-700 w-1/6"
-              >
-                Party:
-              </label>
-              <select
-                id="party"
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-5/6"
-                required
-                value={selectedPartyId}
-                onChange={(e) => {
-                  setSelectedPartyId(e.target.value);
-                }}
-              >
-                {parties.map((party) => (
-                  <option key={party.id} value={party.id}>
-                    {party.partyName}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
 
           {/* Submit Button */}
           <div className="w-full flex justify-center mt-4">
@@ -459,4 +355,4 @@ const AddTransaction = ({
   );
 };
 
-export default AddTransaction;
+export default AddLedger;
